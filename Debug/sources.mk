@@ -30,8 +30,8 @@ CPP_DEPS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
-libraries/LiquidCrystal/src \
-libraries/RTC-MCP7940 \
+libraries/DS1337RTC \
+libraries/LiquidCrystal_I2C \
 libraries/SD \
 libraries/SD/utility \
 libraries/SPI \

@@ -4,8 +4,6 @@ c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\
                               ./libraries/core/WMath.o (__mulsi3)
 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodqi4.o)
                               ./libraries/SD/utility/SdFile.o (__udivmodqi4)
-c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
-                              ./libraries/RTC-MCP7940/MCP7940.o (__udivmodhi4)
 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodhi4.o)
                               ./libraries/Time/Time.o (__divmodhi4)
 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodsi4.o)
@@ -16,8 +14,6 @@ c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\
                               c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o) (__negsi2)
 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
                               c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o (exit)
-c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
-                              ./libraries/RTC-MCP7940/MCP7940.o (__tablejump2__)
 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_copy_data.o)
                               ./libraries/core/HardwareSerial.o (__do_copy_data)
 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_clear_bss.o)
@@ -32,6 +28,10 @@ c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\
                               ./libraries/core/Stream.o (__muluhisi3)
 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
                               ./libraries/Time/Time.o (__mulshisi3)
+c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+                              c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodhi4.o) (__udivmodhi4)
+c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
+                              c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ctors.o) (__tablejump__)
 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(addsf3.o)
                               ./libraries/core/Print.o (__subsf3)
 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(addsf3x.o)
@@ -170,6 +170,8 @@ Discarded input sections
  .group         0x00000000        0x8 ./libraries/core/HardwareSerial.o
  .text          0x00000000        0x0 ./libraries/core/HardwareSerial.o
  .bss           0x00000000        0x0 ./libraries/core/HardwareSerial.o
+ .text._ZN14HardwareSerial3endEv
+                0x00000000       0x38 ./libraries/core/HardwareSerial.o
  .text._ZN14HardwareSerial17availableForWriteEv
                 0x00000000       0x1e ./libraries/core/HardwareSerial.o
  .text          0x00000000        0x0 ./libraries/core/HardwareSerial0.o
@@ -206,9 +208,13 @@ Discarded input sections
  .bss           0x00000000        0x0 ./libraries/core/Print.o
  .text._ZN5Print5printEPK19__FlashStringHelper
                 0x00000000       0x4a ./libraries/core/Print.o
+ .text._ZN5Print5printERK6String
+                0x00000000       0x1c ./libraries/core/Print.o
  .text._ZN5Print5printERK9Printable
                 0x00000000       0x14 ./libraries/core/Print.o
  .text._ZN5Print7printlnEPK19__FlashStringHelper
+                0x00000000       0x24 ./libraries/core/Print.o
+ .text._ZN5Print7printlnERK6String
                 0x00000000       0x24 ./libraries/core/Print.o
  .text._ZN5Print7printlnEc
                 0x00000000       0x24 ./libraries/core/Print.o
@@ -224,8 +230,6 @@ Discarded input sections
                 0x00000000       0x24 ./libraries/core/Print.o
  .text._ZN5Print7printlnEhi
                 0x00000000       0x2e ./libraries/core/Print.o
- .text._ZN5Print5printEji
-                0x00000000        0xc ./libraries/core/Print.o
  .text._ZN5Print7printlnEji
                 0x00000000       0x2c ./libraries/core/Print.o
  .text._ZN5Print7printlnEmi
@@ -242,8 +246,16 @@ Discarded input sections
  .bss           0x00000000        0x0 ./libraries/core/Stream.o
  .text._ZN6Stream9timedReadEv
                 0x00000000       0x5c ./libraries/core/Stream.o
+ .text._ZN6Stream9timedPeekEv
+                0x00000000       0x5c ./libraries/core/Stream.o
+ .text._ZN6Stream13peekNextDigitEv
+                0x00000000       0x38 ./libraries/core/Stream.o
  .text._ZN6Stream10setTimeoutEm
                 0x00000000        0xc ./libraries/core/Stream.o
+ .text._ZN6Stream8parseIntEc
+                0x00000000       0xda ./libraries/core/Stream.o
+ .text._ZN6Stream8parseIntEv
+                0x00000000        0x6 ./libraries/core/Stream.o
  .text._ZN6Stream10parseFloatEc
                 0x00000000      0x100 ./libraries/core/Stream.o
  .text._ZN6Stream10parseFloatEv
@@ -290,8 +302,6 @@ Discarded input sections
  .bss           0x00000000        0x0 ./libraries/core/USBCore.o
  .text          0x00000000        0x0 ./libraries/core/WInterrupts.o
  .bss           0x00000000        0x0 ./libraries/core/WInterrupts.o
- .text.attachInterrupt
-                0x00000000       0x40 ./libraries/core/WInterrupts.o
  .text.detachInterrupt
                 0x00000000       0x20 ./libraries/core/WInterrupts.o
  .text          0x00000000        0x0 ./libraries/core/WMath.o
@@ -324,10 +334,16 @@ Discarded input sections
                 0x00000000       0x2e ./libraries/core/WString.o
  .text._ZN6StringC2ERKS_
                 0x00000000       0x12 ./libraries/core/WString.o
+ .text._ZN6StringaSEPKc
+                0x00000000       0x30 ./libraries/core/WString.o
  .text._ZN6StringC2Ec
                 0x00000000       0x30 ./libraries/core/WString.o
  .text._ZN6StringC2Ehh
                 0x00000000       0x5a ./libraries/core/WString.o
+ .text._ZN6StringC2Eih
+                0x00000000       0x58 ./libraries/core/WString.o
+ .text._ZN6StringC2Ejh
+                0x00000000       0x58 ./libraries/core/WString.o
  .text._ZN6StringC2Elh
                 0x00000000       0x5a ./libraries/core/WString.o
  .text._ZN6StringC2Emh
@@ -340,11 +356,19 @@ Discarded input sections
                 0x00000000       0x42 ./libraries/core/WString.o
  .text._ZN6StringC2EPK19__FlashStringHelper
                 0x00000000       0x12 ./libraries/core/WString.o
+ .text._ZN6String6concatEPKcj
+                0x00000000       0x58 ./libraries/core/WString.o
  .text._ZN6String6concatERKS_
                 0x00000000        0xe ./libraries/core/WString.o
+ .text._ZN6String6concatEPKc
+                0x00000000       0x20 ./libraries/core/WString.o
  .text._ZN6String6concatEc
                 0x00000000       0x26 ./libraries/core/WString.o
+ .text._ZN6String6concatEh
+                0x00000000       0x5a ./libraries/core/WString.o
  .text._ZN6String6concatEi
+                0x00000000       0x64 ./libraries/core/WString.o
+ .text._ZN6String6concatEj
                 0x00000000       0x64 ./libraries/core/WString.o
  .text._ZN6String6concatEl
                 0x00000000       0x66 ./libraries/core/WString.o
@@ -469,8 +493,6 @@ Discarded input sections
  .text._ZdaPv   0x00000000        0x4 ./libraries/core/new.o
  .text          0x00000000        0x0 ./libraries/core/wiring.o
  .bss           0x00000000        0x0 ./libraries/core/wiring.o
- .text.delayMicroseconds
-                0x00000000       0x16 ./libraries/core/wiring.o
  .text          0x00000000        0x0 ./libraries/core/wiring_analog.o
  .bss           0x00000000        0x0 ./libraries/core/wiring_analog.o
  .text.analogReference
@@ -533,10 +555,6 @@ Discarded input sections
                 0x00000000        0x2 ./libraries/Wire/Wire.o
  .text          0x00000000        0x0 ./libraries/TimerOne/TimerOne.o
  .bss           0x00000000        0x0 ./libraries/TimerOne/TimerOne.o
- .bss._ZN8TimerOne15clockSelectBitsE
-                0x00000000        0x1 ./libraries/TimerOne/TimerOne.o
- .bss._ZN8TimerOne9pwmPeriodE
-                0x00000000        0x2 ./libraries/TimerOne/TimerOne.o
  .bss.Timer1    0x00000000        0x1 ./libraries/TimerOne/TimerOne.o
  .text          0x00000000        0x0 ./libraries/Time/DateStrings.o
  .bss           0x00000000        0x0 ./libraries/Time/DateStrings.o
@@ -678,12 +696,16 @@ Discarded input sections
  .bss._ZL2tm    0x00000000        0x7 ./libraries/Time/Time.o
  .text          0x00000000        0x0 ./libraries/SPI/SPI.o
  .bss           0x00000000        0x0 ./libraries/SPI/SPI.o
+ .text._ZN8SPIClass5beginEv
+                0x00000000       0x6c ./libraries/SPI/SPI.o
  .text._ZN8SPIClass3endEv
                 0x00000000       0x28 ./libraries/SPI/SPI.o
  .text._ZN8SPIClass14usingInterruptEh
                 0x00000000       0x38 ./libraries/SPI/SPI.o
  .text._ZN8SPIClass17notUsingInterruptEh
                 0x00000000       0x36 ./libraries/SPI/SPI.o
+ .bss._ZN8SPIClass11initializedE
+                0x00000000        0x1 ./libraries/SPI/SPI.o
  .bss.SPI       0x00000000        0x1 ./libraries/SPI/SPI.o
  .group         0x00000000        0x8 ./libraries/SD/utility/Sd2Card.o
  .group         0x00000000        0x8 ./libraries/SD/utility/Sd2Card.o
@@ -691,6 +713,10 @@ Discarded input sections
  .bss           0x00000000        0x0 ./libraries/SD/utility/Sd2Card.o
  .text._ZN7Sd2Card16partialBlockReadEh
                 0x00000000       0x28 ./libraries/SD/utility/Sd2Card.o
+ .text._ZN7Sd2Card10setSckRateEh
+                0x00000000       0x56 ./libraries/SD/utility/Sd2Card.o
+ .text._ZN7Sd2Card4initEhh
+                0x00000000      0x186 ./libraries/SD/utility/Sd2Card.o
  .text._ZN7Sd2Card12readRegisterEhPv
                 0x00000000       0x74 ./libraries/SD/utility/Sd2Card.o
  .text._ZN7Sd2Card8cardSizeEv
@@ -708,22 +734,40 @@ Discarded input sections
  .group         0x00000000        0x8 ./libraries/SD/utility/SdFile.o
  .text          0x00000000        0x0 ./libraries/SD/utility/SdFile.o
  .bss           0x00000000        0x0 ./libraries/SD/utility/SdFile.o
+ .text._ZN6SdFile13addDirClusterEv
+                0x00000000       0xc2 ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile15contiguousRangeEPmS0_
                 0x00000000      0x15c ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile7dirNameERK14directoryEntryPc
                 0x00000000       0x3c ./libraries/SD/utility/SdFile.o
+ .text._ZN6SdFile10make83NameEPKcPh
+                0x00000000       0x70 ./libraries/SD/utility/SdFile.o
+ .text._ZN6SdFile8openRootEP8SdVolume
+                0x00000000       0xa0 ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile14printTwoDigitsEh
                 0x00000000       0x36 ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile12printFatDateEj
                 0x00000000       0x50 ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile12printFatTimeEj
                 0x00000000       0x46 ./libraries/SD/utility/SdFile.o
+ .text._ZN6SdFile4readEPvj
+                0x00000000      0x210 ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile7readDirEP14directoryEntry
                 0x00000000       0x68 ./libraries/SD/utility/SdFile.o
+ .text._ZN6SdFile12readDirCacheEv
+                0x00000000       0x96 ./libraries/SD/utility/SdFile.o
+ .text._ZN6SdFile5closeEv
+                0x00000000       0x1c ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile8dirEntryEP14directoryEntry
                 0x00000000       0x3e ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile9timestampEhjhhhhh
                 0x00000000      0x134 ./libraries/SD/utility/SdFile.o
+ .text._ZN6SdFile8truncateEm
+                0x00000000      0x170 ./libraries/SD/utility/SdFile.o
+ .text._ZN6SdFile15openCachedEntryEhh
+                0x00000000       0xdc ./libraries/SD/utility/SdFile.o
+ .text._ZN6SdFile4openEPS_PKch
+                0x00000000      0x1ca ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile7makeDirEPS_PKc
                 0x00000000      0x1c0 ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile4openEPS_jh
@@ -748,15 +792,41 @@ Discarded input sections
                 0x00000000       0x74 ./libraries/SD/utility/SdFile.o
  .text._ZN6SdFile2lsEhh
                 0x00000000      0x1ca ./libraries/SD/utility/SdFile.o
+ .progmem.data._ZZN6SdFile10make83NameEPKcPhE3__c
+                0x00000000       0x10 ./libraries/SD/utility/SdFile.o
  .bss._ZN6SdFile12oldDateTime_E
                 0x00000000        0x2 ./libraries/SD/utility/SdFile.o
  .text          0x00000000        0x0 ./libraries/SD/utility/SdVolume.o
  .bss           0x00000000        0x0 ./libraries/SD/utility/SdVolume.o
+ .text._ZN8SdVolume14cacheZeroBlockEm
+                0x00000000       0x4c ./libraries/SD/utility/SdVolume.o
+ .text._ZNK8SdVolume9chainSizeEmPm
+                0x00000000       0xd6 ./libraries/SD/utility/SdVolume.o
+ .text._ZN8SdVolume9freeChainEm
+                0x00000000       0xac ./libraries/SD/utility/SdVolume.o
+ .text._ZN8SdVolume4initEP7Sd2Cardh
+                0x00000000      0x228 ./libraries/SD/utility/SdVolume.o
  .group         0x00000000        0x8 ./libraries/SD/File.o
  .group         0x00000000        0x8 ./libraries/SD/File.o
  .group         0x00000000        0x8 ./libraries/SD/File.o
  .text          0x00000000        0x0 ./libraries/SD/File.o
  .bss           0x00000000        0x0 ./libraries/SD/File.o
+ .text._ZN4File5writeEh
+                0x00000000       0x2c ./libraries/SD/File.o
+ .text._ZN4File5writeEPKhj
+                0x00000000       0x36 ./libraries/SD/File.o
+ .text._ZN4File5flushEv
+                0x00000000       0x10 ./libraries/SD/File.o
+ .text._ZN6SdFile4readEv
+                0x00000000       0x2e ./libraries/SD/File.o
+ .text._ZN4File4readEv
+                0x00000000       0x14 ./libraries/SD/File.o
+ .text._ZN4File4peekEv
+                0x00000000       0x56 ./libraries/SD/File.o
+ .text._ZN4FileC2E6SdFilePKc
+                0x00000000       0x72 ./libraries/SD/File.o
+ .text._ZN4FileC2Ev
+                0x00000000       0x26 ./libraries/SD/File.o
  .text._ZN4File4nameEv
                 0x00000000        0x4 ./libraries/SD/File.o
  .text._ZN4File11isDirectoryEv
@@ -765,7 +835,19 @@ Discarded input sections
                 0x00000000       0x14 ./libraries/SD/File.o
  .text._ZN4File4seekEm
                 0x00000000       0x1a ./libraries/SD/File.o
+ .text._ZN4File8positionEv
+                0x00000000       0x20 ./libraries/SD/File.o
+ .text._ZN4File4sizeEv
+                0x00000000       0x20 ./libraries/SD/File.o
+ .text._ZN4File9availableEv
+                0x00000000       0x5e ./libraries/SD/File.o
+ .text._ZN4File5closeEv
+                0x00000000       0x24 ./libraries/SD/File.o
+ .text._ZN4FilecvbEv
+                0x00000000       0x1a ./libraries/SD/File.o
  .rodata._ZTV6Stream
+                0x00000000       0x10 ./libraries/SD/File.o
+ .rodata._ZTV4File
                 0x00000000       0x10 ./libraries/SD/File.o
  .bss.nfilecount
                 0x00000000        0x1 ./libraries/SD/File.o
@@ -784,6 +866,16 @@ Discarded input sections
                 0x00000000       0x70 ./libraries/SD/SD.o
  .text._Z8walkPathPcR6SdFilePFbS1_S_bPvES2_
                 0x00000000      0x120 ./libraries/SD/SD.o
+ .text._ZN7SDClass5beginEh
+                0x00000000       0x5e ./libraries/SD/SD.o
+ .text._ZN6SdFileC2ERKS_
+                0x00000000       0xa2 ./libraries/SD/SD.o
+ .text._ZN7SDClass12getParentDirEPKcPi
+                0x00000000      0x132 ./libraries/SD/SD.o
+ .rodata.str1.1
+                0x00000000        0x2 ./libraries/SD/SD.o
+ .text._ZN7SDClass4openEPKch
+                0x00000000      0x11c ./libraries/SD/SD.o
  .text._ZN7SDClass6existsEPc
                 0x00000000       0x16 ./libraries/SD/SD.o
  .text._ZN7SDClass5mkdirEPc
@@ -796,99 +888,106 @@ Discarded input sections
                 0x00000000       0xd4 ./libraries/SD/SD.o
  .text._ZN4File15rewindDirectoryEv
                 0x00000000       0x28 ./libraries/SD/SD.o
- .group         0x00000000        0x8 ./libraries/RTC-MCP7940/MCP7940.o
- .text          0x00000000        0x0 ./libraries/RTC-MCP7940/MCP7940.o
- .bss           0x00000000        0x0 ./libraries/RTC-MCP7940/MCP7940.o
- .text._ZL6conv2dPKc
-                0x00000000       0x1c ./libraries/RTC-MCP7940/MCP7940.o
- .text._ZN7TwoWire5writeEi
-                0x00000000        0xe ./libraries/RTC-MCP7940/MCP7940.o
- .text._ZN8DateTimeC2EPKcS1_
-                0x00000000       0xc0 ./libraries/RTC-MCP7940/MCP7940.o
- .progmem.gcc_sw_table._ZN8DateTimeC2EPKcS1_
-                0x00000000       0x26 ./libraries/RTC-MCP7940/MCP7940.o
- .text._ZNK8DateTime3getEv
-                0x00000000       0xa0 ./libraries/RTC-MCP7940/MCP7940.o
- .text._ZNK8DateTime9DayOfWeekEv
-                0x00000000       0x1e ./libraries/RTC-MCP7940/MCP7940.o
- .text._ZN11RTC_MCP79409configureEh
-                0x00000000       0x30 ./libraries/RTC-MCP7940/MCP7940.o
- .text._ZN11RTC_MCP79408setAlarmEh
-                0x00000000       0x30 ./libraries/RTC-MCP7940/MCP7940.o
- .text._ZN11RTC_MCP794011ordinalDateEhh
-                0x00000000       0xc6 ./libraries/RTC-MCP7940/MCP7940.o
- .progmem.gcc_sw_table._ZN11RTC_MCP794011ordinalDateEhh
-                0x00000000       0x30 ./libraries/RTC-MCP7940/MCP7940.o
- .group         0x00000000        0x8 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .group         0x00000000        0x8 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .group         0x00000000        0x8 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text          0x00000000        0x0 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .bss           0x00000000        0x0 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal13setRowOffsetsEiiii
-                0x00000000       0x10 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal11pulseEnableEv
-                0x00000000       0x3a ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal10write4bitsEh
-                0x00000000       0x60 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal10write8bitsEh
-                0x00000000       0x60 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal4sendEhh
-                0x00000000       0x52 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal7commandEh
-                0x00000000        0x6 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal5clearEv
-                0x00000000        0xe ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal4homeEv
-                0x00000000        0xe ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal9setCursorEhh
-                0x00000000       0x24 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal9noDisplayEv
-                0x00000000        0xe ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal7displayEv
-                0x00000000       0x10 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal5beginEhhh
-                0x00000000       0xea ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal4initEhhhhhhhhhhhh
-                0x00000000       0x8c ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystalC2Ehhhhhhhhhhh
-                0x00000000       0x5e ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystalC2Ehhhhhhhhhh
-                0x00000000       0x5c ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystalC2Ehhhhhhh
-                0x00000000       0x4c ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystalC2Ehhhhhh
-                0x00000000       0x4c ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal8noCursorEv
-                0x00000000        0xe ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal6cursorEv
-                0x00000000       0x10 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal7noBlinkEv
-                0x00000000        0xe ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal5blinkEv
-                0x00000000       0x10 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal17scrollDisplayLeftEv
-                0x00000000        0x6 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal18scrollDisplayRightEv
-                0x00000000        0x6 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal11leftToRightEv
-                0x00000000       0x10 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal11rightToLeftEv
-                0x00000000        0xe ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal10autoscrollEv
-                0x00000000       0x10 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal12noAutoscrollEv
-                0x00000000        0xe ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal10createCharEhPh
-                0x00000000       0x74 ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .text._ZN13LiquidCrystal5writeEh
-                0x00000000        0xc ./libraries/LiquidCrystal/src/LiquidCrystal.o
- .rodata._ZTV13LiquidCrystal
-                0x00000000        0x8 ./libraries/LiquidCrystal/src/LiquidCrystal.o
+ .group         0x00000000        0x8 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .group         0x00000000        0x8 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .group         0x00000000        0x8 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text          0x00000000        0x0 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .bss           0x00000000        0x0 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C9noDisplayEv
+                0x00000000        0xe ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C8noCursorEv
+                0x00000000        0xe ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C6cursorEv
+                0x00000000       0x10 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C7noBlinkEv
+                0x00000000        0xe ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C5blinkEv
+                0x00000000       0x10 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C17scrollDisplayLeftEv
+                0x00000000        0x6 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C18scrollDisplayRightEv
+                0x00000000        0x6 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C11leftToRightEv
+                0x00000000       0x10 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C11rightToLeftEv
+                0x00000000        0xe ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C10autoscrollEv
+                0x00000000       0x10 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C12noAutoscrollEv
+                0x00000000        0xe ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C9cursor_onEv
+                0x00000000        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C10cursor_offEv
+                0x00000000        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C8blink_onEv
+                0x00000000        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C9blink_offEv
+                0x00000000        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C21load_custom_characterEhPh
+                0x00000000        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C12setBacklightEh
+                0x00000000        0xa ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C8printstrEPKc
+                0x00000000        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C3offEv
+                0x00000000        0x2 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C2onEv
+                0x00000000        0x2 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C8setDelayEii
+                0x00000000        0x2 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C6statusEv
+                0x00000000        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C6keypadEv
+                0x00000000        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C13init_bargraphEh
+                0x00000000        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C21draw_horizontal_graphEhhhh
+                0x00000000        0x2 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C19draw_vertical_graphEhhhh
+                0x00000000        0x2 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .text._ZN17LiquidCrystal_I2C11setContrastEh
+                0x00000000        0x2 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .group         0x00000000        0x8 ./libraries/DS1337RTC/DS1337RTC.o
+ .text          0x00000000        0x0 ./libraries/DS1337RTC/DS1337RTC.o
+ .bss           0x00000000        0x0 ./libraries/DS1337RTC/DS1337RTC.o
+ .text._ZN9DS1337RTCC2Ev
+                0x00000000        0x8 ./libraries/DS1337RTC/DS1337RTC.o
+ .text._ZN9DS1337RTC9stopClockEv
+                0x00000000       0x2c ./libraries/DS1337RTC/DS1337RTC.o
+ .text._ZN9DS1337RTC10startClockEv
+                0x00000000       0x2c ./libraries/DS1337RTC/DS1337RTC.o
+ .text._ZN9DS1337RTC3getEi
+                0x00000000       0x38 ./libraries/DS1337RTC/DS1337RTC.o
+ .text._ZN9DS1337RTC4syncEv
+                0x00000000        0x8 ./libraries/DS1337RTC/DS1337RTC.o
+ .text._ZN9DS1337RTC3setEmi
+                0x00000000       0x4c ./libraries/DS1337RTC/DS1337RTC.o
+ .text._ZN9DS1337RTC11enableAlarmEi
+                0x00000000       0x48 ./libraries/DS1337RTC/DS1337RTC.o
+ .text._ZN9DS1337RTC10freqSelectEi
+                0x00000000       0x6e ./libraries/DS1337RTC/DS1337RTC.o
+ .bss.RTC       0x00000000        0x1 ./libraries/DS1337RTC/DS1337RTC.o
  .text          0x00000000        0x0 ./trapapoul.o
  .bss           0x00000000        0x0 ./trapapoul.o
+ .text._Z11numberInputhh
+                0x00000000        0x2 ./trapapoul.o
+ .text._Z11isTimeValidP12tmElements_t
+                0x00000000       0x1a ./trapapoul.o
  .text._Z14serialSetAlarmv
-                0x00000000        0xc ./trapapoul.o
- .bss.RTC       0x00000000        0x1 ./trapapoul.o
+                0x00000000        0x2 ./trapapoul.o
+ .text._Z7pushLog6String
+                0x00000000       0x7c ./trapapoul.o
+ .bss.toti      0x00000000        0x1 ./trapapoul.o
+ .bss.tot0      0x00000000        0x4 ./trapapoul.o
+ .bss.tot2      0x00000000        0x4 ./trapapoul.o
+ .bss.tot1      0x00000000        0x4 ./trapapoul.o
+ .bss.mes0      0x00000000        0x2 ./trapapoul.o
+ .bss.mes2      0x00000000        0x2 ./trapapoul.o
+ .bss.mes1      0x00000000        0x2 ./trapapoul.o
+ .data.cur_hh   0x00000000        0x1 ./trapapoul.o
+ .data.cur_mm   0x00000000        0x1 ./trapapoul.o
+ .bss.menuPointer
+                0x00000000        0x2 ./trapapoul.o
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulsi3.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulsi3.o)
  .text.libgcc.mul
@@ -917,19 +1016,6 @@ Discarded input sections
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodqi4.o)
  .text.libgcc.fixed
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodqi4.o)
- .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
- .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
- .text.libgcc.mul
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
- .text.libgcc   0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
- .text.libgcc.prologue
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
- .text.libgcc.builtins
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
- .text.libgcc.fmul
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
- .text.libgcc.fixed
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodhi4.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodhi4.o)
  .text.libgcc.mul
@@ -960,6 +1046,8 @@ Discarded input sections
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o)
  .text.libgcc.mul
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o)
+ .text.libgcc.div
+                0x00000000       0x2e c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o)
  .text.libgcc   0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o)
  .text.libgcc.prologue
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o)
@@ -973,6 +1061,8 @@ Discarded input sections
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_negsi2.o)
  .text.libgcc.mul
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_negsi2.o)
+ .text.libgcc.div
+                0x00000000       0x10 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_negsi2.o)
  .text.libgcc   0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_negsi2.o)
  .text.libgcc.prologue
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_negsi2.o)
@@ -997,20 +1087,6 @@ Discarded input sections
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
  .text.libgcc.fixed
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
- .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
- .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
- .text.libgcc.mul
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
- .text.libgcc.div
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
- .text.libgcc.prologue
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
- .text.libgcc.builtins
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
- .text.libgcc.fmul
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
- .text.libgcc.fixed
-                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_copy_data.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_copy_data.o)
  .text.libgcc.mul
@@ -1073,6 +1149,8 @@ Discarded input sections
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_dtors.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
+ .text.libgcc.mul
+                0x00000000       0x1e c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
  .text.libgcc.div
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
  .text.libgcc   0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
@@ -1086,6 +1164,8 @@ Discarded input sections
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
+ .text.libgcc.mul
+                0x00000000       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
  .text.libgcc.div
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
  .text.libgcc   0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
@@ -1112,6 +1192,33 @@ Discarded input sections
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
  .text.libgcc.fixed
                 0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+ .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+ .text.libgcc.mul
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+ .text.libgcc   0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+ .text.libgcc.prologue
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+ .text.libgcc.builtins
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+ .text.libgcc.fmul
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+ .text.libgcc.fixed
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+ .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
+ .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
+ .text.libgcc.mul
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
+ .text.libgcc.div
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
+ .text.libgcc.prologue
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
+ .text.libgcc.builtins
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
+ .text.libgcc.fmul
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
+ .text.libgcc.fixed
+                0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(addsf3.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(addsf3.o)
  .text.avr-libc.fplib
@@ -1238,6 +1345,8 @@ Discarded input sections
                 0x00000000       0x12 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strlen_P.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memcmp.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memcmp.o)
+ .text.avr-libc
+                0x00000000       0x1a c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memcmp.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memcpy.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memcpy.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memmove.o)
@@ -1246,6 +1355,8 @@ Discarded input sections
                 0x00000000       0x24 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memmove.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strchr.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strchr.o)
+ .text.avr-libc
+                0x00000000       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strchr.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strcmp.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strcmp.o)
  .text.avr-libc
@@ -1258,6 +1369,8 @@ Discarded input sections
                 0x00000000       0x1c c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strncmp.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strncpy.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strncpy.o)
+ .text.avr-libc
+                0x00000000       0x1e c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strncpy.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strrchr.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strrchr.o)
  .text.avr-libc
@@ -1268,8 +1381,12 @@ Discarded input sections
                 0x00000000       0x34 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strstr.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(itoa.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(itoa.o)
+ .text.avr-libc
+                0x00000000       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(itoa.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(itoa_ncheck.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(itoa_ncheck.o)
+ .text.avr-libc
+                0x00000000       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(itoa_ncheck.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(ltoa.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(ltoa.o)
  .text.avr-libc
@@ -1292,8 +1409,12 @@ Discarded input sections
                 0x00000000       0x44 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(ultoa_ncheck.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(utoa.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(utoa.o)
+ .text.avr-libc
+                0x00000000       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(utoa.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(utoa_ncheck.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(utoa_ncheck.o)
+ .text.avr-libc
+                0x00000000       0x34 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(utoa_ncheck.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(dtoa_prf.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(dtoa_prf.o)
  .text.avr-libc
@@ -1318,6 +1439,8 @@ Discarded input sections
                 0x00000000       0x30 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strncasecmp_P.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strrev.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strrev.o)
+ .text.avr-libc
+                0x00000000       0x20 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strrev.o)
  .text          0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(errno.o)
  .bss           0x00000000        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(errno.o)
  COMMON         0x00000000        0x2 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(errno.o)
@@ -1398,8 +1521,8 @@ LOAD ./libraries/SD/utility/SdFile.o
 LOAD ./libraries/SD/utility/SdVolume.o
 LOAD ./libraries/SD/File.o
 LOAD ./libraries/SD/SD.o
-LOAD ./libraries/RTC-MCP7940/MCP7940.o
-LOAD ./libraries/LiquidCrystal/src/LiquidCrystal.o
+LOAD ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+LOAD ./libraries/DS1337RTC/DS1337RTC.o
 LOAD ./trapapoul.o
 LOAD c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a
 LOAD c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a
@@ -1499,7 +1622,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000     0x5340
+.text           0x00000000     0x3ea0
  *(.vectors)
  .vectors       0x00000000       0x68 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
                 0x00000000                __vector_default
@@ -1533,648 +1656,521 @@ END GROUP
  .progmem.data.port_to_mode_PGM
                 0x000000b9        0xa ./libraries/core/wiring_digital.o
                 0x000000b9                port_to_mode_PGM
- .progmem.data._ZZN6SdFile10make83NameEPKcPhE3__c
-                0x000000c3       0x10 ./libraries/SD/utility/SdFile.o
- .progmem.data._ZL11daysInMonth
-                0x000000d3        0xc ./libraries/RTC-MCP7940/MCP7940.o
-                0x000000e0                . = ALIGN (0x2)
- *fill*         0x000000df        0x1 
+                0x000000c4                . = ALIGN (0x2)
+ *fill*         0x000000c3        0x1 
  *(.jumptables)
  *(.jumptables*)
  *(.lowtext)
  *(.lowtext*)
-                0x000000e0                __ctors_start = .
+                0x000000c4                __ctors_start = .
  *(.ctors)
- .ctors         0x000000e0        0x2 ./libraries/core/HardwareSerial0.o
- .ctors         0x000000e2        0x2 ./libraries/core/IPAddress.o
- .ctors         0x000000e4        0x2 ./libraries/Wire/Wire.o
- .ctors         0x000000e6        0x2 ./libraries/SD/utility/Sd2Card.o
- .ctors         0x000000e8        0x2 ./libraries/SD/SD.o
- .ctors         0x000000ea        0x2 ./trapapoul.o
-                0x000000ec                __ctors_end = .
-                0x000000ec                __dtors_start = .
+ .ctors         0x000000c4        0x2 ./libraries/core/HardwareSerial0.o
+ .ctors         0x000000c6        0x2 ./libraries/core/IPAddress.o
+ .ctors         0x000000c8        0x2 ./libraries/Wire/Wire.o
+ .ctors         0x000000ca        0x2 ./libraries/SD/utility/Sd2Card.o
+ .ctors         0x000000cc        0x2 ./libraries/SD/SD.o
+ .ctors         0x000000ce        0x2 ./libraries/DS1337RTC/DS1337RTC.o
+ .ctors         0x000000d0        0x2 ./trapapoul.o
+                0x000000d2                __ctors_end = .
+                0x000000d2                __dtors_start = .
  *(.dtors)
- .dtors         0x000000ec        0x2 ./trapapoul.o
-                0x000000ee                __dtors_end = .
+ .dtors         0x000000d2        0x2 ./trapapoul.o
+                0x000000d4                __dtors_end = .
  SORT(*)(.ctors)
  SORT(*)(.dtors)
  *(.init0)
- .init0         0x000000ee        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
-                0x000000ee                __init
+ .init0         0x000000d4        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
+                0x000000d4                __init
  *(.init0)
  *(.init1)
  *(.init1)
  *(.init2)
- .init2         0x000000ee        0xc c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
+ .init2         0x000000d4        0xc c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
  *(.init2)
  *(.init3)
  *(.init3)
  *(.init4)
- .init4         0x000000fa       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_copy_data.o)
-                0x000000fa                __do_copy_data
- .init4         0x00000110       0x10 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_clear_bss.o)
-                0x00000110                __do_clear_bss
+ .init4         0x000000e0       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_copy_data.o)
+                0x000000e0                __do_copy_data
+ .init4         0x000000f6       0x10 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_clear_bss.o)
+                0x000000f6                __do_clear_bss
  *(.init4)
  *(.init5)
  *(.init5)
  *(.init6)
- .init6         0x00000120       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ctors.o)
-                0x00000120                __do_global_ctors
+ .init6         0x00000106       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ctors.o)
+                0x00000106                __do_global_ctors
  *(.init6)
  *(.init7)
  *(.init7)
  *(.init8)
  *(.init8)
  *(.init9)
- .init9         0x00000136        0x6 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
+ .init9         0x0000011c        0x6 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
  *(.init9)
  *(.text)
- .text          0x0000013c        0x2 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
-                0x0000013c                __vector_22
-                0x0000013c                __vector_12
-                0x0000013c                __bad_interrupt
-                0x0000013c                __vector_6
-                0x0000013c                __vector_3
-                0x0000013c                __vector_23
-                0x0000013c                __vector_25
-                0x0000013c                __vector_11
-                0x0000013c                __vector_17
-                0x0000013c                __vector_5
-                0x0000013c                __vector_4
-                0x0000013c                __vector_9
-                0x0000013c                __vector_21
-                0x0000013c                __vector_15
-                0x0000013c                __vector_8
-                0x0000013c                __vector_14
-                0x0000013c                __vector_10
-                0x0000013c                __vector_20
-                0x0000013e                . = ALIGN (0x2)
+ .text          0x00000122        0x2 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
+                0x00000122                __vector_22
+                0x00000122                __vector_12
+                0x00000122                __bad_interrupt
+                0x00000122                __vector_6
+                0x00000122                __vector_3
+                0x00000122                __vector_23
+                0x00000122                __vector_25
+                0x00000122                __vector_11
+                0x00000122                __vector_17
+                0x00000122                __vector_5
+                0x00000122                __vector_4
+                0x00000122                __vector_9
+                0x00000122                __vector_21
+                0x00000122                __vector_15
+                0x00000122                __vector_8
+                0x00000122                __vector_14
+                0x00000122                __vector_10
+                0x00000122                __vector_20
+                0x00000124                . = ALIGN (0x2)
  *(.text.*)
  .text._ZN14HardwareSerial9availableEv
-                0x0000013e       0x16 ./libraries/core/HardwareSerial.o
-                0x0000013e                _ZN14HardwareSerial9availableEv
+                0x00000124       0x16 ./libraries/core/HardwareSerial.o
+                0x00000124                _ZN14HardwareSerial9availableEv
  .text._ZN14HardwareSerial4peekEv
-                0x00000154       0x1c ./libraries/core/HardwareSerial.o
-                0x00000154                _ZN14HardwareSerial4peekEv
+                0x0000013a       0x1c ./libraries/core/HardwareSerial.o
+                0x0000013a                _ZN14HardwareSerial4peekEv
  .text._ZN14HardwareSerial4readEv
-                0x00000170       0x28 ./libraries/core/HardwareSerial.o
-                0x00000170                _ZN14HardwareSerial4readEv
+                0x00000156       0x28 ./libraries/core/HardwareSerial.o
+                0x00000156                _ZN14HardwareSerial4readEv
  .text._Z14serialEventRunv
-                0x00000198       0x1a ./libraries/core/HardwareSerial.o
-                0x00000198                _Z14serialEventRunv
+                0x0000017e       0x1a ./libraries/core/HardwareSerial.o
+                0x0000017e                _Z14serialEventRunv
  .text._ZN14HardwareSerial17_tx_udr_empty_irqEv
-                0x000001b2       0x42 ./libraries/core/HardwareSerial.o
-                0x000001b2                _ZN14HardwareSerial17_tx_udr_empty_irqEv
+                0x00000198       0x42 ./libraries/core/HardwareSerial.o
+                0x00000198                _ZN14HardwareSerial17_tx_udr_empty_irqEv
  .text._ZN14HardwareSerial5flushEv
-                0x000001f4       0x42 ./libraries/core/HardwareSerial.o
-                0x000001f4                _ZN14HardwareSerial5flushEv
+                0x000001da       0x42 ./libraries/core/HardwareSerial.o
+                0x000001da                _ZN14HardwareSerial5flushEv
  .text._ZN14HardwareSerial5writeEh
-                0x00000236       0xc8 ./libraries/core/HardwareSerial.o
-                0x00000236                _ZN14HardwareSerial5writeEh
+                0x0000021c       0xc8 ./libraries/core/HardwareSerial.o
+                0x0000021c                _ZN14HardwareSerial5writeEh
  .text._ZN14HardwareSerial5beginEmh
-                0x000002fe       0xc4 ./libraries/core/HardwareSerial.o
-                0x000002fe                _ZN14HardwareSerial5beginEmh
- .text._ZN14HardwareSerial3endEv
-                0x000003c2       0x38 ./libraries/core/HardwareSerial.o
-                0x000003c2                _ZN14HardwareSerial3endEv
+                0x000002e4       0xc4 ./libraries/core/HardwareSerial.o
+                0x000002e4                _ZN14HardwareSerial5beginEmh
  .text.__vector_18
-                0x000003fa       0x64 ./libraries/core/HardwareSerial0.o
-                0x000003fa                __vector_18
+                0x000003a8       0x64 ./libraries/core/HardwareSerial0.o
+                0x000003a8                __vector_18
  .text.__vector_19
-                0x0000045e       0x4a ./libraries/core/HardwareSerial0.o
-                0x0000045e                __vector_19
+                0x0000040c       0x4a ./libraries/core/HardwareSerial0.o
+                0x0000040c                __vector_19
  .text._Z17Serial0_availablev
-                0x000004a8       0x12 ./libraries/core/HardwareSerial0.o
-                0x000004a8                _Z17Serial0_availablev
+                0x00000456       0x12 ./libraries/core/HardwareSerial0.o
+                0x00000456                _Z17Serial0_availablev
  .text.startup._GLOBAL__sub_I___vector_18
-                0x000004ba       0x86 ./libraries/core/HardwareSerial0.o
+                0x00000468       0x86 ./libraries/core/HardwareSerial0.o
  .text._ZNK9IPAddress7printToER5Print
-                0x00000540       0x6e ./libraries/core/IPAddress.o
-                0x00000540                _ZNK9IPAddress7printToER5Print
+                0x000004ee       0x6e ./libraries/core/IPAddress.o
+                0x000004ee                _ZNK9IPAddress7printToER5Print
  .text.startup._GLOBAL__sub_I__ZN9IPAddressC2Ev
-                0x000005ae       0x1e ./libraries/core/IPAddress.o
+                0x0000055c       0x1e ./libraries/core/IPAddress.o
  .text._ZN5Print5writeEPKhj
-                0x000005cc       0x50 ./libraries/core/Print.o
-                0x000005cc                _ZN5Print5writeEPKhj
+                0x0000057a       0x50 ./libraries/core/Print.o
+                0x0000057a                _ZN5Print5writeEPKhj
  .text._ZN5Print5writeEPKc
-                0x0000061c       0x2c ./libraries/core/Print.o
-                0x0000061c                _ZN5Print5writeEPKc
- .text._ZN5Print5printERK6String
-                0x00000648       0x1c ./libraries/core/Print.o
-                0x00000648                _ZN5Print5printERK6String
+                0x000005ca       0x2c ./libraries/core/Print.o
+                0x000005ca                _ZN5Print5writeEPKc
  .text._ZN5Print5printEPKc
-                0x00000664        0x2 ./libraries/core/Print.o
-                0x00000664                _ZN5Print5printEPKc
+                0x000005f6        0x2 ./libraries/core/Print.o
+                0x000005f6                _ZN5Print5printEPKc
  .text._ZN5Print5printEc
-                0x00000666        0xe ./libraries/core/Print.o
-                0x00000666                _ZN5Print5printEc
+                0x000005f8        0xe ./libraries/core/Print.o
+                0x000005f8                _ZN5Print5printEc
  .text._ZN5Print7printlnEv
-                0x00000674        0x6 ./libraries/core/Print.o
-                0x00000674                _ZN5Print7printlnEv
- .text._ZN5Print7printlnERK6String
-                0x0000067a       0x20 ./libraries/core/Print.o
-                0x0000067a                _ZN5Print7printlnERK6String
+                0x00000606        0x6 ./libraries/core/Print.o
+                0x00000606                _ZN5Print7printlnEv
  .text._ZN5Print7printlnEPKc
-                0x0000069a       0x20 ./libraries/core/Print.o
-                0x0000069a                _ZN5Print7printlnEPKc
+                0x0000060c       0x20 ./libraries/core/Print.o
+                0x0000060c                _ZN5Print7printlnEPKc
  .text._ZN5Print11printNumberEmh
-                0x000006ba       0xb0 ./libraries/core/Print.o
-                0x000006ba                _ZN5Print11printNumberEmh
+                0x0000062c       0xb0 ./libraries/core/Print.o
+                0x0000062c                _ZN5Print11printNumberEmh
  .text._ZN5Print5printEmi
-                0x0000076a       0x18 ./libraries/core/Print.o
-                0x0000076a                _ZN5Print5printEmi
+                0x000006dc       0x18 ./libraries/core/Print.o
+                0x000006dc                _ZN5Print5printEmi
  .text._ZN5Print5printEhi
-                0x00000782        0xc ./libraries/core/Print.o
-                0x00000782                _ZN5Print5printEhi
- .text._ZN6Stream9timedPeekEv
-                0x0000078e       0x58 ./libraries/core/Stream.o
-                0x0000078e                _ZN6Stream9timedPeekEv
- .text._ZN6Stream13peekNextDigitEv
-                0x000007e6       0x36 ./libraries/core/Stream.o
-                0x000007e6                _ZN6Stream13peekNextDigitEv
- .text._ZN6Stream8parseIntEc
-                0x0000081c       0xd6 ./libraries/core/Stream.o
-                0x0000081c                _ZN6Stream8parseIntEc
- .text._ZN6Stream8parseIntEv
-                0x000008f2        0x4 ./libraries/core/Stream.o
-                0x000008f2                _ZN6Stream8parseIntEv
+                0x000006f4        0xc ./libraries/core/Print.o
+                0x000006f4                _ZN5Print5printEhi
+ .text._ZN5Print5printEji
+                0x00000700        0xa ./libraries/core/Print.o
+                0x00000700                _ZN5Print5printEji
  .text._Z12disableTimerh
-                0x000008f6       0x40 ./libraries/core/Tone.o
-                0x000008f6                _Z12disableTimerh
+                0x0000070a       0x40 ./libraries/core/Tone.o
+                0x0000070a                _Z12disableTimerh
  .text._Z6noToneh
-                0x00000936       0x26 ./libraries/core/Tone.o
-                0x00000936                _Z6noToneh
+                0x0000074a       0x26 ./libraries/core/Tone.o
+                0x0000074a                _Z6noToneh
  .text.__vector_7
-                0x0000095c       0xb6 ./libraries/core/Tone.o
-                0x0000095c                __vector_7
+                0x00000770       0xb6 ./libraries/core/Tone.o
+                0x00000770                __vector_7
+ .text.attachInterrupt
+                0x00000826       0x40 ./libraries/core/WInterrupts.o
+                0x00000826                attachInterrupt
  .text.__vector_1
-                0x00000a12       0x5a ./libraries/core/WInterrupts.o
-                0x00000a12                __vector_1
+                0x00000866       0x5a ./libraries/core/WInterrupts.o
+                0x00000866                __vector_1
  .text.__vector_2
-                0x00000a6c       0x5a ./libraries/core/WInterrupts.o
-                0x00000a6c                __vector_2
+                0x000008c0       0x5a ./libraries/core/WInterrupts.o
+                0x000008c0                __vector_2
  .text._ZN6StringD2Ev
-                0x00000ac6        0xa ./libraries/core/WString.o
-                0x00000ac6                _ZN6StringD2Ev
-                0x00000ac6                _ZN6StringD1Ev
+                0x0000091a        0xa ./libraries/core/WString.o
+                0x0000091a                _ZN6StringD2Ev
+                0x0000091a                _ZN6StringD1Ev
  .text._ZN6String10invalidateEv
-                0x00000ad0       0x24 ./libraries/core/WString.o
-                0x00000ad0                _ZN6String10invalidateEv
+                0x00000924       0x24 ./libraries/core/WString.o
+                0x00000924                _ZN6String10invalidateEv
  .text._ZN6String12changeBufferEj
-                0x00000af4       0x34 ./libraries/core/WString.o
-                0x00000af4                _ZN6String12changeBufferEj
+                0x00000948       0x34 ./libraries/core/WString.o
+                0x00000948                _ZN6String12changeBufferEj
  .text._ZN6String7reserveEj
-                0x00000b28       0x36 ./libraries/core/WString.o
-                0x00000b28                _ZN6String7reserveEj
+                0x0000097c       0x36 ./libraries/core/WString.o
+                0x0000097c                _ZN6String7reserveEj
  .text._ZN6String4copyEPKcj
-                0x00000b5e       0x3e ./libraries/core/WString.o
-                0x00000b5e                _ZN6String4copyEPKcj
+                0x000009b2       0x3e ./libraries/core/WString.o
+                0x000009b2                _ZN6String4copyEPKcj
  .text._ZN6StringC2EPKc
-                0x00000b9c       0x2a ./libraries/core/WString.o
-                0x00000b9c                _ZN6StringC2EPKc
-                0x00000b9c                _ZN6StringC1EPKc
- .text._ZN6StringaSEPKc
-                0x00000bc6       0x2c ./libraries/core/WString.o
-                0x00000bc6                _ZN6StringaSEPKc
- .text._ZN6StringC2Eih
-                0x00000bf2       0x56 ./libraries/core/WString.o
-                0x00000bf2                _ZN6StringC2Eih
-                0x00000bf2                _ZN6StringC1Eih
- .text._ZN6StringC2Ejh
-                0x00000c48       0x56 ./libraries/core/WString.o
-                0x00000c48                _ZN6StringC1Ejh
-                0x00000c48                _ZN6StringC2Ejh
- .text._ZN6String6concatEPKcj
-                0x00000c9e       0x56 ./libraries/core/WString.o
-                0x00000c9e                _ZN6String6concatEPKcj
- .text._ZN6String6concatEPKc
-                0x00000cf4       0x1e ./libraries/core/WString.o
-                0x00000cf4                _ZN6String6concatEPKc
- .text._ZN6String6concatEh
-                0x00000d12       0x58 ./libraries/core/WString.o
-                0x00000d12                _ZN6String6concatEh
- .text._ZN6String6concatEj
-                0x00000d6a       0x62 ./libraries/core/WString.o
-                0x00000d6a                _ZN6String6concatEj
- .text.__empty  0x00000dcc        0x2 ./libraries/core/hooks.o
-                0x00000dcc                yield
+                0x000009f0       0x2a ./libraries/core/WString.o
+                0x000009f0                _ZN6StringC2EPKc
+                0x000009f0                _ZN6StringC1EPKc
+ .text.__empty  0x00000a1a        0x2 ./libraries/core/hooks.o
+                0x00000a1a                yield
  .text.initVariant
-                0x00000dce        0x2 ./libraries/core/main.o
-                0x00000dce                initVariant
+                0x00000a1c        0x2 ./libraries/core/main.o
+                0x00000a1c                initVariant
  .text.startup.main
-                0x00000dd0       0x18 ./libraries/core/main.o
-                0x00000dd0                main
+                0x00000a1e       0x18 ./libraries/core/main.o
+                0x00000a1e                main
  .text.__vector_16
-                0x00000de8       0x94 ./libraries/core/wiring.o
-                0x00000de8                __vector_16
- .text.millis   0x00000e7c       0x18 ./libraries/core/wiring.o
-                0x00000e7c                millis
- .text.micros   0x00000e94       0x46 ./libraries/core/wiring.o
-                0x00000e94                micros
- .text.delay    0x00000eda       0x4a ./libraries/core/wiring.o
-                0x00000eda                delay
- .text.init     0x00000f24       0x76 ./libraries/core/wiring.o
-                0x00000f24                init
+                0x00000a36       0x94 ./libraries/core/wiring.o
+                0x00000a36                __vector_16
+ .text.millis   0x00000aca       0x18 ./libraries/core/wiring.o
+                0x00000aca                millis
+ .text.micros   0x00000ae2       0x46 ./libraries/core/wiring.o
+                0x00000ae2                micros
+ .text.delay    0x00000b28       0x4a ./libraries/core/wiring.o
+                0x00000b28                delay
+ .text.delayMicroseconds
+                0x00000b72       0x16 ./libraries/core/wiring.o
+                0x00000b72                delayMicroseconds
+ .text.init     0x00000b88       0x76 ./libraries/core/wiring.o
+                0x00000b88                init
  .text.turnOffPWM
-                0x00000f9a       0x52 ./libraries/core/wiring_digital.o
- .text.pinMode  0x00000fec       0x72 ./libraries/core/wiring_digital.o
-                0x00000fec                pinMode
+                0x00000bfe       0x52 ./libraries/core/wiring_digital.o
+ .text.pinMode  0x00000c50       0x72 ./libraries/core/wiring_digital.o
+                0x00000c50                pinMode
  .text.digitalWrite
-                0x0000105e       0x6a ./libraries/core/wiring_digital.o
-                0x0000105e                digitalWrite
+                0x00000cc2       0x6a ./libraries/core/wiring_digital.o
+                0x00000cc2                digitalWrite
  .text.digitalRead
-                0x000010c8       0x50 ./libraries/core/wiring_digital.o
-                0x000010c8                digitalRead
+                0x00000d2c       0x50 ./libraries/core/wiring_digital.o
+                0x00000d2c                digitalRead
  .text.twi_init
-                0x00001118       0x38 ./libraries/Wire/utility/twi.o
-                0x00001118                twi_init
+                0x00000d7c       0x38 ./libraries/Wire/utility/twi.o
+                0x00000d7c                twi_init
  .text.twi_readFrom
-                0x00001150       0x88 ./libraries/Wire/utility/twi.o
-                0x00001150                twi_readFrom
+                0x00000db4       0x88 ./libraries/Wire/utility/twi.o
+                0x00000db4                twi_readFrom
  .text.twi_writeTo
-                0x000011d8       0xa6 ./libraries/Wire/utility/twi.o
-                0x000011d8                twi_writeTo
+                0x00000e3c       0xa6 ./libraries/Wire/utility/twi.o
+                0x00000e3c                twi_writeTo
  .text.twi_transmit
-                0x0000127e       0x32 ./libraries/Wire/utility/twi.o
-                0x0000127e                twi_transmit
+                0x00000ee2       0x32 ./libraries/Wire/utility/twi.o
+                0x00000ee2                twi_transmit
  .text.twi_stop
-                0x000012b0       0x14 ./libraries/Wire/utility/twi.o
-                0x000012b0                twi_stop
+                0x00000f14       0x14 ./libraries/Wire/utility/twi.o
+                0x00000f14                twi_stop
  .text.twi_releaseBus
-                0x000012c4        0xc ./libraries/Wire/utility/twi.o
-                0x000012c4                twi_releaseBus
+                0x00000f28        0xc ./libraries/Wire/utility/twi.o
+                0x00000f28                twi_releaseBus
  .text.__vector_24
-                0x000012d0      0x254 ./libraries/Wire/utility/twi.o
-                0x000012d0                __vector_24
+                0x00000f34      0x254 ./libraries/Wire/utility/twi.o
+                0x00000f34                __vector_24
  .text._ZN7TwoWire9availableEv
-                0x00001524       0x10 ./libraries/Wire/Wire.o
-                0x00001524                _ZN7TwoWire9availableEv
+                0x00001188       0x10 ./libraries/Wire/Wire.o
+                0x00001188                _ZN7TwoWire9availableEv
  .text._ZN7TwoWire4readEv
-                0x00001534       0x26 ./libraries/Wire/Wire.o
-                0x00001534                _ZN7TwoWire4readEv
+                0x00001198       0x26 ./libraries/Wire/Wire.o
+                0x00001198                _ZN7TwoWire4readEv
  .text._ZN7TwoWire4peekEv
-                0x0000155a       0x1e ./libraries/Wire/Wire.o
-                0x0000155a                _ZN7TwoWire4peekEv
+                0x000011be       0x1e ./libraries/Wire/Wire.o
+                0x000011be                _ZN7TwoWire4peekEv
  .text._ZN7TwoWire5flushEv
-                0x00001578        0x2 ./libraries/Wire/Wire.o
-                0x00001578                _ZN7TwoWire5flushEv
+                0x000011dc        0x2 ./libraries/Wire/Wire.o
+                0x000011dc                _ZN7TwoWire5flushEv
  .text._ZN7TwoWire5writeEPKhj
-                0x0000157a       0x58 ./libraries/Wire/Wire.o
-                0x0000157a                _ZN7TwoWire5writeEPKhj
+                0x000011de       0x58 ./libraries/Wire/Wire.o
+                0x000011de                _ZN7TwoWire5writeEPKhj
  .text._ZN7TwoWire5writeEh
-                0x000015d2       0x5c ./libraries/Wire/Wire.o
-                0x000015d2                _ZN7TwoWire5writeEh
+                0x00001236       0x5c ./libraries/Wire/Wire.o
+                0x00001236                _ZN7TwoWire5writeEh
  .text._ZN7TwoWireC2Ev
-                0x0000162e       0x20 ./libraries/Wire/Wire.o
-                0x0000162e                _ZN7TwoWireC1Ev
-                0x0000162e                _ZN7TwoWireC2Ev
+                0x00001292       0x20 ./libraries/Wire/Wire.o
+                0x00001292                _ZN7TwoWireC1Ev
+                0x00001292                _ZN7TwoWireC2Ev
  .text._ZN7TwoWire5beginEv
-                0x0000164e       0x12 ./libraries/Wire/Wire.o
-                0x0000164e                _ZN7TwoWire5beginEv
+                0x000012b2       0x12 ./libraries/Wire/Wire.o
+                0x000012b2                _ZN7TwoWire5beginEv
  .text._ZN7TwoWire11requestFromEhhh
-                0x00001660       0x18 ./libraries/Wire/Wire.o
-                0x00001660                _ZN7TwoWire11requestFromEhhh
+                0x000012c4       0x18 ./libraries/Wire/Wire.o
+                0x000012c4                _ZN7TwoWire11requestFromEhhh
  .text._ZN7TwoWire11requestFromEii
-                0x00001678        0x4 ./libraries/Wire/Wire.o
-                0x00001678                _ZN7TwoWire11requestFromEii
+                0x000012dc        0x4 ./libraries/Wire/Wire.o
+                0x000012dc                _ZN7TwoWire11requestFromEii
  .text._ZN7TwoWire17beginTransmissionEh
-                0x0000167c       0x14 ./libraries/Wire/Wire.o
-                0x0000167c                _ZN7TwoWire17beginTransmissionEh
+                0x000012e0       0x14 ./libraries/Wire/Wire.o
+                0x000012e0                _ZN7TwoWire17beginTransmissionEh
  .text._ZN7TwoWire17beginTransmissionEi
-                0x00001690        0x2 ./libraries/Wire/Wire.o
-                0x00001690                _ZN7TwoWire17beginTransmissionEi
+                0x000012f4        0x2 ./libraries/Wire/Wire.o
+                0x000012f4                _ZN7TwoWire17beginTransmissionEi
  .text._ZN7TwoWire15endTransmissionEh
-                0x00001692       0x24 ./libraries/Wire/Wire.o
-                0x00001692                _ZN7TwoWire15endTransmissionEh
+                0x000012f6       0x24 ./libraries/Wire/Wire.o
+                0x000012f6                _ZN7TwoWire15endTransmissionEh
  .text._ZN7TwoWire15endTransmissionEv
-                0x000016b6        0x4 ./libraries/Wire/Wire.o
-                0x000016b6                _ZN7TwoWire15endTransmissionEv
+                0x0000131a        0x4 ./libraries/Wire/Wire.o
+                0x0000131a                _ZN7TwoWire15endTransmissionEv
  .text.startup._GLOBAL__sub_I__ZN7TwoWire8rxBufferE
-                0x000016ba        0x6 ./libraries/Wire/Wire.o
+                0x0000131e        0x6 ./libraries/Wire/Wire.o
  .text._ZN8TimerOne16isrDefaultUnusedEv
-                0x000016c0        0x2 ./libraries/TimerOne/TimerOne.o
-                0x000016c0                _ZN8TimerOne16isrDefaultUnusedEv
+                0x00001324        0x2 ./libraries/TimerOne/TimerOne.o
+                0x00001324                _ZN8TimerOne16isrDefaultUnusedEv
  .text.__vector_13
-                0x000016c2       0x4e ./libraries/TimerOne/TimerOne.o
-                0x000016c2                __vector_13
- .text._ZN8SPIClass5beginEv
-                0x00001710       0x64 ./libraries/SPI/SPI.o
-                0x00001710                _ZN8SPIClass5beginEv
+                0x00001326       0x4e ./libraries/TimerOne/TimerOne.o
+                0x00001326                __vector_13
  .text._ZN8SPIClass14endTransactionEv.part.3
-                0x00001774       0x1a ./libraries/SD/utility/Sd2Card.o
+                0x00001374       0x1a ./libraries/SD/utility/Sd2Card.o
  .text._ZN8SPIClass16beginTransactionE11SPISettings
-                0x0000178e       0x34 ./libraries/SD/utility/Sd2Card.o
-                0x0000178e                _ZN8SPIClass16beginTransactionE11SPISettings
+                0x0000138e       0x34 ./libraries/SD/utility/Sd2Card.o
+                0x0000138e                _ZN8SPIClass16beginTransactionE11SPISettings
  .text._ZN8SPIClass8transferEh
-                0x000017c2        0xe ./libraries/SD/utility/Sd2Card.o
-                0x000017c2                _ZN8SPIClass8transferEh
+                0x000013c2        0xe ./libraries/SD/utility/Sd2Card.o
+                0x000013c2                _ZN8SPIClass8transferEh
  .text._ZL6spiRecv
-                0x000017d0        0x4 ./libraries/SD/utility/Sd2Card.o
+                0x000013d0        0x4 ./libraries/SD/utility/Sd2Card.o
  .text._ZN7Sd2Card14chipSelectHighEv
-                0x000017d4       0x1e ./libraries/SD/utility/Sd2Card.o
-                0x000017d4                _ZN7Sd2Card14chipSelectHighEv
+                0x000013d4       0x1e ./libraries/SD/utility/Sd2Card.o
+                0x000013d4                _ZN7Sd2Card14chipSelectHighEv
  .text._ZN7Sd2Card13chipSelectLowEv
-                0x000017f2       0x28 ./libraries/SD/utility/Sd2Card.o
-                0x000017f2                _ZN7Sd2Card13chipSelectLowEv
+                0x000013f2       0x28 ./libraries/SD/utility/Sd2Card.o
+                0x000013f2                _ZN7Sd2Card13chipSelectLowEv
  .text._ZN7Sd2Card7readEndEv
-                0x0000181a       0x30 ./libraries/SD/utility/Sd2Card.o
-                0x0000181a                _ZN7Sd2Card7readEndEv
- .text._ZN7Sd2Card10setSckRateEh
-                0x0000184a       0x56 ./libraries/SD/utility/Sd2Card.o
-                0x0000184a                _ZN7Sd2Card10setSckRateEh
+                0x0000141a       0x30 ./libraries/SD/utility/Sd2Card.o
+                0x0000141a                _ZN7Sd2Card7readEndEv
  .text._ZN7Sd2Card11waitNotBusyEj
-                0x000018a0       0x30 ./libraries/SD/utility/Sd2Card.o
-                0x000018a0                _ZN7Sd2Card11waitNotBusyEj
+                0x0000144a       0x30 ./libraries/SD/utility/Sd2Card.o
+                0x0000144a                _ZN7Sd2Card11waitNotBusyEj
  .text._ZN7Sd2Card11cardCommandEhm
-                0x000018d0       0xb6 ./libraries/SD/utility/Sd2Card.o
-                0x000018d0                _ZN7Sd2Card11cardCommandEhm
- .text._ZN7Sd2Card4initEhh
-                0x00001986      0x158 ./libraries/SD/utility/Sd2Card.o
-                0x00001986                _ZN7Sd2Card4initEhh
+                0x0000147a       0xb6 ./libraries/SD/utility/Sd2Card.o
+                0x0000147a                _ZN7Sd2Card11cardCommandEhm
  .text._ZN7Sd2Card14waitStartBlockEv
-                0x00001ade       0x42 ./libraries/SD/utility/Sd2Card.o
-                0x00001ade                _ZN7Sd2Card14waitStartBlockEv
+                0x00001530       0x42 ./libraries/SD/utility/Sd2Card.o
+                0x00001530                _ZN7Sd2Card14waitStartBlockEv
  .text._ZN7Sd2Card8readDataEmjjPh
-                0x00001b20       0xf2 ./libraries/SD/utility/Sd2Card.o
-                0x00001b20                _ZN7Sd2Card8readDataEmjjPh
+                0x00001572       0xf2 ./libraries/SD/utility/Sd2Card.o
+                0x00001572                _ZN7Sd2Card8readDataEmjjPh
  .text._ZN7Sd2Card9readBlockEmPh
-                0x00001c12       0x1e ./libraries/SD/utility/Sd2Card.o
-                0x00001c12                _ZN7Sd2Card9readBlockEmPh
+                0x00001664       0x1e ./libraries/SD/utility/Sd2Card.o
+                0x00001664                _ZN7Sd2Card9readBlockEmPh
  .text._ZN7Sd2Card9writeDataEhPKh
-                0x00001c30       0x7a ./libraries/SD/utility/Sd2Card.o
-                0x00001c30                _ZN7Sd2Card9writeDataEhPKh
+                0x00001682       0x7a ./libraries/SD/utility/Sd2Card.o
+                0x00001682                _ZN7Sd2Card9writeDataEhPKh
  .text._ZN7Sd2Card10writeBlockEmPKh
-                0x00001caa       0x8e ./libraries/SD/utility/Sd2Card.o
-                0x00001caa                _ZN7Sd2Card10writeBlockEmPKh
+                0x000016fc       0x8e ./libraries/SD/utility/Sd2Card.o
+                0x000016fc                _ZN7Sd2Card10writeBlockEmPKh
  .text.startup._GLOBAL__sub_I__ZN7Sd2Card11cardCommandEhm
-                0x00001d38        0xc ./libraries/SD/utility/Sd2Card.o
+                0x0000178a        0xc ./libraries/SD/utility/Sd2Card.o
  .text._ZN6SdFile10addClusterEv
-                0x00001d44       0x54 ./libraries/SD/utility/SdFile.o
-                0x00001d44                _ZN6SdFile10addClusterEv
- .text._ZN6SdFile13addDirClusterEv
-                0x00001d98       0xbe ./libraries/SD/utility/SdFile.o
-                0x00001d98                _ZN6SdFile13addDirClusterEv
+                0x00001796       0x52 ./libraries/SD/utility/SdFile.o
+                0x00001796                _ZN6SdFile10addClusterEv
  .text._ZN6SdFile13cacheDirEntryEh
-                0x00001e56       0x30 ./libraries/SD/utility/SdFile.o
-                0x00001e56                _ZN6SdFile13cacheDirEntryEh
- .text._ZN6SdFile10make83NameEPKcPh
-                0x00001e86       0x70 ./libraries/SD/utility/SdFile.o
-                0x00001e86                _ZN6SdFile10make83NameEPKcPh
- .text._ZN6SdFile8openRootEP8SdVolume
-                0x00001ef6       0x9e ./libraries/SD/utility/SdFile.o
-                0x00001ef6                _ZN6SdFile8openRootEP8SdVolume
- .text._ZN6SdFile4readEPvj
-                0x00001f94      0x20a ./libraries/SD/utility/SdFile.o
-                0x00001f94                _ZN6SdFile4readEPvj
- .text._ZN6SdFile12readDirCacheEv
-                0x0000219e       0x94 ./libraries/SD/utility/SdFile.o
-                0x0000219e                _ZN6SdFile12readDirCacheEv
+                0x000017e8       0x30 ./libraries/SD/utility/SdFile.o
+                0x000017e8                _ZN6SdFile13cacheDirEntryEh
  .text._ZN6SdFile7seekSetEm
-                0x00002232      0x136 ./libraries/SD/utility/SdFile.o
-                0x00002232                _ZN6SdFile7seekSetEm
+                0x00001818      0x136 ./libraries/SD/utility/SdFile.o
+                0x00001818                _ZN6SdFile7seekSetEm
  .text._ZN6SdFile4syncEv
-                0x00002368       0x8a ./libraries/SD/utility/SdFile.o
-                0x00002368                _ZN6SdFile4syncEv
- .text._ZN6SdFile5closeEv
-                0x000023f2       0x1a ./libraries/SD/utility/SdFile.o
-                0x000023f2                _ZN6SdFile5closeEv
- .text._ZN6SdFile8truncateEm
-                0x0000240c      0x162 ./libraries/SD/utility/SdFile.o
-                0x0000240c                _ZN6SdFile8truncateEm
- .text._ZN6SdFile15openCachedEntryEhh
-                0x0000256e       0xd8 ./libraries/SD/utility/SdFile.o
-                0x0000256e                _ZN6SdFile15openCachedEntryEhh
- .text._ZN6SdFile4openEPS_PKch
-                0x00002646      0x1be ./libraries/SD/utility/SdFile.o
-                0x00002646                _ZN6SdFile4openEPS_PKch
+                0x0000194e       0x8a ./libraries/SD/utility/SdFile.o
+                0x0000194e                _ZN6SdFile4syncEv
  .text._ZN6SdFile5writeEPKvj
-                0x00002804      0x330 ./libraries/SD/utility/SdFile.o
-                0x00002804                _ZN6SdFile5writeEPKvj
+                0x000019d8      0x330 ./libraries/SD/utility/SdFile.o
+                0x000019d8                _ZN6SdFile5writeEPKvj
  .text._ZN6SdFile5writeEh
-                0x00002b34       0x20 ./libraries/SD/utility/SdFile.o
-                0x00002b34                _ZN6SdFile5writeEh
+                0x00001d08       0x20 ./libraries/SD/utility/SdFile.o
+                0x00001d08                _ZN6SdFile5writeEh
  .text._ZN8SdVolume10cacheFlushEv
-                0x00002b54       0x72 ./libraries/SD/utility/SdVolume.o
-                0x00002b54                _ZN8SdVolume10cacheFlushEv
+                0x00001d28       0x72 ./libraries/SD/utility/SdVolume.o
+                0x00001d28                _ZN8SdVolume10cacheFlushEv
  .text._ZN8SdVolume13cacheRawBlockEmh
-                0x00002bc6       0x72 ./libraries/SD/utility/SdVolume.o
-                0x00002bc6                _ZN8SdVolume13cacheRawBlockEmh
- .text._ZN8SdVolume14cacheZeroBlockEm
-                0x00002c38       0x4a ./libraries/SD/utility/SdVolume.o
-                0x00002c38                _ZN8SdVolume14cacheZeroBlockEm
+                0x00001d9a       0x72 ./libraries/SD/utility/SdVolume.o
+                0x00001d9a                _ZN8SdVolume13cacheRawBlockEmh
  .text._ZNK8SdVolume6fatGetEmPm
-                0x00002c82      0x106 ./libraries/SD/utility/SdVolume.o
-                0x00002c82                _ZNK8SdVolume6fatGetEmPm
- .text._ZNK8SdVolume9chainSizeEmPm
-                0x00002d88       0xd4 ./libraries/SD/utility/SdVolume.o
-                0x00002d88                _ZNK8SdVolume9chainSizeEmPm
+                0x00001e0c      0x106 ./libraries/SD/utility/SdVolume.o
+                0x00001e0c                _ZNK8SdVolume6fatGetEmPm
  .text._ZN8SdVolume6fatPutEmm
-                0x00002e5c      0x140 ./libraries/SD/utility/SdVolume.o
-                0x00002e5c                _ZN8SdVolume6fatPutEmm
+                0x00001f12      0x140 ./libraries/SD/utility/SdVolume.o
+                0x00001f12                _ZN8SdVolume6fatPutEmm
  .text._ZN8SdVolume15allocContiguousEmPm
-                0x00002f9c      0x222 ./libraries/SD/utility/SdVolume.o
-                0x00002f9c                _ZN8SdVolume15allocContiguousEmPm
- .text._ZN8SdVolume9freeChainEm
-                0x000031be       0xa8 ./libraries/SD/utility/SdVolume.o
-                0x000031be                _ZN8SdVolume9freeChainEm
- .text._ZN8SdVolume4initEP7Sd2Cardh
-                0x00003266      0x224 ./libraries/SD/utility/SdVolume.o
-                0x00003266                _ZN8SdVolume4initEP7Sd2Cardh
- .text._ZN4File5writeEh
-                0x0000348a       0x2c ./libraries/SD/File.o
-                0x0000348a                _ZN4File5writeEh
- .text._ZN4File5writeEPKhj
-                0x000034b6       0x34 ./libraries/SD/File.o
-                0x000034b6                _ZN4File5writeEPKhj
- .text._ZN4File5flushEv
-                0x000034ea       0x10 ./libraries/SD/File.o
-                0x000034ea                _ZN4File5flushEv
- .text._ZN6SdFile4readEv
-                0x000034fa       0x2e ./libraries/SD/File.o
-                0x000034fa                _ZN6SdFile4readEv
- .text._ZN4File4readEv
-                0x00003528       0x12 ./libraries/SD/File.o
-                0x00003528                _ZN4File4readEv
- .text._ZN4File4peekEv
-                0x0000353a       0x54 ./libraries/SD/File.o
-                0x0000353a                _ZN4File4peekEv
- .text._ZN4FileC2E6SdFilePKc
-                0x0000358e       0x72 ./libraries/SD/File.o
-                0x0000358e                _ZN4FileC1E6SdFilePKc
-                0x0000358e                _ZN4FileC2E6SdFilePKc
- .text._ZN4FileC2Ev
-                0x00003600       0x26 ./libraries/SD/File.o
-                0x00003600                _ZN4FileC2Ev
-                0x00003600                _ZN4FileC1Ev
- .text._ZN4File8positionEv
-                0x00003626       0x20 ./libraries/SD/File.o
-                0x00003626                _ZN4File8positionEv
- .text._ZN4File4sizeEv
-                0x00003646       0x20 ./libraries/SD/File.o
-                0x00003646                _ZN4File4sizeEv
- .text._ZN4File9availableEv
-                0x00003666       0x5a ./libraries/SD/File.o
-                0x00003666                _ZN4File9availableEv
- .text._ZN4File5closeEv
-                0x000036c0       0x24 ./libraries/SD/File.o
-                0x000036c0                _ZN4File5closeEv
- .text._ZN4FilecvbEv
-                0x000036e4       0x1a ./libraries/SD/File.o
-                0x000036e4                _ZN4FilecvbEv
- .text._ZN7SDClass5beginEh
-                0x000036fe       0x5a ./libraries/SD/SD.o
-                0x000036fe                _ZN7SDClass5beginEh
- .text._ZN6SdFileC2ERKS_
-                0x00003758       0xa2 ./libraries/SD/SD.o
-                0x00003758                _ZN6SdFileC1ERKS_
-                0x00003758                _ZN6SdFileC2ERKS_
- .text._ZN7SDClass12getParentDirEPKcPi
-                0x000037fa      0x12e ./libraries/SD/SD.o
-                0x000037fa                _ZN7SDClass12getParentDirEPKcPi
- .text._ZN7SDClass4openEPKch
-                0x00003928      0x112 ./libraries/SD/SD.o
-                0x00003928                _ZN7SDClass4openEPKch
+                0x00002052      0x222 ./libraries/SD/utility/SdVolume.o
+                0x00002052                _ZN8SdVolume15allocContiguousEmPm
  .text.startup._GLOBAL__sub_I__Z20getNextPathComponentPcPjS_
-                0x00003a3a       0x46 ./libraries/SD/SD.o
- .text._ZN8DateTimeC2El
-                0x00003a80       0xb4 ./libraries/RTC-MCP7940/MCP7940.o
-                0x00003a80                _ZN8DateTimeC1El
-                0x00003a80                _ZN8DateTimeC2El
- .text._ZN8DateTimeC2Ejhhhhh
-                0x00003b34       0x28 ./libraries/RTC-MCP7940/MCP7940.o
-                0x00003b34                _ZN8DateTimeC2Ejhhhhh
-                0x00003b34                _ZN8DateTimeC1Ejhhhhh
- .text._ZN11RTC_MCP79405beginEv
-                0x00003b5c        0x8 ./libraries/RTC-MCP7940/MCP7940.o
-                0x00003b5c                _ZN11RTC_MCP79405beginEv
- .text._ZN11RTC_MCP79406adjustERK8DateTime
-                0x00003b64       0xd8 ./libraries/RTC-MCP7940/MCP7940.o
-                0x00003b64                _ZN11RTC_MCP79406adjustERK8DateTime
- .text._ZN11RTC_MCP79405issetEv
-                0x00003c3c       0x44 ./libraries/RTC-MCP7940/MCP7940.o
-                0x00003c3c                _ZN11RTC_MCP79405issetEv
- .text._ZN11RTC_MCP79403nowEv
-                0x00003c80      0x12e ./libraries/RTC-MCP7940/MCP7940.o
-                0x00003c80                _ZN11RTC_MCP79403nowEv
- .text._Z7pushLog6String
-                0x00003dae       0x5e ./trapapoul.o
-                0x00003dae                _Z7pushLog6String
- .text._Z9printDatev
-                0x00003e0c       0x88 ./trapapoul.o
-                0x00003e0c                _Z9printDatev
- .text._Z9printTimev
-                0x00003e94       0x94 ./trapapoul.o
-                0x00003e94                _Z9printTimev
- .text._Z10motorAlignv
-                0x00003f28      0x228 ./trapapoul.o
-                0x00003f28                _Z10motorAlignv
- .text._Z9motorInitv
-                0x00004150       0x22 ./trapapoul.o
-                0x00004150                _Z9motorInitv
- .text._Z9motorGoToi
-                0x00004172      0x3b8 ./trapapoul.o
-                0x00004172                _Z9motorGoToi
- .text._Z9motorTurni
-                0x0000452a        0xe ./trapapoul.o
-                0x0000452a                _Z9motorTurni
- .text.startup._GLOBAL__sub_I_calendar
-                0x00004538       0x18 ./trapapoul.o
- .text.exit._GLOBAL__sub_D_calendar
-                0x00004550        0x8 ./trapapoul.o
- .text._Z12serialSetRtcv
-                0x00004558      0x1cc ./trapapoul.o
-                0x00004558                _Z12serialSetRtcv
- .text.setup    0x00004724      0x1fc ./trapapoul.o
-                0x00004724                setup
- .text.loop     0x00004920      0x3aa ./trapapoul.o
-                0x00004920                loop
+                0x00002274       0x46 ./libraries/SD/SD.o
+ .text._ZN17LiquidCrystal_I2CC2Ehhh
+                0x000022ba       0x18 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x000022ba                _ZN17LiquidCrystal_I2CC1Ehhh
+                0x000022ba                _ZN17LiquidCrystal_I2CC2Ehhh
+ .text._ZN17LiquidCrystal_I2C13expanderWriteEh
+                0x000022d2       0x38 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x000022d2                _ZN17LiquidCrystal_I2C13expanderWriteEh
+ .text._ZN17LiquidCrystal_I2C11noBacklightEv
+                0x0000230a        0x8 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x0000230a                _ZN17LiquidCrystal_I2C11noBacklightEv
+ .text._ZN17LiquidCrystal_I2C9backlightEv
+                0x00002312        0xa ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x00002312                _ZN17LiquidCrystal_I2C9backlightEv
+ .text._ZN17LiquidCrystal_I2C11pulseEnableEh
+                0x0000231c       0x2c ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x0000231c                _ZN17LiquidCrystal_I2C11pulseEnableEh
+ .text._ZN17LiquidCrystal_I2C10write4bitsEh
+                0x00002348       0x18 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x00002348                _ZN17LiquidCrystal_I2C10write4bitsEh
+ .text._ZN17LiquidCrystal_I2C4sendEhh
+                0x00002360       0x36 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x00002360                _ZN17LiquidCrystal_I2C4sendEhh
+ .text._ZN17LiquidCrystal_I2C7commandEh
+                0x00002396        0x4 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x00002396                _ZN17LiquidCrystal_I2C7commandEh
+ .text._ZN17LiquidCrystal_I2C5clearEv
+                0x0000239a        0xc ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x0000239a                _ZN17LiquidCrystal_I2C5clearEv
+ .text._ZN17LiquidCrystal_I2C4homeEv
+                0x000023a6        0xc ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x000023a6                _ZN17LiquidCrystal_I2C4homeEv
+ .text._ZN17LiquidCrystal_I2C9setCursorEhh
+                0x000023b2       0x58 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x000023b2                _ZN17LiquidCrystal_I2C9setCursorEhh
+ .text._ZN17LiquidCrystal_I2C7displayEv
+                0x0000240a        0xe ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x0000240a                _ZN17LiquidCrystal_I2C7displayEv
+ .text._ZN17LiquidCrystal_I2C10createCharEhPh
+                0x00002418       0x72 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x00002418                _ZN17LiquidCrystal_I2C10createCharEhPh
+ .text._ZN17LiquidCrystal_I2C5writeEh
+                0x0000248a        0xa ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x0000248a                _ZN17LiquidCrystal_I2C5writeEh
+ .text._ZN17LiquidCrystal_I2C5beginEhhh
+                0x00002494       0x90 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x00002494                _ZN17LiquidCrystal_I2C5beginEhhh
+ .text._ZN17LiquidCrystal_I2C9init_privEv
+                0x00002524       0x1e ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x00002524                _ZN17LiquidCrystal_I2C9init_privEv
+ .text._ZN17LiquidCrystal_I2C4initEv
+                0x00002542        0x2 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x00002542                _ZN17LiquidCrystal_I2C4initEv
+ .text._ZN7TwoWire5writeEi
+                0x00002544        0xe ./libraries/DS1337RTC/DS1337RTC.o
+                0x00002544                _ZN7TwoWire5writeEi
+ .text._ZN9DS1337RTC11resetAlarmsEv
+                0x00002552       0x28 ./libraries/DS1337RTC/DS1337RTC.o
+                0x00002552                _ZN9DS1337RTC11resetAlarmsEv
+ .text._ZN9DS1337RTC7dec2bcdEh
+                0x0000257a       0x12 ./libraries/DS1337RTC/DS1337RTC.o
+                0x0000257a                _ZN9DS1337RTC7dec2bcdEh
+ .text._ZN9DS1337RTC7bcd2decEh
+                0x0000258c       0x12 ./libraries/DS1337RTC/DS1337RTC.o
+                0x0000258c                _ZN9DS1337RTC7bcd2decEh
+ .text.startup._GLOBAL__sub_I_controlRegister
+                0x0000259e        0x8 ./libraries/DS1337RTC/DS1337RTC.o
+ .text._ZN9DS1337RTC4readER12tmElements_ti
+                0x000025a6      0x100 ./libraries/DS1337RTC/DS1337RTC.o
+                0x000025a6                _ZN9DS1337RTC4readER12tmElements_ti
+ .text._ZN9DS1337RTC5writeER12tmElements_ti
+                0x000026a6       0xaa ./libraries/DS1337RTC/DS1337RTC.o
+                0x000026a6                _ZN9DS1337RTC5writeER12tmElements_ti
+ .text._ZN9DS1337RTC12disableAlarmEi
+                0x00002750       0x46 ./libraries/DS1337RTC/DS1337RTC.o
+                0x00002750                _ZN9DS1337RTC12disableAlarmEi
+ .text._ZN9DS1337RTC15interruptSelectEi
+                0x00002796       0x46 ./libraries/DS1337RTC/DS1337RTC.o
+                0x00002796                _ZN9DS1337RTC15interruptSelectEi
+ .text._Z11interrupt_0v
+                0x000027dc       0x12 ./trapapoul.o
+                0x000027dc                _Z11interrupt_0v
+ .text._Z17interrupt_blinkerv
+                0x000027ee       0x20 ./trapapoul.o
+                0x000027ee                _Z17interrupt_blinkerv
+ .text.setup    0x0000280e      0x198 ./trapapoul.o
+                0x0000280e                setup
+ .text._Z10waitButtonv
+                0x000029a6       0x6c ./trapapoul.o
+                0x000029a6                _Z10waitButtonv
+ .text._Z11isDateValidP12tmElements_t
+                0x00002a12       0x5c ./trapapoul.o
+                0x00002a12                _Z11isDateValidP12tmElements_t
+ .text._Z9enterTimeP12tmElements_t
+                0x00002a6e      0x87c ./trapapoul.o
+                0x00002a6e                _Z9enterTimeP12tmElements_t
+ .text.startup._GLOBAL__sub_I_timeToGo
+                0x000032ea       0x1a ./trapapoul.o
+ .text.exit._GLOBAL__sub_D_timeToGo
+                0x00003304        0x8 ./trapapoul.o
+ .text._Z13userInterfacev
+                0x0000330c      0x608 ./trapapoul.o
+                0x0000330c                _Z13userInterfacev
+ .text.loop     0x00003914       0x5c ./trapapoul.o
+                0x00003914                loop
  .text.libgcc.div
-                0x00004cca       0x18 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodqi4.o)
-                0x00004cca                __udivmodqi4
+                0x00003970       0x18 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodqi4.o)
+                0x00003970                __udivmodqi4
  .text.libgcc.div
-                0x00004ce2       0x28 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
-                0x00004ce2                __udivmodhi4
+                0x00003988       0x26 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodhi4.o)
+                0x00003988                _div
+                0x00003988                __divmodhi4
  .text.libgcc.div
-                0x00004d0a       0x26 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodhi4.o)
-                0x00004d0a                _div
-                0x00004d0a                __divmodhi4
+                0x000039ae       0x44 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodsi4.o)
+                0x000039ae                __udivmodsi4
  .text.libgcc.div
-                0x00004d30       0x44 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodsi4.o)
-                0x00004d30                __udivmodsi4
- .text.libgcc.div
-                0x00004d74       0x28 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o)
-                0x00004d74                __divmodsi4
- .text.libgcc.div
-                0x00004d9c       0x10 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_negsi2.o)
-                0x00004d9c                __negsi2
- .text.libgcc   0x00004dac        0xc c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
-                0x00004dac                __tablejump2__
-                0x00004db0                __tablejump__
- .text.libgcc.mul
-                0x00004db8       0x1e c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
-                0x00004db8                __umulhisi3
- .text.libgcc.mul
-                0x00004dd6       0x14 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
-                0x00004dd6                __muluhisi3
+                0x000039f2       0x28 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+                0x000039f2                __udivmodhi4
+ .text.libgcc   0x00003a1a        0xc c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
+                0x00003a1a                __tablejump2__
+                0x00003a1e                __tablejump__
  .text.avr-libc
-                0x00004dea      0x24e c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(malloc.o)
-                0x00004dea                malloc
-                0x00004f1a                free
+                0x00003a26      0x24e c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(malloc.o)
+                0x00003a26                malloc
+                0x00003b56                free
  .text.avr-libc
-                0x00005038      0x186 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(realloc.o)
-                0x00005038                realloc
+                0x00003c74      0x186 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(realloc.o)
+                0x00003c74                realloc
  .text.avr-libc
-                0x000051be       0x1a c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memcmp.o)
-                0x000051be                memcmp
+                0x00003dfa       0x12 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memcpy.o)
+                0x00003dfa                memcpy
  .text.avr-libc
-                0x000051d8       0x12 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memcpy.o)
-                0x000051d8                memcpy
- .text.avr-libc
-                0x000051ea       0x16 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strchr.o)
-                0x000051ea                strchr
- .text.avr-libc
-                0x00005200        0xe c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strcpy.o)
-                0x00005200                strcpy
- .text.avr-libc
-                0x0000520e       0x1e c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strncpy.o)
-                0x0000520e                strncpy
- .text.avr-libc
-                0x0000522c       0x14 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(itoa.o)
-                0x0000522c                __itoa
-                0x0000522c                itoa
- .text.avr-libc
-                0x00005240       0x14 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(itoa_ncheck.o)
-                0x00005240                __itoa_ncheck
- .text.avr-libc
-                0x00005254       0x14 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(utoa.o)
-                0x00005254                __utoa
-                0x00005254                utoa
- .text.avr-libc
-                0x00005268       0x32 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(utoa_ncheck.o)
-                0x00005268                __utoa_ncheck
-                0x0000526a                __utoa_common
- .text.avr-libc
-                0x0000529a       0x20 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strrev.o)
-                0x0000529a                strrev
+                0x00003e0c        0xe c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strcpy.o)
+                0x00003e0c                strcpy
  .text.libgcc.prologue
-                0x000052ba       0x38 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_prologue.o)
-                0x000052ba                __prologue_saves__
+                0x00003e1a       0x38 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_prologue.o)
+                0x00003e1a                __prologue_saves__
  .text.libgcc.prologue
-                0x000052f2       0x36 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_epilogue.o)
-                0x000052f2                __epilogue_restores__
-                0x00005328                . = ALIGN (0x2)
+                0x00003e52       0x36 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_epilogue.o)
+                0x00003e52                __epilogue_restores__
+                0x00003e88                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00005328        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
-                0x00005328                _exit
-                0x00005328                exit
+ .fini9         0x00003e88        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
+                0x00003e88                _exit
+                0x00003e88                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
  *(.fini7)
  *(.fini7)
  *(.fini6)
- .fini6         0x00005328       0x14 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_dtors.o)
-                0x00005328                __do_global_dtors
+ .fini6         0x00003e88       0x14 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_dtors.o)
+                0x00003e88                __do_global_dtors
  *(.fini6)
  *(.fini5)
  *(.fini5)
@@ -2187,11 +2183,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000533c        0x4 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
+ .fini0         0x00003e9c        0x4 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x00005340                _etext = .
+                0x00003ea0                _etext = .
 
-.data           0x00800100      0x148 load address 0x00005340
+.data           0x00800100      0x25c load address 0x00003ea0
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
@@ -2230,18 +2226,16 @@ END GROUP
  .data          0x00800100        0x0 ./libraries/SD/utility/SdVolume.o
  .data          0x00800100        0x0 ./libraries/SD/File.o
  .data          0x00800100        0x0 ./libraries/SD/SD.o
- .data          0x00800100        0x0 ./libraries/RTC-MCP7940/MCP7940.o
- .data          0x00800100        0x0 ./libraries/LiquidCrystal/src/LiquidCrystal.o
+ .data          0x00800100        0x0 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .data          0x00800100        0x0 ./libraries/DS1337RTC/DS1337RTC.o
  .data          0x00800100        0x0 ./trapapoul.o
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulsi3.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodqi4.o)
- .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodhi4.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodsi4.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_negsi2.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
- .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_copy_data.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_clear_bss.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ctors.o)
@@ -2249,6 +2243,8 @@ END GROUP
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
+ .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(addsf3.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(addsf3x.o)
  .data          0x00800100        0x0 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(cmpsf2.o)
@@ -2321,171 +2317,191 @@ END GROUP
  .data._ZN8SdVolume17cacheBlockNumber_E
                 0x0080010d        0x4 ./libraries/SD/utility/SdVolume.o
                 0x0080010d                _ZN8SdVolume17cacheBlockNumber_E
+ .data.controlRegister
+                0x00800111        0x1 ./libraries/DS1337RTC/DS1337RTC.o
+                0x00800111                controlRegister
+ .data.closeMode
+                0x00800112        0x1 ./trapapoul.o
+                0x00800112                closeMode
+ .data.openMode
+                0x00800113        0x1 ./trapapoul.o
+                0x00800113                openMode
  *(.rodata)
+ .rodata        0x00800114        0x8 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
  *(.rodata*)
  .rodata._ZTV14HardwareSerial
-                0x00800111       0x10 ./libraries/core/HardwareSerial.o
-                0x00800111                _ZTV14HardwareSerial
+                0x0080011c       0x10 ./libraries/core/HardwareSerial.o
+                0x0080011c                _ZTV14HardwareSerial
  .rodata._ZTV9IPAddress
-                0x00800121        0x6 ./libraries/core/IPAddress.o
-                0x00800121                _ZTV9IPAddress
+                0x0080012c        0x6 ./libraries/core/IPAddress.o
+                0x0080012c                _ZTV9IPAddress
  .rodata.str1.1
-                0x00800127       0x11 ./libraries/core/Print.o
+                0x00800132       0x11 ./libraries/core/Print.o
  .rodata._ZTV7TwoWire
-                0x00800138       0x10 ./libraries/Wire/Wire.o
-                0x00800138                _ZTV7TwoWire
+                0x00800143       0x10 ./libraries/Wire/Wire.o
+                0x00800143                _ZTV7TwoWire
  .rodata._ZTV6SdFile
-                0x00800148        0x8 ./libraries/SD/utility/SdFile.o
-                0x00800148                _ZTV6SdFile
- .rodata._ZTV4File
-                0x00800150       0x10 ./libraries/SD/File.o
-                0x00800150                _ZTV4File
+                0x00800153        0x8 ./libraries/SD/utility/SdFile.o
+                0x00800153                _ZTV6SdFile
+ .rodata._ZTV17LiquidCrystal_I2C
+                0x0080015b        0x8 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                0x0080015b                _ZTV17LiquidCrystal_I2C
  .rodata.str1.1
-                0x00800160        0x2 ./libraries/SD/SD.o
- .rodata.str1.1
-                0x00800162       0xe6 ./trapapoul.o
-                                 0xed (size before relaxing)
+                0x00800163      0x1ed ./trapapoul.o
+                                0x205 (size before relaxing)
+ .rodata._ZL9monthDays
+                0x00800350        0xc ./trapapoul.o
  *(.gnu.linkonce.d*)
-                0x00800248                . = ALIGN (0x2)
-                0x00800248                _edata = .
-                0x00800248                PROVIDE (__data_end, .)
+                0x0080035c                . = ALIGN (0x2)
+                0x0080035c                _edata = .
+                0x0080035c                PROVIDE (__data_end, .)
 
-.bss            0x00800248      0x3e2
-                0x00800248                PROVIDE (__bss_start, .)
+.bss            0x0080035c      0x3f2
+                0x0080035c                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
- .bss.Serial    0x00800248       0x9d ./libraries/core/HardwareSerial0.o
-                0x00800248                Serial
+ .bss.Serial    0x0080035c       0x9d ./libraries/core/HardwareSerial0.o
+                0x0080035c                Serial
  .bss._ZL11INADDR_NONE
-                0x008002e5        0x6 ./libraries/core/IPAddress.o
+                0x008003f9        0x6 ./libraries/core/IPAddress.o
  .bss.timer2_pin_mask
-                0x008002eb        0x1 ./libraries/core/Tone.o
-                0x008002eb                timer2_pin_mask
+                0x008003ff        0x1 ./libraries/core/Tone.o
+                0x008003ff                timer2_pin_mask
  .bss.timer2_pin_port
-                0x008002ec        0x2 ./libraries/core/Tone.o
-                0x008002ec                timer2_pin_port
+                0x00800400        0x2 ./libraries/core/Tone.o
+                0x00800400                timer2_pin_port
  .bss.timer2_toggle_count
-                0x008002ee        0x4 ./libraries/core/Tone.o
-                0x008002ee                timer2_toggle_count
- .bss.intFunc   0x008002f2        0x4 ./libraries/core/WInterrupts.o
+                0x00800402        0x4 ./libraries/core/Tone.o
+                0x00800402                timer2_toggle_count
+ .bss.intFunc   0x00800406        0x4 ./libraries/core/WInterrupts.o
  .bss.timer0_fract
-                0x008002f6        0x1 ./libraries/core/wiring.o
+                0x0080040a        0x1 ./libraries/core/wiring.o
  .bss.timer0_millis
-                0x008002f7        0x4 ./libraries/core/wiring.o
-                0x008002f7                timer0_millis
+                0x0080040b        0x4 ./libraries/core/wiring.o
+                0x0080040b                timer0_millis
  .bss.timer0_overflow_count
-                0x008002fb        0x4 ./libraries/core/wiring.o
-                0x008002fb                timer0_overflow_count
+                0x0080040f        0x4 ./libraries/core/wiring.o
+                0x0080040f                timer0_overflow_count
  .bss.twi_error
-                0x008002ff        0x1 ./libraries/Wire/utility/twi.o
+                0x00800413        0x1 ./libraries/Wire/utility/twi.o
  .bss.twi_rxBufferIndex
-                0x00800300        0x1 ./libraries/Wire/utility/twi.o
+                0x00800414        0x1 ./libraries/Wire/utility/twi.o
  .bss.twi_rxBuffer
-                0x00800301       0x20 ./libraries/Wire/utility/twi.o
+                0x00800415       0x20 ./libraries/Wire/utility/twi.o
  .bss.twi_txBufferLength
-                0x00800321        0x1 ./libraries/Wire/utility/twi.o
+                0x00800435        0x1 ./libraries/Wire/utility/twi.o
  .bss.twi_txBufferIndex
-                0x00800322        0x1 ./libraries/Wire/utility/twi.o
+                0x00800436        0x1 ./libraries/Wire/utility/twi.o
  .bss.twi_txBuffer
-                0x00800323       0x20 ./libraries/Wire/utility/twi.o
+                0x00800437       0x20 ./libraries/Wire/utility/twi.o
  .bss.twi_masterBufferLength
-                0x00800343        0x1 ./libraries/Wire/utility/twi.o
+                0x00800457        0x1 ./libraries/Wire/utility/twi.o
  .bss.twi_masterBufferIndex
-                0x00800344        0x1 ./libraries/Wire/utility/twi.o
+                0x00800458        0x1 ./libraries/Wire/utility/twi.o
  .bss.twi_masterBuffer
-                0x00800345       0x20 ./libraries/Wire/utility/twi.o
+                0x00800459       0x20 ./libraries/Wire/utility/twi.o
  .bss.twi_onSlaveReceive
-                0x00800365        0x2 ./libraries/Wire/utility/twi.o
+                0x00800479        0x2 ./libraries/Wire/utility/twi.o
  .bss.twi_onSlaveTransmit
-                0x00800367        0x2 ./libraries/Wire/utility/twi.o
+                0x0080047b        0x2 ./libraries/Wire/utility/twi.o
  .bss.twi_inRepStart
-                0x00800369        0x1 ./libraries/Wire/utility/twi.o
+                0x0080047d        0x1 ./libraries/Wire/utility/twi.o
  .bss.twi_sendStop
-                0x0080036a        0x1 ./libraries/Wire/utility/twi.o
+                0x0080047e        0x1 ./libraries/Wire/utility/twi.o
  .bss.twi_slarw
-                0x0080036b        0x1 ./libraries/Wire/utility/twi.o
+                0x0080047f        0x1 ./libraries/Wire/utility/twi.o
  .bss.twi_state
-                0x0080036c        0x1 ./libraries/Wire/utility/twi.o
- .bss.Wire      0x0080036d        0xc ./libraries/Wire/Wire.o
-                0x0080036d                Wire
+                0x00800480        0x1 ./libraries/Wire/utility/twi.o
+ .bss.Wire      0x00800481        0xc ./libraries/Wire/Wire.o
+                0x00800481                Wire
  .bss._ZN7TwoWire12transmittingE
-                0x00800379        0x1 ./libraries/Wire/Wire.o
-                0x00800379                _ZN7TwoWire12transmittingE
+                0x0080048d        0x1 ./libraries/Wire/Wire.o
+                0x0080048d                _ZN7TwoWire12transmittingE
  .bss._ZN7TwoWire14txBufferLengthE
-                0x0080037a        0x1 ./libraries/Wire/Wire.o
-                0x0080037a                _ZN7TwoWire14txBufferLengthE
+                0x0080048e        0x1 ./libraries/Wire/Wire.o
+                0x0080048e                _ZN7TwoWire14txBufferLengthE
  .bss._ZN7TwoWire13txBufferIndexE
-                0x0080037b        0x1 ./libraries/Wire/Wire.o
-                0x0080037b                _ZN7TwoWire13txBufferIndexE
+                0x0080048f        0x1 ./libraries/Wire/Wire.o
+                0x0080048f                _ZN7TwoWire13txBufferIndexE
  .bss._ZN7TwoWire8txBufferE
-                0x0080037c       0x20 ./libraries/Wire/Wire.o
-                0x0080037c                _ZN7TwoWire8txBufferE
+                0x00800490       0x20 ./libraries/Wire/Wire.o
+                0x00800490                _ZN7TwoWire8txBufferE
  .bss._ZN7TwoWire9txAddressE
-                0x0080039c        0x1 ./libraries/Wire/Wire.o
-                0x0080039c                _ZN7TwoWire9txAddressE
+                0x008004b0        0x1 ./libraries/Wire/Wire.o
+                0x008004b0                _ZN7TwoWire9txAddressE
  .bss._ZN7TwoWire14rxBufferLengthE
-                0x0080039d        0x1 ./libraries/Wire/Wire.o
-                0x0080039d                _ZN7TwoWire14rxBufferLengthE
+                0x008004b1        0x1 ./libraries/Wire/Wire.o
+                0x008004b1                _ZN7TwoWire14rxBufferLengthE
  .bss._ZN7TwoWire13rxBufferIndexE
-                0x0080039e        0x1 ./libraries/Wire/Wire.o
-                0x0080039e                _ZN7TwoWire13rxBufferIndexE
+                0x008004b2        0x1 ./libraries/Wire/Wire.o
+                0x008004b2                _ZN7TwoWire13rxBufferIndexE
  .bss._ZN7TwoWire8rxBufferE
-                0x0080039f       0x20 ./libraries/Wire/Wire.o
-                0x0080039f                _ZN7TwoWire8rxBufferE
+                0x008004b3       0x20 ./libraries/Wire/Wire.o
+                0x008004b3                _ZN7TwoWire8rxBufferE
+ .bss._ZN8TimerOne15clockSelectBitsE
+                0x008004d3        0x1 ./libraries/TimerOne/TimerOne.o
+                0x008004d3                _ZN8TimerOne15clockSelectBitsE
+ .bss._ZN8TimerOne9pwmPeriodE
+                0x008004d4        0x2 ./libraries/TimerOne/TimerOne.o
+                0x008004d4                _ZN8TimerOne9pwmPeriodE
  .bss._ZN8SPIClass13interruptSaveE
-                0x008003bf        0x1 ./libraries/SPI/SPI.o
-                0x008003bf                _ZN8SPIClass13interruptSaveE
+                0x008004d6        0x1 ./libraries/SPI/SPI.o
+                0x008004d6                _ZN8SPIClass13interruptSaveE
  .bss._ZN8SPIClass13interruptMaskE
-                0x008003c0        0x1 ./libraries/SPI/SPI.o
-                0x008003c0                _ZN8SPIClass13interruptMaskE
+                0x008004d7        0x1 ./libraries/SPI/SPI.o
+                0x008004d7                _ZN8SPIClass13interruptMaskE
  .bss._ZN8SPIClass13interruptModeE
-                0x008003c1        0x1 ./libraries/SPI/SPI.o
-                0x008003c1                _ZN8SPIClass13interruptModeE
- .bss._ZN8SPIClass11initializedE
-                0x008003c2        0x1 ./libraries/SPI/SPI.o
-                0x008003c2                _ZN8SPIClass11initializedE
+                0x008004d8        0x1 ./libraries/SPI/SPI.o
+                0x008004d8                _ZN8SPIClass13interruptModeE
  .bss._ZL20chip_select_asserted
-                0x008003c3        0x1 ./libraries/SD/utility/Sd2Card.o
+                0x008004d9        0x1 ./libraries/SD/utility/Sd2Card.o
  .bss._ZL8settings
-                0x008003c4        0x2 ./libraries/SD/utility/Sd2Card.o
+                0x008004da        0x2 ./libraries/SD/utility/Sd2Card.o
  .bss._ZN6SdFile9dateTime_E
-                0x008003c6        0x2 ./libraries/SD/utility/SdFile.o
-                0x008003c6                _ZN6SdFile9dateTime_E
+                0x008004dc        0x2 ./libraries/SD/utility/SdFile.o
+                0x008004dc                _ZN6SdFile9dateTime_E
  .bss._ZN8SdVolume17cacheMirrorBlock_E
-                0x008003c8        0x4 ./libraries/SD/utility/SdVolume.o
-                0x008003c8                _ZN8SdVolume17cacheMirrorBlock_E
+                0x008004de        0x4 ./libraries/SD/utility/SdVolume.o
+                0x008004de                _ZN8SdVolume17cacheMirrorBlock_E
  .bss._ZN8SdVolume11cacheDirty_E
-                0x008003cc        0x1 ./libraries/SD/utility/SdVolume.o
-                0x008003cc                _ZN8SdVolume11cacheDirty_E
+                0x008004e2        0x1 ./libraries/SD/utility/SdVolume.o
+                0x008004e2                _ZN8SdVolume11cacheDirty_E
  .bss._ZN8SdVolume7sdCard_E
-                0x008003cd        0x2 ./libraries/SD/utility/SdVolume.o
-                0x008003cd                _ZN8SdVolume7sdCard_E
+                0x008004e3        0x2 ./libraries/SD/utility/SdVolume.o
+                0x008004e3                _ZN8SdVolume7sdCard_E
  .bss._ZN8SdVolume12cacheBuffer_E
-                0x008003cf      0x200 ./libraries/SD/utility/SdVolume.o
-                0x008003cf                _ZN8SdVolume12cacheBuffer_E
- .bss.SD        0x008005cf       0x49 ./libraries/SD/SD.o
-                0x008005cf                SD
- .bss.motorPosition
-                0x00800618        0x2 ./trapapoul.o
-                0x00800618                motorPosition
- .bss.calendar  0x0080061a        0x6 ./trapapoul.o
-                0x0080061a                calendar
- .bss._ZL11logFileName
-                0x00800620        0x6 ./trapapoul.o
+                0x008004e5      0x200 ./libraries/SD/utility/SdVolume.o
+                0x008004e5                _ZN8SdVolume12cacheBuffer_E
+ .bss.SD        0x008006e5       0x49 ./libraries/SD/SD.o
+                0x008006e5                SD
+ .bss.lcd       0x0080072e        0xc ./trapapoul.o
+                0x0080072e                lcd
+ .bss.blinkCount
+                0x0080073a        0x1 ./trapapoul.o
+                0x0080073a                blinkCount
+ .bss.blink     0x0080073b        0x1 ./trapapoul.o
+                0x0080073b                blink
+ .bss.timeElements
+                0x0080073c        0x7 ./trapapoul.o
+                0x0080073c                timeElements
+ .bss.timeToGo  0x00800743        0x1 ./trapapoul.o
+                0x00800743                timeToGo
+ .bss._ZL11LogFileName
+                0x00800744        0x6 ./trapapoul.o
  *(COMMON)
- COMMON         0x00800626        0x4 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(malloc.o)
-                0x00800626                __brkval
-                0x00800628                __flp
-                0x0080062a                PROVIDE (__bss_end, .)
-                0x00005340                __data_load_start = LOADADDR (.data)
-                0x00005488                __data_load_end = (__data_load_start + SIZEOF (.data))
+ COMMON         0x0080074a        0x4 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(malloc.o)
+                0x0080074a                __brkval
+                0x0080074c                __flp
+                0x0080074e                PROVIDE (__bss_end, .)
+                0x00003ea0                __data_load_start = LOADADDR (.data)
+                0x000040fc                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x0080062a        0x0
-                0x0080062a                PROVIDE (__noinit_start, .)
+.noinit         0x0080074e        0x0
+                0x0080074e                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x0080062a                PROVIDE (__noinit_end, .)
-                0x0080062a                _end = .
-                0x0080062a                PROVIDE (__heap_start, .)
+                0x0080074e                PROVIDE (__noinit_end, .)
+                0x0080074e                _end = .
+                0x0080074e                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -2503,87 +2519,87 @@ END GROUP
 .signature
  *(.signature*)
 
-.stab           0x00000000    0x1719c
+.stab           0x00000000    0x14ca0
  *(.stab)
  .stab          0x00000000      0x690 ./libraries/core/CDC.o
  .stab          0x00000690      0x684 ./libraries/core/HID.o
                                 0x690 (size before relaxing)
- .stab          0x00000d14      0xac8 ./libraries/core/HardwareSerial.o
+ .stab          0x00000d14      0xa5c ./libraries/core/HardwareSerial.o
                                 0xc24 (size before relaxing)
- .stab          0x000017dc      0x81c ./libraries/core/HardwareSerial0.o
+ .stab          0x00001770      0x81c ./libraries/core/HardwareSerial0.o
                                 0x828 (size before relaxing)
- .stab          0x00001ff8      0x690 ./libraries/core/HardwareSerial1.o
+ .stab          0x00001f8c      0x690 ./libraries/core/HardwareSerial1.o
                                 0x69c (size before relaxing)
- .stab          0x00002688      0x690 ./libraries/core/HardwareSerial2.o
+ .stab          0x0000261c      0x690 ./libraries/core/HardwareSerial2.o
                                 0x69c (size before relaxing)
- .stab          0x00002d18      0x690 ./libraries/core/HardwareSerial3.o
+ .stab          0x00002cac      0x690 ./libraries/core/HardwareSerial3.o
                                 0x69c (size before relaxing)
- .stab          0x000033a8      0x810 ./libraries/core/IPAddress.o
+ .stab          0x0000333c      0x810 ./libraries/core/IPAddress.o
                                 0xa5c (size before relaxing)
- .stab          0x00003bb8      0xa38 ./libraries/core/Print.o
+ .stab          0x00003b4c      0x9e4 ./libraries/core/Print.o
                                0x1344 (size before relaxing)
- .stab          0x000045f0      0x858 ./libraries/core/Stream.o
+ .stab          0x00004530      0x5d0 ./libraries/core/Stream.o
                                0x12b4 (size before relaxing)
- .stab          0x00004e48      0x8c4 ./libraries/core/Tone.o
+ .stab          0x00004b00      0x8c4 ./libraries/core/Tone.o
                                 0xd80 (size before relaxing)
- .stab          0x0000570c      0x684 ./libraries/core/USBCore.o
+ .stab          0x000053c4      0x684 ./libraries/core/USBCore.o
                                 0x690 (size before relaxing)
- .stab          0x00005d90      0x6c0 ./libraries/core/WInterrupts.o
+ .stab          0x00005a48      0x75c ./libraries/core/WInterrupts.o
                                 0x7d4 (size before relaxing)
- .stab          0x00006450      0x348 ./libraries/core/WMath.o
+ .stab          0x000061a4      0x348 ./libraries/core/WMath.o
                                 0x528 (size before relaxing)
- .stab          0x00006798      0xbdc ./libraries/core/WString.o
+ .stab          0x000064ec      0x780 ./libraries/core/WString.o
                                0x2c04 (size before relaxing)
- .stab          0x00007374      0x348 ./libraries/core/abi.o
+ .stab          0x00006c6c      0x348 ./libraries/core/abi.o
                                 0x3a8 (size before relaxing)
- .stab          0x000076bc      0x270 ./libraries/core/hooks.o
+ .stab          0x00006fb4      0x270 ./libraries/core/hooks.o
                                 0x27c (size before relaxing)
- .stab          0x0000792c      0x708 ./libraries/core/main.o
+ .stab          0x00007224      0x708 ./libraries/core/main.o
                                 0x738 (size before relaxing)
- .stab          0x00008034      0x348 ./libraries/core/new.o
+ .stab          0x0000792c      0x348 ./libraries/core/new.o
                                 0x420 (size before relaxing)
- .stab          0x0000837c      0x738 ./libraries/core/wiring.o
+ .stab          0x00007c74      0x78c ./libraries/core/wiring.o
                                 0xa2c (size before relaxing)
- .stab          0x00008ab4      0x2e8 ./libraries/core/wiring_analog.o
+ .stab          0x00008400      0x2e8 ./libraries/core/wiring_analog.o
                                 0x8d0 (size before relaxing)
- .stab          0x00008d9c      0x870 ./libraries/core/wiring_digital.o
+ .stab          0x000086e8      0x870 ./libraries/core/wiring_digital.o
                                 0xb1c (size before relaxing)
- .stab          0x0000960c      0x2e8 ./libraries/core/wiring_pulse.o
+ .stab          0x00008f58      0x2e8 ./libraries/core/wiring_pulse.o
                                 0x894 (size before relaxing)
- .stab          0x000098f4      0x2e8 ./libraries/core/wiring_shift.o
+ .stab          0x00009240      0x2e8 ./libraries/core/wiring_shift.o
                                 0x7b0 (size before relaxing)
- .stab          0x00009bdc      0xac8 ./libraries/Wire/utility/twi.o
+ .stab          0x00009528      0xac8 ./libraries/Wire/utility/twi.o
                                 0xd8c (size before relaxing)
- .stab          0x0000a6a4      0xb7c ./libraries/Wire/Wire.o
+ .stab          0x00009ff0      0xb7c ./libraries/Wire/Wire.o
                                 0xe58 (size before relaxing)
- .stab          0x0000b220      0x720 ./libraries/TimerOne/TimerOne.o
+ .stab          0x0000ab6c      0x720 ./libraries/TimerOne/TimerOne.o
                                 0x72c (size before relaxing)
- .stab          0x0000b940      0x51c ./libraries/Time/DateStrings.o
+ .stab          0x0000b28c      0x51c ./libraries/Time/DateStrings.o
                                 0x870 (size before relaxing)
- .stab          0x0000be5c      0x66c ./libraries/Time/Time.o
+ .stab          0x0000b7a8      0x66c ./libraries/Time/Time.o
                                0x135c (size before relaxing)
- .stab          0x0000c4c8      0x750 ./libraries/SPI/SPI.o
+ .stab          0x0000be14      0x630 ./libraries/SPI/SPI.o
                                 0xaa4 (size before relaxing)
- .stab          0x0000cc18     0x1998 ./libraries/SD/utility/Sd2Card.o
+ .stab          0x0000c444     0x153c ./libraries/SD/utility/Sd2Card.o
                                0x2088 (size before relaxing)
- .stab          0x0000e5b0     0x1d58 ./libraries/SD/utility/SdFile.o
+ .stab          0x0000d980     0x1050 ./libraries/SD/utility/SdFile.o
                                0x3a14 (size before relaxing)
- .stab          0x00010308     0x1668 ./libraries/SD/utility/SdVolume.o
+ .stab          0x0000e9d0      0xbb8 ./libraries/SD/utility/SdVolume.o
                                0x1674 (size before relaxing)
- .stab          0x00011970     0x13d4 ./libraries/SD/File.o
+ .stab          0x0000f588      0x798 ./libraries/SD/File.o
                                0x1524 (size before relaxing)
- .stab          0x00012d44     0x12cc ./libraries/SD/SD.o
+ .stab          0x0000fd20      0xdec ./libraries/SD/SD.o
                                0x1cb0 (size before relaxing)
- .stab          0x00014010      0xc30 ./libraries/RTC-MCP7940/MCP7940.o
-                               0x123c (size before relaxing)
- .stab          0x00014c40      0x5e8 ./libraries/LiquidCrystal/src/LiquidCrystal.o
-                               0x15e4 (size before relaxing)
- .stab          0x00015228     0x1f74 ./trapapoul.o
-                               0x1fb0 (size before relaxing)
+ .stab          0x00010b0c      0xdbc ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                               0x1488 (size before relaxing)
+ .stab          0x000118c8      0xb1c ./libraries/DS1337RTC/DS1337RTC.o
+                                0xf30 (size before relaxing)
+ .stab          0x000123e4     0x28bc ./trapapoul.o
+                               0x2a30 (size before relaxing)
 
-.stabstr        0x00000000    0x10192
+.stabstr        0x00000000    0x10648
  *(.stabstr)
- .stabstr       0x00000000    0x10192 ./libraries/core/CDC.o
+ .stabstr       0x00000000    0x10648 ./libraries/core/CDC.o
 
 .stab.excl
  *(.stab.excl)
@@ -2635,8 +2651,8 @@ END GROUP
  .comment       0x00000011       0x12 ./libraries/SD/utility/SdVolume.o
  .comment       0x00000011       0x12 ./libraries/SD/File.o
  .comment       0x00000011       0x12 ./libraries/SD/SD.o
- .comment       0x00000011       0x12 ./libraries/RTC-MCP7940/MCP7940.o
- .comment       0x00000011       0x12 ./libraries/LiquidCrystal/src/LiquidCrystal.o
+ .comment       0x00000011       0x12 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+ .comment       0x00000011       0x12 ./libraries/DS1337RTC/DS1337RTC.o
  .comment       0x00000011       0x12 ./trapapoul.o
  .comment       0x00000011       0x12 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(dtostrf.o)
  .comment       0x00000011       0x12 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(malloc.o)
@@ -2714,7 +2730,7 @@ LOAD linker stubs
 Cross Reference Table
 
 Symbol                                            File
-RTC                                               ./trapapoul.o
+RTC                                               ./libraries/DS1337RTC/DS1337RTC.o
 SD                                                ./libraries/SD/SD.o
                                                   ./trapapoul.o
 SPI                                               ./libraries/SPI/SPI.o
@@ -2723,19 +2739,24 @@ Serial                                            ./libraries/core/HardwareSeria
                                                   ./libraries/SD/utility/SdFile.o
 Timer1                                            ./libraries/TimerOne/TimerOne.o
 Wire                                              ./libraries/Wire/Wire.o
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
+                                                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
 _Z10adjustTimel                                   ./libraries/Time/Time.o
-_Z10motorAlignv                                   ./trapapoul.o
 _Z10randomSeedm                                   ./libraries/core/WMath.o
 _Z10timeStatusv                                   ./libraries/Time/Time.o
+_Z10waitButtonv                                   ./trapapoul.o
 _Z11dayShortStrh                                  ./libraries/Time/DateStrings.o
+_Z11interrupt_0v                                  ./trapapoul.o
+_Z11isDateValidP12tmElements_t                    ./trapapoul.o
+_Z11isTimeValidP12tmElements_t                    ./trapapoul.o
+_Z11numberInputhh                                 ./trapapoul.o
 _Z11serialEventv                                  ./libraries/core/HardwareSerial.o
 _Z12disableTimerh                                 ./libraries/core/Tone.o
 _Z12hourFormat12m                                 ./libraries/Time/Time.o
 _Z12hourFormat12v                                 ./libraries/Time/Time.o
 _Z12refreshCachem                                 ./libraries/Time/Time.o
-_Z12serialSetRtcv                                 ./trapapoul.o
 _Z13monthShortStrh                                ./libraries/Time/DateStrings.o
+_Z13userInterfacev                                ./trapapoul.o
 _Z14callback_rmdirR6SdFilePcbPv                   ./libraries/SD/SD.o
 _Z14serialEventRunv                               ./libraries/core/HardwareSerial.o
                                                   ./libraries/core/main.o
@@ -2745,6 +2766,7 @@ _Z15setSyncIntervalm                              ./libraries/Time/Time.o
 _Z15setSyncProviderPFmvE                          ./libraries/Time/Time.o
 _Z17Serial0_availablev                            ./libraries/core/HardwareSerial0.o
                                                   ./libraries/core/HardwareSerial.o
+_Z17interrupt_blinkerv                            ./trapapoul.o
 _Z19callback_pathExistsR6SdFilePcbPv              ./libraries/SD/SD.o
 _Z20callback_makeDirPathR6SdFilePcbPv             ./libraries/SD/SD.o
 _Z20getNextPathComponentPcPjS_                    ./libraries/SD/SD.o
@@ -2777,79 +2799,80 @@ _Z7setTimem                                       ./libraries/Time/Time.o
 _Z7weekdaym                                       ./libraries/Time/Time.o
 _Z7weekdayv                                       ./libraries/Time/Time.o
 _Z8makeTimeR12tmElements_t                        ./libraries/Time/Time.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
 _Z8makeWordhh                                     ./libraries/core/WMath.o
 _Z8makeWordj                                      ./libraries/core/WMath.o
 _Z8monthStrh                                      ./libraries/Time/DateStrings.o
 _Z8walkPathPcR6SdFilePFbS1_S_bPvES2_              ./libraries/SD/SD.o
 _Z9breakTimemR12tmElements_t                      ./libraries/Time/Time.o
-_Z9motorGoToi                                     ./trapapoul.o
-_Z9motorInitv                                     ./trapapoul.o
-_Z9motorTurni                                     ./trapapoul.o
-_Z9printDatev                                     ./trapapoul.o
-_Z9printTimev                                     ./trapapoul.o
-_ZN11RTC_MCP794011ordinalDateEhh                  ./libraries/RTC-MCP7940/MCP7940.o
-_ZN11RTC_MCP79403nowEv                            ./libraries/RTC-MCP7940/MCP7940.o
-                                                  ./trapapoul.o
-_ZN11RTC_MCP79405beginEv                          ./libraries/RTC-MCP7940/MCP7940.o
-                                                  ./trapapoul.o
-_ZN11RTC_MCP79405issetEv                          ./libraries/RTC-MCP7940/MCP7940.o
-                                                  ./trapapoul.o
-_ZN11RTC_MCP79406adjustERK8DateTime               ./libraries/RTC-MCP7940/MCP7940.o
-                                                  ./trapapoul.o
-_ZN11RTC_MCP79408setAlarmEh                       ./libraries/RTC-MCP7940/MCP7940.o
-                                                  ./trapapoul.o
-_ZN11RTC_MCP79409configureEh                      ./libraries/RTC-MCP7940/MCP7940.o
-                                                  ./trapapoul.o
-_ZN13LiquidCrystal10autoscrollEv                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal10createCharEhPh                ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal10write4bitsEh                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal10write8bitsEh                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal11leftToRightEv                 ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal11pulseEnableEv                 ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal11rightToLeftEv                 ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal12noAutoscrollEv                ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal13setRowOffsetsEiiii            ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal17scrollDisplayLeftEv           ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal18scrollDisplayRightEv          ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal4homeEv                         ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal4initEhhhhhhhhhhhh              ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal4sendEhh                        ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal5beginEhhh                      ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal5blinkEv                        ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal5clearEv                        ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal5writeEh                        ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal6cursorEv                       ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal7commandEh                      ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal7displayEv                      ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal7noBlinkEv                      ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal8noCursorEv                     ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal9noDisplayEv                    ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystal9setCursorEhh                   ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystalC1Ehhhhhh                       ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystalC1Ehhhhhhh                      ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystalC1Ehhhhhhhhhh                   ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystalC1Ehhhhhhhhhhh                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystalC2Ehhhhhh                       ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystalC2Ehhhhhhh                      ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystalC2Ehhhhhhhhhh                   ./libraries/LiquidCrystal/src/LiquidCrystal.o
-_ZN13LiquidCrystalC2Ehhhhhhhhhhh                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
+_Z9enterTimeP12tmElements_t                       ./trapapoul.o
 _ZN14HardwareSerial17_tx_udr_empty_irqEv          ./libraries/core/HardwareSerial.o
                                                   ./libraries/core/HardwareSerial0.o
 _ZN14HardwareSerial17availableForWriteEv          ./libraries/core/HardwareSerial.o
 _ZN14HardwareSerial3endEv                         ./libraries/core/HardwareSerial.o
-                                                  ./trapapoul.o
 _ZN14HardwareSerial4peekEv                        ./libraries/core/HardwareSerial.o
-                                                  ./trapapoul.o
 _ZN14HardwareSerial4readEv                        ./libraries/core/HardwareSerial.o
-                                                  ./trapapoul.o
 _ZN14HardwareSerial5beginEmh                      ./libraries/core/HardwareSerial.o
                                                   ./trapapoul.o
 _ZN14HardwareSerial5flushEv                       ./libraries/core/HardwareSerial.o
 _ZN14HardwareSerial5writeEh                       ./libraries/core/HardwareSerial.o
                                                   ./libraries/SD/utility/SdFile.o
 _ZN14HardwareSerial9availableEv                   ./libraries/core/HardwareSerial.o
-                                                  ./trapapoul.o
                                                   ./libraries/core/HardwareSerial0.o
+_ZN17LiquidCrystal_I2C10autoscrollEv              ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C10createCharEhPh            ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                                                  ./trapapoul.o
+_ZN17LiquidCrystal_I2C10cursor_offEv              ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C10write4bitsEh              ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C11leftToRightEv             ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C11noBacklightEv             ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                                                  ./trapapoul.o
+_ZN17LiquidCrystal_I2C11pulseEnableEh             ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C11rightToLeftEv             ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C11setContrastEh             ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C12noAutoscrollEv            ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C12setBacklightEh            ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C13expanderWriteEh           ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C13init_bargraphEh           ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C17scrollDisplayLeftEv       ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C18scrollDisplayRightEv      ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C19draw_vertical_graphEhhhh  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C21draw_horizontal_graphEhhhh ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C21load_custom_characterEhPh ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C2onEv                       ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C3offEv                      ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C4homeEv                     ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C4initEv                     ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                                                  ./trapapoul.o
+_ZN17LiquidCrystal_I2C4sendEhh                    ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C5beginEhhh                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C5blinkEv                    ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C5clearEv                    ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                                                  ./trapapoul.o
+_ZN17LiquidCrystal_I2C5writeEh                    ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                                                  ./trapapoul.o
+_ZN17LiquidCrystal_I2C6cursorEv                   ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C6keypadEv                   ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C6statusEv                   ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C7commandEh                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C7displayEv                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C7noBlinkEv                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C8blink_onEv                 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C8noCursorEv                 ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C8printstrEPKc               ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C8setDelayEii                ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C9backlightEv                ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                                                  ./trapapoul.o
+_ZN17LiquidCrystal_I2C9blink_offEv                ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C9cursor_onEv                ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C9init_privEv                ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C9noDisplayEv                ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+_ZN17LiquidCrystal_I2C9setCursorEhh               ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                                                  ./trapapoul.o
+_ZN17LiquidCrystal_I2CC1Ehhh                      ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
+                                                  ./trapapoul.o
+_ZN17LiquidCrystal_I2CC2Ehhh                      ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
 _ZN4File11isDirectoryEv                           ./libraries/SD/File.o
                                                   ./libraries/SD/SD.o
 _ZN4File12openNextFileEh                          ./libraries/SD/SD.o
@@ -2880,25 +2903,29 @@ _ZN5Print11printNumberEmh                         ./libraries/core/Print.o
 _ZN5Print5printEPK19__FlashStringHelper           ./libraries/core/Print.o
 _ZN5Print5printEPKc                               ./libraries/core/Print.o
                                                   ./trapapoul.o
+                                                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
                                                   ./libraries/SD/utility/SdFile.o
 _ZN5Print5printERK6String                         ./libraries/core/Print.o
                                                   ./trapapoul.o
 _ZN5Print5printERK9Printable                      ./libraries/core/Print.o
 _ZN5Print5printEc                                 ./libraries/core/Print.o
+                                                  ./trapapoul.o
                                                   ./libraries/SD/utility/SdFile.o
                                                   ./libraries/core/IPAddress.o
 _ZN5Print5printEdi                                ./libraries/core/Print.o
 _ZN5Print5printEhi                                ./libraries/core/Print.o
+                                                  ./trapapoul.o
                                                   ./libraries/core/IPAddress.o
 _ZN5Print5printEii                                ./libraries/core/Print.o
 _ZN5Print5printEji                                ./libraries/core/Print.o
+                                                  ./trapapoul.o
                                                   ./libraries/SD/utility/SdFile.o
 _ZN5Print5printEli                                ./libraries/core/Print.o
 _ZN5Print5printEmi                                ./libraries/core/Print.o
                                                   ./libraries/SD/utility/SdFile.o
 _ZN5Print5writeEPKc                               ./libraries/core/Print.o
 _ZN5Print5writeEPKhj                              ./libraries/core/Print.o
-                                                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
+                                                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
                                                   ./libraries/SD/File.o
                                                   ./libraries/SD/utility/SdFile.o
                                                   ./libraries/Wire/Wire.o
@@ -2983,7 +3010,6 @@ _ZN6Stream4findEPc                                ./libraries/core/Stream.o
 _ZN6Stream4findEPcj                               ./libraries/core/Stream.o
 _ZN6Stream8parseIntEc                             ./libraries/core/Stream.o
 _ZN6Stream8parseIntEv                             ./libraries/core/Stream.o
-                                                  ./trapapoul.o
 _ZN6Stream9findMultiEPNS_11MultiTargetEi          ./libraries/core/Stream.o
 _ZN6Stream9findUntilEPcS0_                        ./libraries/core/Stream.o
 _ZN6Stream9findUntilEPcjS0_j                      ./libraries/core/Stream.o
@@ -2999,7 +3025,6 @@ _ZN6String4copyEPKcj                              ./libraries/core/WString.o
 _ZN6String4trimEv                                 ./libraries/core/WString.o
 _ZN6String6concatEPK19__FlashStringHelper         ./libraries/core/WString.o
 _ZN6String6concatEPKc                             ./libraries/core/WString.o
-                                                  ./trapapoul.o
 _ZN6String6concatEPKcj                            ./libraries/core/WString.o
 _ZN6String6concatERKS_                            ./libraries/core/WString.o
 _ZN6String6concatEc                               ./libraries/core/WString.o
@@ -3007,10 +3032,8 @@ _ZN6String6concatEc                               ./libraries/core/WString.o
 _ZN6String6concatEd                               ./libraries/core/WString.o
 _ZN6String6concatEf                               ./libraries/core/WString.o
 _ZN6String6concatEh                               ./libraries/core/WString.o
-                                                  ./trapapoul.o
 _ZN6String6concatEi                               ./libraries/core/WString.o
 _ZN6String6concatEj                               ./libraries/core/WString.o
-                                                  ./trapapoul.o
 _ZN6String6concatEl                               ./libraries/core/WString.o
 _ZN6String6concatEm                               ./libraries/core/WString.o
 _ZN6String6removeEj                               ./libraries/core/WString.o
@@ -3029,9 +3052,7 @@ _ZN6StringC1Edh                                   ./libraries/core/WString.o
 _ZN6StringC1Efh                                   ./libraries/core/WString.o
 _ZN6StringC1Ehh                                   ./libraries/core/WString.o
 _ZN6StringC1Eih                                   ./libraries/core/WString.o
-                                                  ./trapapoul.o
 _ZN6StringC1Ejh                                   ./libraries/core/WString.o
-                                                  ./trapapoul.o
 _ZN6StringC1Elh                                   ./libraries/core/WString.o
 _ZN6StringC1Emh                                   ./libraries/core/WString.o
 _ZN6StringC2EPK19__FlashStringHelper              ./libraries/core/WString.o
@@ -3056,7 +3077,6 @@ _ZN7SDClass12getParentDirEPKcPi                   ./libraries/SD/SD.o
 _ZN7SDClass4openEPKch                             ./libraries/SD/SD.o
                                                   ./trapapoul.o
 _ZN7SDClass5beginEh                               ./libraries/SD/SD.o
-                                                  ./trapapoul.o
 _ZN7SDClass5mkdirEPc                              ./libraries/SD/SD.o
 _ZN7SDClass5rmdirEPc                              ./libraries/SD/SD.o
 _ZN7SDClass6existsEPc                             ./libraries/SD/SD.o
@@ -3089,7 +3109,7 @@ _ZN7Sd2Card9writeStopEv                           ./libraries/SD/utility/Sd2Card
 _ZN7TwoWire11requestFromEhh                       ./libraries/Wire/Wire.o
 _ZN7TwoWire11requestFromEhhh                      ./libraries/Wire/Wire.o
 _ZN7TwoWire11requestFromEii                       ./libraries/Wire/Wire.o
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
 _ZN7TwoWire11requestFromEiii                      ./libraries/Wire/Wire.o
 _ZN7TwoWire12transmittingE                        ./libraries/Wire/Wire.o
 _ZN7TwoWire13rxBufferIndexE                       ./libraries/Wire/Wire.o
@@ -3100,24 +3120,27 @@ _ZN7TwoWire14user_onReceiveE                      ./libraries/Wire/Wire.o
 _ZN7TwoWire14user_onRequestE                      ./libraries/Wire/Wire.o
 _ZN7TwoWire15endTransmissionEh                    ./libraries/Wire/Wire.o
 _ZN7TwoWire15endTransmissionEv                    ./libraries/Wire/Wire.o
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
+                                                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
 _ZN7TwoWire16onReceiveServiceEPhi                 ./libraries/Wire/Wire.o
 _ZN7TwoWire16onRequestServiceEv                   ./libraries/Wire/Wire.o
 _ZN7TwoWire17beginTransmissionEh                  ./libraries/Wire/Wire.o
+                                                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
 _ZN7TwoWire17beginTransmissionEi                  ./libraries/Wire/Wire.o
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
 _ZN7TwoWire4peekEv                                ./libraries/Wire/Wire.o
 _ZN7TwoWire4readEv                                ./libraries/Wire/Wire.o
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
 _ZN7TwoWire5beginEh                               ./libraries/Wire/Wire.o
 _ZN7TwoWire5beginEi                               ./libraries/Wire/Wire.o
 _ZN7TwoWire5beginEv                               ./libraries/Wire/Wire.o
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
+                                                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
 _ZN7TwoWire5flushEv                               ./libraries/Wire/Wire.o
 _ZN7TwoWire5writeEPKhj                            ./libraries/Wire/Wire.o
 _ZN7TwoWire5writeEh                               ./libraries/Wire/Wire.o
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
-_ZN7TwoWire5writeEi                               ./libraries/RTC-MCP7940/MCP7940.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
+_ZN7TwoWire5writeEi                               ./libraries/DS1337RTC/DS1337RTC.o
 _ZN7TwoWire8rxBufferE                             ./libraries/Wire/Wire.o
 _ZN7TwoWire8setClockEm                            ./libraries/Wire/Wire.o
 _ZN7TwoWire8txBufferE                             ./libraries/Wire/Wire.o
@@ -3127,14 +3150,6 @@ _ZN7TwoWire9onRequestEPFvvE                       ./libraries/Wire/Wire.o
 _ZN7TwoWire9txAddressE                            ./libraries/Wire/Wire.o
 _ZN7TwoWireC1Ev                                   ./libraries/Wire/Wire.o
 _ZN7TwoWireC2Ev                                   ./libraries/Wire/Wire.o
-_ZN8DateTimeC1EPKcS1_                             ./libraries/RTC-MCP7940/MCP7940.o
-_ZN8DateTimeC1Ejhhhhh                             ./libraries/RTC-MCP7940/MCP7940.o
-                                                  ./trapapoul.o
-_ZN8DateTimeC1El                                  ./libraries/RTC-MCP7940/MCP7940.o
-                                                  ./trapapoul.o
-_ZN8DateTimeC2EPKcS1_                             ./libraries/RTC-MCP7940/MCP7940.o
-_ZN8DateTimeC2Ejhhhhh                             ./libraries/RTC-MCP7940/MCP7940.o
-_ZN8DateTimeC2El                                  ./libraries/RTC-MCP7940/MCP7940.o
 _ZN8SPIClass11initializedE                        ./libraries/SPI/SPI.o
 _ZN8SPIClass13interruptMaskE                      ./libraries/SPI/SPI.o
                                                   ./libraries/SD/utility/Sd2Card.o
@@ -3173,9 +3188,33 @@ _ZN8SdVolume7sdCard_E                             ./libraries/SD/utility/SdVolum
 _ZN8SdVolume9freeChainEm                          ./libraries/SD/utility/SdVolume.o
                                                   ./libraries/SD/utility/SdFile.o
 _ZN8TimerOne11isrCallbackE                        ./libraries/TimerOne/TimerOne.o
+                                                  ./trapapoul.o
 _ZN8TimerOne15clockSelectBitsE                    ./libraries/TimerOne/TimerOne.o
+                                                  ./trapapoul.o
 _ZN8TimerOne16isrDefaultUnusedEv                  ./libraries/TimerOne/TimerOne.o
 _ZN8TimerOne9pwmPeriodE                           ./libraries/TimerOne/TimerOne.o
+                                                  ./trapapoul.o
+_ZN9DS1337RTC10freqSelectEi                       ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTC10startClockEv                       ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTC11enableAlarmEi                      ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTC11resetAlarmsEv                      ./libraries/DS1337RTC/DS1337RTC.o
+                                                  ./trapapoul.o
+_ZN9DS1337RTC12disableAlarmEi                     ./libraries/DS1337RTC/DS1337RTC.o
+                                                  ./trapapoul.o
+_ZN9DS1337RTC15interruptSelectEi                  ./libraries/DS1337RTC/DS1337RTC.o
+                                                  ./trapapoul.o
+_ZN9DS1337RTC3getEi                               ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTC3setEmi                              ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTC4readER12tmElements_ti               ./libraries/DS1337RTC/DS1337RTC.o
+                                                  ./trapapoul.o
+_ZN9DS1337RTC4syncEv                              ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTC5writeER12tmElements_ti              ./libraries/DS1337RTC/DS1337RTC.o
+                                                  ./trapapoul.o
+_ZN9DS1337RTC7bcd2decEh                           ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTC7dec2bcdEh                           ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTC9stopClockEv                         ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTCC1Ev                                 ./libraries/DS1337RTC/DS1337RTC.o
+_ZN9DS1337RTCC2Ev                                 ./libraries/DS1337RTC/DS1337RTC.o
 _ZN9IPAddressC1EPKh                               ./libraries/core/IPAddress.o
 _ZN9IPAddressC1Ehhhh                              ./libraries/core/IPAddress.o
 _ZN9IPAddressC1Em                                 ./libraries/core/IPAddress.o
@@ -3211,17 +3250,15 @@ _ZNK6StringgtERKS_                                ./libraries/core/WString.o
 _ZNK6StringixEj                                   ./libraries/core/WString.o
 _ZNK6StringleERKS_                                ./libraries/core/WString.o
 _ZNK6StringltERKS_                                ./libraries/core/WString.o
-_ZNK8DateTime3getEv                               ./libraries/RTC-MCP7940/MCP7940.o
-_ZNK8DateTime9DayOfWeekEv                         ./libraries/RTC-MCP7940/MCP7940.o
 _ZNK8SdVolume6fatGetEmPm                          ./libraries/SD/utility/SdVolume.o
                                                   ./libraries/SD/utility/SdFile.o
 _ZNK8SdVolume9chainSizeEmPm                       ./libraries/SD/utility/SdVolume.o
                                                   ./libraries/SD/utility/SdFile.o
 _ZNK9IPAddress7printToER5Print                    ./libraries/core/IPAddress.o
 _ZNK9IPAddresseqEPKh                              ./libraries/core/IPAddress.o
-_ZTV13LiquidCrystal                               ./libraries/LiquidCrystal/src/LiquidCrystal.o
 _ZTV14HardwareSerial                              ./libraries/core/HardwareSerial.o
                                                   ./libraries/core/HardwareSerial0.o
+_ZTV17LiquidCrystal_I2C                           ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
 _ZTV4File                                         ./libraries/SD/File.o
 _ZTV5Print                                        ./libraries/core/Print.o
 _ZTV6SdFile                                       ./libraries/SD/utility/SdFile.o
@@ -3275,7 +3312,6 @@ __divmodhi4                                       c:/program files (x86)/arduino
                                                   ./libraries/Time/Time.o
 __divmodsi4                                       c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(random.o)
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
                                                   ./libraries/core/WMath.o
 __divsf3                                          c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(divsf3.o)
                                                   ./libraries/core/Print.o
@@ -3286,6 +3322,7 @@ __do_clear_bss                                    c:/program files (x86)/arduino
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(errno.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(malloc.o)
                                                   ./trapapoul.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
                                                   ./libraries/SD/SD.o
                                                   ./libraries/SD/File.o
                                                   ./libraries/SD/utility/SdVolume.o
@@ -3307,7 +3344,8 @@ __do_copy_data                                    c:/program files (x86)/arduino
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(random.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(malloc.o)
                                                   ./trapapoul.o
-                                                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
+                                                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
                                                   ./libraries/SD/SD.o
                                                   ./libraries/SD/File.o
                                                   ./libraries/SD/utility/SdVolume.o
@@ -3324,6 +3362,7 @@ __do_copy_data                                    c:/program files (x86)/arduino
                                                   ./libraries/core/HardwareSerial.o
 __do_global_ctors                                 c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ctors.o)
                                                   ./trapapoul.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
                                                   ./libraries/SD/SD.o
                                                   ./libraries/SD/utility/Sd2Card.o
                                                   ./libraries/Wire/Wire.o
@@ -3434,7 +3473,6 @@ __muluhisi3                                       c:/program files (x86)/arduino
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(random.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulsi3.o)
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
                                                   ./libraries/SD/utility/SdVolume.o
                                                   ./libraries/Time/Time.o
                                                   ./libraries/core/Tone.o
@@ -3452,16 +3490,13 @@ __strlen_P                                        c:/program files (x86)/arduino
 __subsf3                                          c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(addsf3.o)
                                                   ./libraries/core/Print.o
 __tablejump2__                                    c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
 __tablejump__                                     c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_tablejump.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_dtors.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ctors.o)
 __udivmodhi4                                      c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodhi4.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodhi4.o)
-                                                  ./trapapoul.o
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
 __udivmodqi4                                      c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodqi4.o)
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
+                                                  ./libraries/DS1337RTC/DS1337RTC.o
                                                   ./libraries/SD/utility/SdFile.o
 __udivmodsi4                                      c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmodsi4.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_divmodsi4.o)
@@ -3478,7 +3513,6 @@ __ultoa_ncheck                                    c:/program files (x86)/arduino
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(ultoa.o)
 __umulhisi3                                       c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
-                                                  ./libraries/RTC-MCP7940/MCP7940.o
                                                   ./libraries/Time/Time.o
 __unordsf2                                        c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libm.a(unordsf2.o)
                                                   ./libraries/core/Print.o
@@ -3538,19 +3572,25 @@ atof                                              c:/program files (x86)/arduino
 atol                                              c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(atol.o)
                                                   ./libraries/core/WString.o
 attachInterrupt                                   ./libraries/core/WInterrupts.o
-calendar                                          ./trapapoul.o
+                                                  ./trapapoul.o
+blink                                             ./trapapoul.o
+blinkCount                                        ./trapapoul.o
+closeMode                                         ./trapapoul.o
+controlRegister                                   ./libraries/DS1337RTC/DS1337RTC.o
 countPulseASM                                     ./libraries/core/wiring_pulse.o
+cur_hh                                            ./trapapoul.o
+cur_mm                                            ./trapapoul.o
 delay                                             ./libraries/core/wiring.o
                                                   ./trapapoul.o
+                                                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
 delayMicroseconds                                 ./libraries/core/wiring.o
-                                                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
+                                                  ./libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.o
 detachInterrupt                                   ./libraries/core/WInterrupts.o
 digitalRead                                       ./libraries/core/wiring_digital.o
                                                   ./trapapoul.o
                                                   ./libraries/core/wiring_shift.o
 digitalWrite                                      ./libraries/core/wiring_digital.o
                                                   ./trapapoul.o
-                                                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
                                                   ./libraries/SD/utility/Sd2Card.o
                                                   ./libraries/SPI/SPI.o
                                                   ./libraries/Wire/utility/twi.o
@@ -3589,6 +3629,7 @@ isspace                                           c:/program files (x86)/arduino
                                                   ./libraries/core/WString.o
 itoa                                              c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(itoa.o)
                                                   ./libraries/core/WString.o
+lcd                                               ./trapapoul.o
 loop                                              ./trapapoul.o
                                                   ./libraries/core/main.o
 ltoa                                              c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(ltoa.o)
@@ -3608,6 +3649,10 @@ memcpy                                            c:/program files (x86)/arduino
                                                   ./libraries/core/WString.o
 memmove                                           c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(memmove.o)
                                                   ./libraries/core/WString.o
+menuPointer                                       ./trapapoul.o
+mes0                                              ./trapapoul.o
+mes1                                              ./trapapoul.o
+mes2                                              ./trapapoul.o
 micros                                            ./libraries/core/wiring.o
                                                   ./libraries/core/wiring_pulse.o
 millis                                            ./libraries/core/wiring.o
@@ -3615,11 +3660,10 @@ millis                                            ./libraries/core/wiring.o
                                                   ./libraries/SD/utility/Sd2Card.o
                                                   ./libraries/Time/Time.o
                                                   ./libraries/core/Stream.o
-motorPosition                                     ./trapapoul.o
 nfilecount                                        ./libraries/SD/File.o
+openMode                                          ./trapapoul.o
 pinMode                                           ./libraries/core/wiring_digital.o
                                                   ./trapapoul.o
-                                                  ./libraries/LiquidCrystal/src/LiquidCrystal.o
                                                   ./libraries/SD/utility/Sd2Card.o
                                                   ./libraries/SPI/SPI.o
                                                   ./libraries/core/wiring_analog.o
@@ -3670,6 +3714,8 @@ strstr                                            c:/program files (x86)/arduino
                                                   ./libraries/core/WString.o
 strtod                                            c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strtod.o)
                                                   c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(atof.o)
+timeElements                                      ./trapapoul.o
+timeToGo                                          ./trapapoul.o
 timer0_millis                                     ./libraries/core/wiring.o
 timer0_overflow_count                             ./libraries/core/wiring.o
 timer0_pin_mask                                   ./libraries/core/Tone.o
@@ -3683,6 +3729,10 @@ timer2_pin_port                                   ./libraries/core/Tone.o
 timer2_toggle_count                               ./libraries/core/Tone.o
 tolower                                           c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(tolower.o)
                                                   ./libraries/core/WString.o
+tot0                                              ./trapapoul.o
+tot1                                              ./trapapoul.o
+tot2                                              ./trapapoul.o
+toti                                              ./trapapoul.o
 toupper                                           c:/program files (x86)/arduino/hardware/tools/avr/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(toupper.o)
                                                   ./libraries/core/WString.o
 twi_attachSlaveRxEvent                            ./libraries/Wire/utility/twi.o

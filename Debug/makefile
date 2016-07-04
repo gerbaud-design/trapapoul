@@ -16,8 +16,8 @@ RM := rm -rf
 -include libraries/SPI/subdir.mk
 -include libraries/SD/utility/subdir.mk
 -include libraries/SD/subdir.mk
--include libraries/RTC-MCP7940/subdir.mk
--include libraries/LiquidCrystal/src/subdir.mk
+-include libraries/LiquidCrystal_I2C/subdir.mk
+-include libraries/DS1337RTC/subdir.mk
 -include subdir.mk
 -include objects.mk
 
