@@ -3,17 +3,17 @@ trapapoul.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .data         00000148  00800100  00005340  000053d4  2**0
+  0 .data         00000140  00800100  00005340  000053d4  2**0
                   CONTENTS, ALLOC, LOAD, DATA
   1 .text         00005340  00000000  00000000  00000094  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .bss          000003e2  00800248  00800248  0000551c  2**0
+  2 .bss          000003e2  00800240  00800240  00005514  2**0
                   ALLOC
-  3 .stab         0001719c  00000000  00000000  0000551c  2**2
+  3 .stab         0001719c  00000000  00000000  00005514  2**2
                   CONTENTS, READONLY, DEBUGGING
-  4 .stabstr      00010192  00000000  00000000  0001c6b8  2**0
+  4 .stabstr      00010192  00000000  00000000  0001c6b0  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .comment      00000011  00000000  00000000  0002c84a  2**0
+  5 .comment      00000011  00000000  00000000  0002c842  2**0
                   CONTENTS, READONLY
 
 Disassembly of section .text:
@@ -128,13 +128,13 @@ Disassembly of section .text:
      104:	02 c0       	rjmp	.+4      	; 0x10a <__do_copy_data+0x10>
      106:	05 90       	lpm	r0, Z+
      108:	0d 92       	st	X+, r0
-     10a:	a8 34       	cpi	r26, 0x48	; 72
+     10a:	a0 34       	cpi	r26, 0x40	; 64
      10c:	b1 07       	cpc	r27, r17
      10e:	d9 f7       	brne	.-10     	; 0x106 <__do_copy_data+0xc>
 
 00000110 <__do_clear_bss>:
      110:	26 e0       	ldi	r18, 0x06	; 6
-     112:	a8 e4       	ldi	r26, 0x48	; 72
+     112:	a0 e4       	ldi	r26, 0x40	; 64
      114:	b2 e0       	ldi	r27, 0x02	; 2
      116:	01 c0       	rjmp	.+2      	; 0x11a <.do_clear_bss_start>
 
@@ -142,7 +142,7 @@ Disassembly of section .text:
      118:	1d 92       	st	X+, r1
 
 0000011a <.do_clear_bss_start>:
-     11a:	aa 32       	cpi	r26, 0x2A	; 42
+     11a:	a2 32       	cpi	r26, 0x22	; 34
      11c:	b2 07       	cpc	r27, r18
      11e:	e1 f7       	brne	.-8      	; 0x118 <.do_clear_bss_loop>
 
@@ -758,11 +758,11 @@ void HardwareSerial::end()
 void HardwareSerial::_rx_complete_irq(void)
 {
   if (bit_is_clear(*_ucsra, UPE0)) {
-     40e:	e0 91 58 02 	lds	r30, 0x0258
-     412:	f0 91 59 02 	lds	r31, 0x0259
+     40e:	e0 91 50 02 	lds	r30, 0x0250
+     412:	f0 91 51 02 	lds	r31, 0x0251
      416:	80 81       	ld	r24, Z
-     418:	e0 91 5e 02 	lds	r30, 0x025E
-     41c:	f0 91 5f 02 	lds	r31, 0x025F
+     418:	e0 91 56 02 	lds	r30, 0x0256
+     41c:	f0 91 57 02 	lds	r31, 0x0257
      420:	82 fd       	sbrc	r24, 2
      422:	12 c0       	rjmp	.+36     	; 0x448 <__vector_18+0x4e>
     // No Parity error, read byte and store it in the buffer if there is
@@ -770,7 +770,7 @@ void HardwareSerial::_rx_complete_irq(void)
     unsigned char c = *_udr;
      424:	90 81       	ld	r25, Z
     rx_buffer_index_t i = (unsigned int)(_rx_buffer_head + 1) % SERIAL_RX_BUFFER_SIZE;
-     426:	80 91 61 02 	lds	r24, 0x0261
+     426:	80 91 59 02 	lds	r24, 0x0259
      42a:	8f 5f       	subi	r24, 0xFF	; 255
      42c:	8f 73       	andi	r24, 0x3F	; 63
 
@@ -779,17 +779,17 @@ void HardwareSerial::_rx_complete_irq(void)
     // current location of the tail), we're about to overflow the buffer
     // and so we don't write the character or advance the head.
     if (i != _rx_buffer_tail) {
-     42e:	20 91 62 02 	lds	r18, 0x0262
+     42e:	20 91 5a 02 	lds	r18, 0x025A
      432:	82 17       	cp	r24, r18
      434:	51 f0       	breq	.+20     	; 0x44a <__vector_18+0x50>
       _rx_buffer[_rx_buffer_head] = c;
-     436:	e0 91 61 02 	lds	r30, 0x0261
+     436:	e0 91 59 02 	lds	r30, 0x0259
      43a:	f0 e0       	ldi	r31, 0x00	; 0
-     43c:	e8 5b       	subi	r30, 0xB8	; 184
+     43c:	e0 5c       	subi	r30, 0xC0	; 192
      43e:	fd 4f       	sbci	r31, 0xFD	; 253
      440:	95 8f       	std	Z+29, r25	; 0x1d
       _rx_buffer_head = i;
-     442:	80 93 61 02 	sts	0x0261, r24
+     442:	80 93 59 02 	sts	0x0259, r24
      446:	01 c0       	rjmp	.+2      	; 0x44a <__vector_18+0x50>
     }
   } else {
@@ -834,7 +834,7 @@ ISR(USART_UDRE_vect)
      47c:	ef 93       	push	r30
      47e:	ff 93       	push	r31
   Serial._tx_udr_empty_irq();
-     480:	88 e4       	ldi	r24, 0x48	; 72
+     480:	80 e4       	ldi	r24, 0x40	; 64
      482:	92 e0       	ldi	r25, 0x02	; 2
      484:	96 de       	rcall	.-724    	; 0x1b2 <_ZN14HardwareSerial17_tx_udr_empty_irqEv>
      486:	ff 91       	pop	r31
@@ -863,7 +863,7 @@ ISR(USART_UDRE_vect)
 // pulling in this file if it's not otherwise used.
 bool Serial0_available() {
   return Serial.available();
-     4a8:	88 e4       	ldi	r24, 0x48	; 72
+     4a8:	80 e4       	ldi	r24, 0x40	; 64
      4aa:	92 e0       	ldi	r25, 0x02	; 2
      4ac:	48 de       	rcall	.-880    	; 0x13e <_ZN14HardwareSerial9availableEv>
      4ae:	21 e0       	ldi	r18, 0x01	; 1
@@ -881,8 +881,8 @@ bool Serial0_available() {
     void setWriteError(int err = 1) { write_error = err; }
   public:
     Print() : write_error(0) {}
-     4ba:	10 92 4b 02 	sts	0x024B, r1
-     4be:	10 92 4a 02 	sts	0x024A, r1
+     4ba:	10 92 43 02 	sts	0x0243, r1
+     4be:	10 92 42 02 	sts	0x0242, r1
     virtual int available() = 0;
     virtual int read() = 0;
     virtual int peek() = 0;
@@ -893,10 +893,10 @@ bool Serial0_available() {
      4c4:	93 e0       	ldi	r25, 0x03	; 3
      4c6:	a0 e0       	ldi	r26, 0x00	; 0
      4c8:	b0 e0       	ldi	r27, 0x00	; 0
-     4ca:	80 93 4c 02 	sts	0x024C, r24
-     4ce:	90 93 4d 02 	sts	0x024D, r25
-     4d2:	a0 93 4e 02 	sts	0x024E, r26
-     4d6:	b0 93 4f 02 	sts	0x024F, r27
+     4ca:	80 93 44 02 	sts	0x0244, r24
+     4ce:	90 93 45 02 	sts	0x0245, r25
+     4d2:	a0 93 46 02 	sts	0x0246, r26
+     4d6:	b0 93 47 02 	sts	0x0247, r27
   volatile uint8_t *ucsrc, volatile uint8_t *udr) :
     _ubrrh(ubrrh), _ubrrl(ubrrl),
     _ucsra(ucsra), _ucsrb(ucsrb), _ucsrc(ucsrc),
@@ -905,36 +905,36 @@ bool Serial0_available() {
     _tx_buffer_head(0), _tx_buffer_tail(0)
      4da:	85 e1       	ldi	r24, 0x15	; 21
      4dc:	91 e0       	ldi	r25, 0x01	; 1
-     4de:	90 93 49 02 	sts	0x0249, r25
-     4e2:	80 93 48 02 	sts	0x0248, r24
+     4de:	90 93 41 02 	sts	0x0241, r25
+     4e2:	80 93 40 02 	sts	0x0240, r24
      4e6:	85 ec       	ldi	r24, 0xC5	; 197
      4e8:	90 e0       	ldi	r25, 0x00	; 0
-     4ea:	90 93 55 02 	sts	0x0255, r25
-     4ee:	80 93 54 02 	sts	0x0254, r24
+     4ea:	90 93 4d 02 	sts	0x024D, r25
+     4ee:	80 93 4c 02 	sts	0x024C, r24
      4f2:	84 ec       	ldi	r24, 0xC4	; 196
      4f4:	90 e0       	ldi	r25, 0x00	; 0
-     4f6:	90 93 57 02 	sts	0x0257, r25
-     4fa:	80 93 56 02 	sts	0x0256, r24
+     4f6:	90 93 4f 02 	sts	0x024F, r25
+     4fa:	80 93 4e 02 	sts	0x024E, r24
      4fe:	80 ec       	ldi	r24, 0xC0	; 192
      500:	90 e0       	ldi	r25, 0x00	; 0
-     502:	90 93 59 02 	sts	0x0259, r25
-     506:	80 93 58 02 	sts	0x0258, r24
+     502:	90 93 51 02 	sts	0x0251, r25
+     506:	80 93 50 02 	sts	0x0250, r24
      50a:	81 ec       	ldi	r24, 0xC1	; 193
      50c:	90 e0       	ldi	r25, 0x00	; 0
-     50e:	90 93 5b 02 	sts	0x025B, r25
-     512:	80 93 5a 02 	sts	0x025A, r24
+     50e:	90 93 53 02 	sts	0x0253, r25
+     512:	80 93 52 02 	sts	0x0252, r24
      516:	82 ec       	ldi	r24, 0xC2	; 194
      518:	90 e0       	ldi	r25, 0x00	; 0
-     51a:	90 93 5d 02 	sts	0x025D, r25
-     51e:	80 93 5c 02 	sts	0x025C, r24
+     51a:	90 93 55 02 	sts	0x0255, r25
+     51e:	80 93 54 02 	sts	0x0254, r24
      522:	86 ec       	ldi	r24, 0xC6	; 198
      524:	90 e0       	ldi	r25, 0x00	; 0
-     526:	90 93 5f 02 	sts	0x025F, r25
-     52a:	80 93 5e 02 	sts	0x025E, r24
-     52e:	10 92 61 02 	sts	0x0261, r1
-     532:	10 92 62 02 	sts	0x0262, r1
-     536:	10 92 63 02 	sts	0x0263, r1
-     53a:	10 92 64 02 	sts	0x0264, r1
+     526:	90 93 57 02 	sts	0x0257, r25
+     52a:	80 93 56 02 	sts	0x0256, r24
+     52e:	10 92 59 02 	sts	0x0259, r1
+     532:	10 92 5a 02 	sts	0x025A, r1
+     536:	10 92 5b 02 	sts	0x025B, r1
+     53a:	10 92 5c 02 	sts	0x025C, r1
      53e:	08 95       	ret
 
 00000540 <_ZNK9IPAddress7printToER5Print>:
@@ -1041,17 +1041,17 @@ IPAddress::IPAddress()
 IPAddress::IPAddress(uint8_t first_octet, uint8_t second_octet, uint8_t third_octet, uint8_t fourth_octet)
      5ae:	85 e2       	ldi	r24, 0x25	; 37
      5b0:	91 e0       	ldi	r25, 0x01	; 1
-     5b2:	90 93 e6 02 	sts	0x02E6, r25
-     5b6:	80 93 e5 02 	sts	0x02E5, r24
+     5b2:	90 93 de 02 	sts	0x02DE, r25
+     5b6:	80 93 dd 02 	sts	0x02DD, r24
 {
     _address.bytes[0] = first_octet;
-     5ba:	10 92 e7 02 	sts	0x02E7, r1
+     5ba:	10 92 df 02 	sts	0x02DF, r1
     _address.bytes[1] = second_octet;
-     5be:	10 92 e8 02 	sts	0x02E8, r1
+     5be:	10 92 e0 02 	sts	0x02E0, r1
     _address.bytes[2] = third_octet;
-     5c2:	10 92 e9 02 	sts	0x02E9, r1
+     5c2:	10 92 e1 02 	sts	0x02E1, r1
     _address.bytes[3] = fourth_octet;
-     5c6:	10 92 ea 02 	sts	0x02EA, r1
+     5c6:	10 92 e2 02 	sts	0x02E2, r1
      5ca:	08 95       	ret
 
 000005cc <_ZN5Print5writeEPKhj>:
@@ -1833,10 +1833,10 @@ ISR(TIMER2_COMPA_vect)
      97c:	ff 93       	push	r31
 
   if (timer2_toggle_count != 0)
-     97e:	80 91 ee 02 	lds	r24, 0x02EE
-     982:	90 91 ef 02 	lds	r25, 0x02EF
-     986:	a0 91 f0 02 	lds	r26, 0x02F0
-     98a:	b0 91 f1 02 	lds	r27, 0x02F1
+     97e:	80 91 e6 02 	lds	r24, 0x02E6
+     982:	90 91 e7 02 	lds	r25, 0x02E7
+     986:	a0 91 e8 02 	lds	r26, 0x02E8
+     98a:	b0 91 e9 02 	lds	r27, 0x02E9
      98e:	89 2b       	or	r24, r25
      990:	8a 2b       	or	r24, r26
      992:	8b 2b       	or	r24, r27
@@ -1844,35 +1844,35 @@ ISR(TIMER2_COMPA_vect)
   {
     // toggle the pin
     *timer2_pin_port ^= timer2_pin_mask;
-     996:	90 91 eb 02 	lds	r25, 0x02EB
-     99a:	e0 91 ec 02 	lds	r30, 0x02EC
-     99e:	f0 91 ed 02 	lds	r31, 0x02ED
+     996:	90 91 e3 02 	lds	r25, 0x02E3
+     99a:	e0 91 e4 02 	lds	r30, 0x02E4
+     99e:	f0 91 e5 02 	lds	r31, 0x02E5
      9a2:	80 81       	ld	r24, Z
      9a4:	89 27       	eor	r24, r25
      9a6:	80 83       	st	Z, r24
 
     if (timer2_toggle_count > 0)
-     9a8:	80 91 ee 02 	lds	r24, 0x02EE
-     9ac:	90 91 ef 02 	lds	r25, 0x02EF
-     9b0:	a0 91 f0 02 	lds	r26, 0x02F0
-     9b4:	b0 91 f1 02 	lds	r27, 0x02F1
+     9a8:	80 91 e6 02 	lds	r24, 0x02E6
+     9ac:	90 91 e7 02 	lds	r25, 0x02E7
+     9b0:	a0 91 e8 02 	lds	r26, 0x02E8
+     9b4:	b0 91 e9 02 	lds	r27, 0x02E9
      9b8:	18 16       	cp	r1, r24
      9ba:	19 06       	cpc	r1, r25
      9bc:	1a 06       	cpc	r1, r26
      9be:	1b 06       	cpc	r1, r27
      9c0:	bc f4       	brge	.+46     	; 0x9f0 <__vector_7+0x94>
       timer2_toggle_count--;
-     9c2:	80 91 ee 02 	lds	r24, 0x02EE
-     9c6:	90 91 ef 02 	lds	r25, 0x02EF
-     9ca:	a0 91 f0 02 	lds	r26, 0x02F0
-     9ce:	b0 91 f1 02 	lds	r27, 0x02F1
+     9c2:	80 91 e6 02 	lds	r24, 0x02E6
+     9c6:	90 91 e7 02 	lds	r25, 0x02E7
+     9ca:	a0 91 e8 02 	lds	r26, 0x02E8
+     9ce:	b0 91 e9 02 	lds	r27, 0x02E9
      9d2:	01 97       	sbiw	r24, 0x01	; 1
      9d4:	a1 09       	sbc	r26, r1
      9d6:	b1 09       	sbc	r27, r1
-     9d8:	80 93 ee 02 	sts	0x02EE, r24
-     9dc:	90 93 ef 02 	sts	0x02EF, r25
-     9e0:	a0 93 f0 02 	sts	0x02F0, r26
-     9e4:	b0 93 f1 02 	sts	0x02F1, r27
+     9d8:	80 93 e6 02 	sts	0x02E6, r24
+     9dc:	90 93 e7 02 	sts	0x02E7, r25
+     9e0:	a0 93 e8 02 	sts	0x02E8, r26
+     9e4:	b0 93 e9 02 	sts	0x02E9, r27
      9e8:	03 c0       	rjmp	.+6      	; 0x9f0 <__vector_7+0x94>
   else
   {
@@ -1929,13 +1929,13 @@ ISR(INT0_vect) {
      a30:	ef 93       	push	r30
      a32:	ff 93       	push	r31
   if(intFunc[EXTERNAL_INT_0])
-     a34:	80 91 f2 02 	lds	r24, 0x02F2
-     a38:	90 91 f3 02 	lds	r25, 0x02F3
+     a34:	80 91 ea 02 	lds	r24, 0x02EA
+     a38:	90 91 eb 02 	lds	r25, 0x02EB
      a3c:	89 2b       	or	r24, r25
      a3e:	29 f0       	breq	.+10     	; 0xa4a <__vector_1+0x38>
     intFunc[EXTERNAL_INT_0]();
-     a40:	e0 91 f2 02 	lds	r30, 0x02F2
-     a44:	f0 91 f3 02 	lds	r31, 0x02F3
+     a40:	e0 91 ea 02 	lds	r30, 0x02EA
+     a44:	f0 91 eb 02 	lds	r31, 0x02EB
      a48:	09 95       	icall
 }
      a4a:	ff 91       	pop	r31
@@ -1977,13 +1977,13 @@ ISR(INT1_vect) {
      a8a:	ef 93       	push	r30
      a8c:	ff 93       	push	r31
   if(intFunc[EXTERNAL_INT_1])
-     a8e:	80 91 f4 02 	lds	r24, 0x02F4
-     a92:	90 91 f5 02 	lds	r25, 0x02F5
+     a8e:	80 91 ec 02 	lds	r24, 0x02EC
+     a92:	90 91 ed 02 	lds	r25, 0x02ED
      a96:	89 2b       	or	r24, r25
      a98:	29 f0       	breq	.+10     	; 0xaa4 <__vector_2+0x38>
     intFunc[EXTERNAL_INT_1]();
-     a9a:	e0 91 f4 02 	lds	r30, 0x02F4
-     a9e:	f0 91 f5 02 	lds	r31, 0x02F5
+     a9a:	e0 91 ec 02 	lds	r30, 0x02EC
+     a9e:	f0 91 ed 02 	lds	r31, 0x02ED
      aa2:	09 95       	icall
 }
      aa4:	ff 91       	pop	r31
@@ -2661,12 +2661,12 @@ ISR(TIMER0_OVF_vect)
 	// copy these to local variables so they can be stored in registers
 	// (volatile variables must be read from memory on every access)
 	unsigned long m = timer0_millis;
-     dfe:	80 91 f7 02 	lds	r24, 0x02F7
-     e02:	90 91 f8 02 	lds	r25, 0x02F8
-     e06:	a0 91 f9 02 	lds	r26, 0x02F9
-     e0a:	b0 91 fa 02 	lds	r27, 0x02FA
+     dfe:	80 91 ef 02 	lds	r24, 0x02EF
+     e02:	90 91 f0 02 	lds	r25, 0x02F0
+     e06:	a0 91 f1 02 	lds	r26, 0x02F1
+     e0a:	b0 91 f2 02 	lds	r27, 0x02F2
 	unsigned char f = timer0_fract;
-     e0e:	30 91 f6 02 	lds	r19, 0x02F6
+     e0e:	30 91 ee 02 	lds	r19, 0x02EE
 
 	m += MILLIS_INC;
 	f += FRACT_INC;
@@ -2697,24 +2697,24 @@ ISR(TIMER0_OVF_vect)
 	}
 
 	timer0_fract = f;
-     e2c:	20 93 f6 02 	sts	0x02F6, r18
+     e2c:	20 93 ee 02 	sts	0x02EE, r18
 	timer0_millis = m;
-     e30:	80 93 f7 02 	sts	0x02F7, r24
-     e34:	90 93 f8 02 	sts	0x02F8, r25
-     e38:	a0 93 f9 02 	sts	0x02F9, r26
-     e3c:	b0 93 fa 02 	sts	0x02FA, r27
+     e30:	80 93 ef 02 	sts	0x02EF, r24
+     e34:	90 93 f0 02 	sts	0x02F0, r25
+     e38:	a0 93 f1 02 	sts	0x02F1, r26
+     e3c:	b0 93 f2 02 	sts	0x02F2, r27
 	timer0_overflow_count++;
-     e40:	80 91 fb 02 	lds	r24, 0x02FB
-     e44:	90 91 fc 02 	lds	r25, 0x02FC
-     e48:	a0 91 fd 02 	lds	r26, 0x02FD
-     e4c:	b0 91 fe 02 	lds	r27, 0x02FE
+     e40:	80 91 f3 02 	lds	r24, 0x02F3
+     e44:	90 91 f4 02 	lds	r25, 0x02F4
+     e48:	a0 91 f5 02 	lds	r26, 0x02F5
+     e4c:	b0 91 f6 02 	lds	r27, 0x02F6
      e50:	01 96       	adiw	r24, 0x01	; 1
      e52:	a1 1d       	adc	r26, r1
      e54:	b1 1d       	adc	r27, r1
-     e56:	80 93 fb 02 	sts	0x02FB, r24
-     e5a:	90 93 fc 02 	sts	0x02FC, r25
-     e5e:	a0 93 fd 02 	sts	0x02FD, r26
-     e62:	b0 93 fe 02 	sts	0x02FE, r27
+     e56:	80 93 f3 02 	sts	0x02F3, r24
+     e5a:	90 93 f4 02 	sts	0x02F4, r25
+     e5e:	a0 93 f5 02 	sts	0x02F5, r26
+     e62:	b0 93 f6 02 	sts	0x02F6, r27
 }
      e66:	bf 91       	pop	r27
      e68:	af 91       	pop	r26
@@ -2741,10 +2741,10 @@ unsigned long millis()
 	cli();
      e7e:	f8 94       	cli
 	m = timer0_millis;
-     e80:	60 91 f7 02 	lds	r22, 0x02F7
-     e84:	70 91 f8 02 	lds	r23, 0x02F8
-     e88:	80 91 f9 02 	lds	r24, 0x02F9
-     e8c:	90 91 fa 02 	lds	r25, 0x02FA
+     e80:	60 91 ef 02 	lds	r22, 0x02EF
+     e84:	70 91 f0 02 	lds	r23, 0x02F0
+     e88:	80 91 f1 02 	lds	r24, 0x02F1
+     e8c:	90 91 f2 02 	lds	r25, 0x02F2
 	SREG = oldSREG;
      e90:	2f bf       	out	0x3f, r18	; 63
 
@@ -2762,10 +2762,10 @@ unsigned long micros() {
 	cli();
      e96:	f8 94       	cli
 	m = timer0_overflow_count;
-     e98:	80 91 fb 02 	lds	r24, 0x02FB
-     e9c:	90 91 fc 02 	lds	r25, 0x02FC
-     ea0:	a0 91 fd 02 	lds	r26, 0x02FD
-     ea4:	b0 91 fe 02 	lds	r27, 0x02FE
+     e98:	80 91 f3 02 	lds	r24, 0x02F3
+     e9c:	90 91 f4 02 	lds	r25, 0x02F4
+     ea0:	a0 91 f5 02 	lds	r26, 0x02F5
+     ea4:	b0 91 f6 02 	lds	r27, 0x02F6
 #if defined(TCNT0)
 	t = TCNT0;
      ea8:	26 b5       	in	r18, 0x26	; 38
@@ -3339,12 +3339,12 @@ void twi_init(void)
 {
   // initialize state
   twi_state = TWI_READY;
-    1118:	10 92 6c 03 	sts	0x036C, r1
+    1118:	10 92 64 03 	sts	0x0364, r1
   twi_sendStop = true;		// default value
     111c:	81 e0       	ldi	r24, 0x01	; 1
-    111e:	80 93 6a 03 	sts	0x036A, r24
+    111e:	80 93 62 03 	sts	0x0362, r24
   twi_inRepStart = false;
-    1122:	10 92 69 03 	sts	0x0369, r1
+    1122:	10 92 61 03 	sts	0x0361, r1
   
   // activate internal pullups for twi.
   digitalWrite(SDA, 1);
@@ -3395,42 +3395,42 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
 
   // wait until twi is ready, become master receiver
   while(TWI_READY != twi_state){
-    1156:	90 91 6c 03 	lds	r25, 0x036C
+    1156:	90 91 64 03 	lds	r25, 0x0364
     115a:	91 11       	cpse	r25, r1
     115c:	fc cf       	rjmp	.-8      	; 0x1156 <twi_readFrom+0x6>
     continue;
   }
   twi_state = TWI_MRX;
     115e:	91 e0       	ldi	r25, 0x01	; 1
-    1160:	90 93 6c 03 	sts	0x036C, r25
+    1160:	90 93 64 03 	sts	0x0364, r25
   twi_sendStop = sendStop;
-    1164:	20 93 6a 03 	sts	0x036A, r18
+    1164:	20 93 62 03 	sts	0x0362, r18
   // reset error state (0xFF.. no error occured)
   twi_error = 0xFF;
     1168:	2f ef       	ldi	r18, 0xFF	; 255
-    116a:	20 93 ff 02 	sts	0x02FF, r18
+    116a:	20 93 f7 02 	sts	0x02F7, r18
 
   // initialize buffer iteration vars
   twi_masterBufferIndex = 0;
-    116e:	10 92 44 03 	sts	0x0344, r1
+    116e:	10 92 3c 03 	sts	0x033C, r1
   twi_masterBufferLength = length-1;  // This is not intuitive, read on...
     1172:	24 0f       	add	r18, r20
-    1174:	20 93 43 03 	sts	0x0343, r18
+    1174:	20 93 3b 03 	sts	0x033B, r18
   // Therefor we must actually set NACK when the _next_ to last byte is
   // received, causing that NACK to be sent in response to receiving the last
   // expected byte of data.
 
   // build sla+w, slave device address + w bit
   twi_slarw = TW_READ;
-    1178:	90 93 6b 03 	sts	0x036B, r25
+    1178:	90 93 63 03 	sts	0x0363, r25
   twi_slarw |= address << 1;
-    117c:	90 91 6b 03 	lds	r25, 0x036B
+    117c:	90 91 63 03 	lds	r25, 0x0363
     1180:	88 0f       	add	r24, r24
     1182:	89 2b       	or	r24, r25
-    1184:	80 93 6b 03 	sts	0x036B, r24
+    1184:	80 93 63 03 	sts	0x0363, r24
 
   if (true == twi_inRepStart) {
-    1188:	80 91 69 03 	lds	r24, 0x0369
+    1188:	80 91 61 03 	lds	r24, 0x0361
     118c:	81 30       	cpi	r24, 0x01	; 1
     118e:	41 f4       	brne	.+16     	; 0x11a0 <twi_readFrom+0x50>
     // (@@@ we hope), and the TWI statemachine is just waiting for the address byte.
@@ -3439,9 +3439,9 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
     // up. Also, don't enable the START interrupt. There may be one pending from the 
     // repeated start that we sent outselves, and that would really confuse things.
     twi_inRepStart = false;			// remember, we're dealing with an ASYNC ISR
-    1190:	10 92 69 03 	sts	0x0369, r1
+    1190:	10 92 61 03 	sts	0x0361, r1
     TWDR = twi_slarw;
-    1194:	80 91 6b 03 	lds	r24, 0x036B
+    1194:	80 91 63 03 	lds	r24, 0x0363
     1198:	80 93 bb 00 	sts	0x00BB, r24
     TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE);	// enable INTs, but not START
     119c:	85 ec       	ldi	r24, 0xC5	; 197
@@ -3455,19 +3455,19 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
 
   // wait for read operation to complete
   while(TWI_MRX == twi_state){
-    11a6:	80 91 6c 03 	lds	r24, 0x036C
+    11a6:	80 91 64 03 	lds	r24, 0x0364
     11aa:	81 30       	cpi	r24, 0x01	; 1
     11ac:	e1 f3       	breq	.-8      	; 0x11a6 <twi_readFrom+0x56>
     continue;
   }
 
   if (twi_masterBufferIndex < length)
-    11ae:	80 91 44 03 	lds	r24, 0x0344
+    11ae:	80 91 3c 03 	lds	r24, 0x033C
     11b2:	84 17       	cp	r24, r20
     11b4:	10 f4       	brcc	.+4      	; 0x11ba <twi_readFrom+0x6a>
     length = twi_masterBufferIndex;
-    11b6:	40 91 44 03 	lds	r20, 0x0344
-    11ba:	25 e4       	ldi	r18, 0x45	; 69
+    11b6:	40 91 3c 03 	lds	r20, 0x033C
+    11ba:	2d e3       	ldi	r18, 0x3D	; 61
     11bc:	33 e0       	ldi	r19, 0x03	; 3
     11be:	fb 01       	movw	r30, r22
 
@@ -3519,28 +3519,28 @@ uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait
 
   // wait until twi is ready, become master transmitter
   while(TWI_READY != twi_state){
-    11e0:	90 91 6c 03 	lds	r25, 0x036C
+    11e0:	90 91 64 03 	lds	r25, 0x0364
     11e4:	91 11       	cpse	r25, r1
     11e6:	fc cf       	rjmp	.-8      	; 0x11e0 <twi_writeTo+0x8>
     continue;
   }
   twi_state = TWI_MTX;
     11e8:	92 e0       	ldi	r25, 0x02	; 2
-    11ea:	90 93 6c 03 	sts	0x036C, r25
+    11ea:	90 93 64 03 	sts	0x0364, r25
   twi_sendStop = sendStop;
-    11ee:	00 93 6a 03 	sts	0x036A, r16
+    11ee:	00 93 62 03 	sts	0x0362, r16
   // reset error state (0xFF.. no error occured)
   twi_error = 0xFF;
     11f2:	9f ef       	ldi	r25, 0xFF	; 255
-    11f4:	90 93 ff 02 	sts	0x02FF, r25
+    11f4:	90 93 f7 02 	sts	0x02F7, r25
 
   // initialize buffer iteration vars
   twi_masterBufferIndex = 0;
-    11f8:	10 92 44 03 	sts	0x0344, r1
+    11f8:	10 92 3c 03 	sts	0x033C, r1
   twi_masterBufferLength = length;
-    11fc:	40 93 43 03 	sts	0x0343, r20
+    11fc:	40 93 3b 03 	sts	0x033B, r20
     1200:	fb 01       	movw	r30, r22
-    1202:	65 e4       	ldi	r22, 0x45	; 69
+    1202:	6d e3       	ldi	r22, 0x3D	; 61
     1204:	73 e0       	ldi	r23, 0x03	; 3
   
   // copy data to twi buffer
@@ -3558,18 +3558,18 @@ uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait
   
   // build sla+w, slave device address + w bit
   twi_slarw = TW_WRITE;
-    1216:	10 92 6b 03 	sts	0x036B, r1
+    1216:	10 92 63 03 	sts	0x0363, r1
   twi_slarw |= address << 1;
-    121a:	90 91 6b 03 	lds	r25, 0x036B
+    121a:	90 91 63 03 	lds	r25, 0x0363
     121e:	88 0f       	add	r24, r24
     1220:	89 2b       	or	r24, r25
-    1222:	80 93 6b 03 	sts	0x036B, r24
+    1222:	80 93 63 03 	sts	0x0363, r24
   
   // if we're in a repeated start, then we've already sent the START
   // in the ISR. Don't do it again.
   //
   if (true == twi_inRepStart) {
-    1226:	80 91 69 03 	lds	r24, 0x0369
+    1226:	80 91 61 03 	lds	r24, 0x0361
     122a:	81 30       	cpi	r24, 0x01	; 1
     122c:	41 f4       	brne	.+16     	; 0x123e <twi_writeTo+0x66>
     // (@@@ we hope), and the TWI statemachine is just waiting for the address byte.
@@ -3578,9 +3578,9 @@ uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait
     // up. Also, don't enable the START interrupt. There may be one pending from the 
     // repeated start that we sent outselves, and that would really confuse things.
     twi_inRepStart = false;			// remember, we're dealing with an ASYNC ISR
-    122e:	10 92 69 03 	sts	0x0369, r1
+    122e:	10 92 61 03 	sts	0x0361, r1
     TWDR = twi_slarw;				
-    1232:	80 91 6b 03 	lds	r24, 0x036B
+    1232:	80 91 63 03 	lds	r24, 0x0363
     1236:	80 93 bb 00 	sts	0x00BB, r24
     TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE);	// enable INTs, but not START
     123a:	85 ec       	ldi	r24, 0xC5	; 197
@@ -3596,24 +3596,24 @@ uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait
   while(wait && (TWI_MTX == twi_state)){
     1244:	22 23       	and	r18, r18
     1246:	21 f0       	breq	.+8      	; 0x1250 <twi_writeTo+0x78>
-    1248:	80 91 6c 03 	lds	r24, 0x036C
+    1248:	80 91 64 03 	lds	r24, 0x0364
     124c:	82 30       	cpi	r24, 0x02	; 2
     124e:	e1 f3       	breq	.-8      	; 0x1248 <twi_writeTo+0x70>
     continue;
   }
   
   if (twi_error == 0xFF)
-    1250:	80 91 ff 02 	lds	r24, 0x02FF
+    1250:	80 91 f7 02 	lds	r24, 0x02F7
     1254:	8f 3f       	cpi	r24, 0xFF	; 255
     1256:	61 f0       	breq	.+24     	; 0x1270 <twi_writeTo+0x98>
     return 0;	// success
   else if (twi_error == TW_MT_SLA_NACK)
-    1258:	80 91 ff 02 	lds	r24, 0x02FF
+    1258:	80 91 f7 02 	lds	r24, 0x02F7
     125c:	80 32       	cpi	r24, 0x20	; 32
     125e:	51 f0       	breq	.+20     	; 0x1274 <twi_writeTo+0x9c>
     return 2;	// error: address send, nack received
   else if (twi_error == TW_MT_DATA_NACK)
-    1260:	80 91 ff 02 	lds	r24, 0x02FF
+    1260:	80 91 f7 02 	lds	r24, 0x02F7
     1264:	80 33       	cpi	r24, 0x30	; 48
     1266:	41 f4       	brne	.+16     	; 0x1278 <twi_writeTo+0xa0>
     return 3;	// error: data send, nack received
@@ -3662,7 +3662,7 @@ uint8_t twi_transmit(const uint8_t* data, uint8_t length)
   
   // ensure we are currently a slave transmitter
   if(TWI_STX != twi_state){
-    1282:	20 91 6c 03 	lds	r18, 0x036C
+    1282:	20 91 64 03 	lds	r18, 0x0364
     1286:	24 30       	cpi	r18, 0x04	; 4
     1288:	89 f4       	brne	.+34     	; 0x12ac <twi_transmit+0x2e>
     return 2;
@@ -3670,9 +3670,9 @@ uint8_t twi_transmit(const uint8_t* data, uint8_t length)
   
   // set length and copy data into tx buffer
   twi_txBufferLength = length;
-    128a:	60 93 21 03 	sts	0x0321, r22
+    128a:	60 93 19 03 	sts	0x0319, r22
     128e:	fc 01       	movw	r30, r24
-    1290:	83 e2       	ldi	r24, 0x23	; 35
+    1290:	8b e1       	ldi	r24, 0x1B	; 27
     1292:	93 e0       	ldi	r25, 0x03	; 3
   for(i = 0; i < length; ++i){
     1294:	dc 01       	movw	r26, r24
@@ -3732,7 +3732,7 @@ void twi_stop(void)
 
   // update twi state
   twi_state = TWI_READY;
-    12be:	10 92 6c 03 	sts	0x036C, r1
+    12be:	10 92 64 03 	sts	0x0364, r1
     12c2:	08 95       	ret
 
 000012c4 <twi_releaseBus>:
@@ -3747,7 +3747,7 @@ void twi_releaseBus(void)
 
   // update twi state
   twi_state = TWI_READY;
-    12ca:	10 92 6c 03 	sts	0x036C, r1
+    12ca:	10 92 64 03 	sts	0x0364, r1
     12ce:	08 95       	ret
 
 000012d0 <__vector_24>:
@@ -3817,7 +3817,7 @@ ISR(TWI_vect)
       break;
     case TW_MT_ARB_LOST: // lost bus arbitration
       twi_error = TW_MT_ARB_LOST;
-    1340:	80 93 ff 02 	sts	0x02FF, r24
+    1340:	80 93 f7 02 	sts	0x02F7, r24
     1344:	a7 c0       	rjmp	.+334    	; 0x1494 <__vector_24+0x1c4>
   twi_state = TWI_READY;
 }
@@ -3886,7 +3886,7 @@ ISR(TWI_vect)
     case TW_REP_START: // sent repeated start condition
       // copy device address and r/w bit to output register and ack
       TWDR = twi_slarw;
-    13b6:	80 91 6b 03 	lds	r24, 0x036B
+    13b6:	80 91 63 03 	lds	r24, 0x0363
     13ba:	10 c0       	rjmp	.+32     	; 0x13dc <__vector_24+0x10c>
 
     // Master Transmitter
@@ -3894,18 +3894,18 @@ ISR(TWI_vect)
     case TW_MT_DATA_ACK: // slave receiver acked data
       // if there is data to send, send it, otherwise stop 
       if(twi_masterBufferIndex < twi_masterBufferLength){
-    13bc:	90 91 44 03 	lds	r25, 0x0344
-    13c0:	80 91 43 03 	lds	r24, 0x0343
+    13bc:	90 91 3c 03 	lds	r25, 0x033C
+    13c0:	80 91 3b 03 	lds	r24, 0x033B
     13c4:	98 17       	cp	r25, r24
     13c6:	70 f5       	brcc	.+92     	; 0x1424 <__vector_24+0x154>
         // copy data to output register and ack
         TWDR = twi_masterBuffer[twi_masterBufferIndex++];
-    13c8:	e0 91 44 03 	lds	r30, 0x0344
+    13c8:	e0 91 3c 03 	lds	r30, 0x033C
     13cc:	81 e0       	ldi	r24, 0x01	; 1
     13ce:	8e 0f       	add	r24, r30
-    13d0:	80 93 44 03 	sts	0x0344, r24
+    13d0:	80 93 3c 03 	sts	0x033C, r24
     13d4:	f0 e0       	ldi	r31, 0x00	; 0
-    13d6:	eb 5b       	subi	r30, 0xBB	; 187
+    13d6:	e3 5c       	subi	r30, 0xC3	; 195
     13d8:	fc 4f       	sbci	r31, 0xFC	; 252
     13da:	80 81       	ld	r24, Z
     13dc:	80 93 bb 00 	sts	0x00BB, r24
@@ -3923,7 +3923,7 @@ void twi_reply(uint8_t ack)
       break;
     case TW_MT_DATA_NACK: // data sent, nack received
       twi_error = TW_MT_DATA_NACK;
-    13e4:	80 93 ff 02 	sts	0x02FF, r24
+    13e4:	80 93 f7 02 	sts	0x02F7, r24
     13e8:	8b c0       	rjmp	.+278    	; 0x1500 <__vector_24+0x230>
       break;
 
@@ -3931,20 +3931,20 @@ void twi_reply(uint8_t ack)
     case TW_MR_DATA_ACK: // data received, ack sent
       // put byte into buffer
       twi_masterBuffer[twi_masterBufferIndex++] = TWDR;
-    13ea:	e0 91 44 03 	lds	r30, 0x0344
+    13ea:	e0 91 3c 03 	lds	r30, 0x033C
     13ee:	81 e0       	ldi	r24, 0x01	; 1
     13f0:	8e 0f       	add	r24, r30
-    13f2:	80 93 44 03 	sts	0x0344, r24
+    13f2:	80 93 3c 03 	sts	0x033C, r24
     13f6:	80 91 bb 00 	lds	r24, 0x00BB
     13fa:	f0 e0       	ldi	r31, 0x00	; 0
-    13fc:	eb 5b       	subi	r30, 0xBB	; 187
+    13fc:	e3 5c       	subi	r30, 0xC3	; 195
     13fe:	fc 4f       	sbci	r31, 0xFC	; 252
     1400:	80 83       	st	Z, r24
     case TW_MR_SLA_ACK:  // address sent, ack received
       // ack if more bytes are expected, otherwise nack
       if(twi_masterBufferIndex < twi_masterBufferLength){
-    1402:	90 91 44 03 	lds	r25, 0x0344
-    1406:	80 91 43 03 	lds	r24, 0x0343
+    1402:	90 91 3c 03 	lds	r25, 0x033C
+    1406:	80 91 3b 03 	lds	r24, 0x033B
     140a:	6b c0       	rjmp	.+214    	; 0x14e2 <__vector_24+0x212>
         twi_reply(0);
       }
@@ -3952,24 +3952,24 @@ void twi_reply(uint8_t ack)
     case TW_MR_DATA_NACK: // data received, nack sent
       // put final byte into buffer
       twi_masterBuffer[twi_masterBufferIndex++] = TWDR;
-    140c:	e0 91 44 03 	lds	r30, 0x0344
+    140c:	e0 91 3c 03 	lds	r30, 0x033C
     1410:	81 e0       	ldi	r24, 0x01	; 1
     1412:	8e 0f       	add	r24, r30
-    1414:	80 93 44 03 	sts	0x0344, r24
+    1414:	80 93 3c 03 	sts	0x033C, r24
     1418:	80 91 bb 00 	lds	r24, 0x00BB
     141c:	f0 e0       	ldi	r31, 0x00	; 0
-    141e:	eb 5b       	subi	r30, 0xBB	; 187
+    141e:	e3 5c       	subi	r30, 0xC3	; 195
     1420:	fc 4f       	sbci	r31, 0xFC	; 252
     1422:	80 83       	st	Z, r24
 	if (twi_sendStop)
-    1424:	80 91 6a 03 	lds	r24, 0x036A
+    1424:	80 91 62 03 	lds	r24, 0x0362
     1428:	81 11       	cpse	r24, r1
     142a:	6a c0       	rjmp	.+212    	; 0x1500 <__vector_24+0x230>
           twi_stop();
 	else {
 	  twi_inRepStart = true;	// we're gonna send the START
     142c:	81 e0       	ldi	r24, 0x01	; 1
-    142e:	80 93 69 03 	sts	0x0369, r24
+    142e:	80 93 61 03 	sts	0x0361, r24
 	  // don't enable the interrupt. We'll generate the start, but we 
 	  // avoid handling the interrupt until we're in the next transaction,
 	  // at the point where we would normally issue the start.
@@ -3983,10 +3983,10 @@ void twi_reply(uint8_t ack)
       // enter slave receiver mode
       twi_state = TWI_SRX;
     1436:	83 e0       	ldi	r24, 0x03	; 3
-    1438:	80 93 6c 03 	sts	0x036C, r24
+    1438:	80 93 64 03 	sts	0x0364, r24
       // indicate that rx buffer can be overwritten and ack
       twi_rxBufferIndex = 0;
-    143c:	10 92 00 03 	sts	0x0300, r1
+    143c:	10 92 f8 02 	sts	0x02F8, r1
     1440:	cf cf       	rjmp	.-98     	; 0x13e0 <__vector_24+0x110>
       twi_reply(1);
       break;
@@ -3994,20 +3994,20 @@ void twi_reply(uint8_t ack)
     case TW_SR_GCALL_DATA_ACK: // data received generally, returned ack
       // if there is still room in the rx buffer
       if(twi_rxBufferIndex < TWI_BUFFER_LENGTH){
-    1442:	80 91 00 03 	lds	r24, 0x0300
+    1442:	80 91 f8 02 	lds	r24, 0x02F8
     1446:	80 32       	cpi	r24, 0x20	; 32
     1448:	08 f0       	brcs	.+2      	; 0x144c <__vector_24+0x17c>
     144a:	4e c0       	rjmp	.+156    	; 0x14e8 <__vector_24+0x218>
         // put byte in buffer and ack
         twi_rxBuffer[twi_rxBufferIndex++] = TWDR;
-    144c:	e0 91 00 03 	lds	r30, 0x0300
+    144c:	e0 91 f8 02 	lds	r30, 0x02F8
     1450:	81 e0       	ldi	r24, 0x01	; 1
     1452:	8e 0f       	add	r24, r30
-    1454:	80 93 00 03 	sts	0x0300, r24
+    1454:	80 93 f8 02 	sts	0x02F8, r24
     1458:	80 91 bb 00 	lds	r24, 0x00BB
     145c:	f0 e0       	ldi	r31, 0x00	; 0
-    145e:	ef 5f       	subi	r30, 0xFF	; 255
-    1460:	fc 4f       	sbci	r31, 0xFC	; 252
+    145e:	e7 50       	subi	r30, 0x07	; 7
+    1460:	fd 4f       	sbci	r31, 0xFD	; 253
     1462:	80 83       	st	Z, r24
     1464:	bd cf       	rjmp	.-134    	; 0x13e0 <__vector_24+0x110>
         twi_reply(0);
@@ -4016,29 +4016,29 @@ void twi_reply(uint8_t ack)
     case TW_SR_STOP: // stop or repeated start condition received
       // put a null char after data if there's room
       if(twi_rxBufferIndex < TWI_BUFFER_LENGTH){
-    1466:	80 91 00 03 	lds	r24, 0x0300
+    1466:	80 91 f8 02 	lds	r24, 0x02F8
     146a:	80 32       	cpi	r24, 0x20	; 32
     146c:	30 f4       	brcc	.+12     	; 0x147a <__vector_24+0x1aa>
         twi_rxBuffer[twi_rxBufferIndex] = '\0';
-    146e:	e0 91 00 03 	lds	r30, 0x0300
+    146e:	e0 91 f8 02 	lds	r30, 0x02F8
     1472:	f0 e0       	ldi	r31, 0x00	; 0
-    1474:	ef 5f       	subi	r30, 0xFF	; 255
-    1476:	fc 4f       	sbci	r31, 0xFC	; 252
+    1474:	e7 50       	subi	r30, 0x07	; 7
+    1476:	fd 4f       	sbci	r31, 0xFD	; 253
     1478:	10 82       	st	Z, r1
       }
       // sends ack and stops interface for clock stretching
       twi_stop();
     147a:	1a df       	rcall	.-460    	; 0x12b0 <twi_stop>
-    147c:	60 91 00 03 	lds	r22, 0x0300
+    147c:	60 91 f8 02 	lds	r22, 0x02F8
       // callback to user defined callback
       twi_onSlaveReceive(twi_rxBuffer, twi_rxBufferIndex);
     1480:	70 e0       	ldi	r23, 0x00	; 0
-    1482:	e0 91 65 03 	lds	r30, 0x0365
-    1486:	f0 91 66 03 	lds	r31, 0x0366
-    148a:	81 e0       	ldi	r24, 0x01	; 1
-    148c:	93 e0       	ldi	r25, 0x03	; 3
+    1482:	e0 91 5d 03 	lds	r30, 0x035D
+    1486:	f0 91 5e 03 	lds	r31, 0x035E
+    148a:	89 ef       	ldi	r24, 0xF9	; 249
+    148c:	92 e0       	ldi	r25, 0x02	; 2
     148e:	09 95       	icall
-    1490:	10 92 00 03 	sts	0x0300, r1
+    1490:	10 92 f8 02 	sts	0x02F8, r1
       // since we submit rx buffer to "wire" library, we can reset it
       twi_rxBufferIndex = 0;
     1494:	17 df       	rcall	.-466    	; 0x12c4 <twi_releaseBus>
@@ -4047,36 +4047,36 @@ void twi_reply(uint8_t ack)
     1496:	35 c0       	rjmp	.+106    	; 0x1502 <__vector_24+0x232>
     1498:	84 e0       	ldi	r24, 0x04	; 4
       break;
-    149a:	80 93 6c 03 	sts	0x036C, r24
+    149a:	80 93 64 03 	sts	0x0364, r24
     
     // Slave Transmitter
     case TW_ST_SLA_ACK:          // addressed, returned ack
     case TW_ST_ARB_LOST_SLA_ACK: // arbitration lost, returned ack
       // enter slave transmitter mode
       twi_state = TWI_STX;
-    149e:	10 92 22 03 	sts	0x0322, r1
+    149e:	10 92 1a 03 	sts	0x031A, r1
       // ready the tx buffer index for iteration
       twi_txBufferIndex = 0;
-    14a2:	10 92 21 03 	sts	0x0321, r1
+    14a2:	10 92 19 03 	sts	0x0319, r1
       // set tx buffer length to be zero, to verify if user changes it
       twi_txBufferLength = 0;
-    14a6:	e0 91 67 03 	lds	r30, 0x0367
+    14a6:	e0 91 5f 03 	lds	r30, 0x035F
       // request for txBuffer to be filled and length to be set
       // note: user must call twi_transmit(bytes, length) to do this
       twi_onSlaveTransmit();
-    14aa:	f0 91 68 03 	lds	r31, 0x0368
+    14aa:	f0 91 60 03 	lds	r31, 0x0360
     14ae:	09 95       	icall
-    14b0:	80 91 21 03 	lds	r24, 0x0321
+    14b0:	80 91 19 03 	lds	r24, 0x0319
       // if they didn't change buffer & length, initialize it
       if(0 == twi_txBufferLength){
     14b4:	81 11       	cpse	r24, r1
     14b6:	05 c0       	rjmp	.+10     	; 0x14c2 <__vector_24+0x1f2>
     14b8:	81 e0       	ldi	r24, 0x01	; 1
-    14ba:	80 93 21 03 	sts	0x0321, r24
+    14ba:	80 93 19 03 	sts	0x0319, r24
         twi_txBufferLength = 1;
-    14be:	10 92 23 03 	sts	0x0323, r1
+    14be:	10 92 1b 03 	sts	0x031B, r1
         twi_txBuffer[0] = 0x00;
-    14c2:	e0 91 22 03 	lds	r30, 0x0322
+    14c2:	e0 91 1a 03 	lds	r30, 0x031A
       }
       // transmit first byte from buffer, fall
     case TW_ST_DATA_ACK: // byte sent, ack returned
@@ -4084,16 +4084,16 @@ void twi_reply(uint8_t ack)
       TWDR = twi_txBuffer[twi_txBufferIndex++];
     14c6:	81 e0       	ldi	r24, 0x01	; 1
     14c8:	8e 0f       	add	r24, r30
-    14ca:	80 93 22 03 	sts	0x0322, r24
+    14ca:	80 93 1a 03 	sts	0x031A, r24
     14ce:	f0 e0       	ldi	r31, 0x00	; 0
-    14d0:	ed 5d       	subi	r30, 0xDD	; 221
+    14d0:	e5 5e       	subi	r30, 0xE5	; 229
     14d2:	fc 4f       	sbci	r31, 0xFC	; 252
     14d4:	80 81       	ld	r24, Z
     14d6:	80 93 bb 00 	sts	0x00BB, r24
-    14da:	90 91 22 03 	lds	r25, 0x0322
+    14da:	90 91 1a 03 	lds	r25, 0x031A
       // if there is more to send, ack, otherwise nack
       if(twi_txBufferIndex < twi_txBufferLength){
-    14de:	80 91 21 03 	lds	r24, 0x0321
+    14de:	80 91 19 03 	lds	r24, 0x0319
     14e2:	98 17       	cp	r25, r24
     14e4:	08 f4       	brcc	.+2      	; 0x14e8 <__vector_24+0x218>
     14e6:	7c cf       	rjmp	.-264    	; 0x13e0 <__vector_24+0x110>
@@ -4114,7 +4114,7 @@ void twi_reply(uint8_t ack)
   // transmit master read ready signal, with or without ack
   if(ack){
     TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWINT) | _BV(TWEA);
-    14f6:	10 92 6c 03 	sts	0x036C, r1
+    14f6:	10 92 64 03 	sts	0x0364, r1
     case TW_ST_DATA_NACK: // received nack, we are done 
     case TW_ST_LAST_DATA: // received ack, but we are done already!
       // ack future responses
@@ -4122,7 +4122,7 @@ void twi_reply(uint8_t ack)
       // leave slave receiver state
       twi_state = TWI_READY;
     14fa:	03 c0       	rjmp	.+6      	; 0x1502 <__vector_24+0x232>
-    14fc:	10 92 ff 02 	sts	0x02FF, r1
+    14fc:	10 92 f7 02 	sts	0x02F7, r1
 
     // All
     case TW_NO_INFO:   // no state information
@@ -4159,9 +4159,9 @@ void twi_reply(uint8_t ack)
 int TwoWire::available(void)
 {
   return rxBufferLength - rxBufferIndex;
-    1524:	80 91 9d 03 	lds	r24, 0x039D
+    1524:	80 91 95 03 	lds	r24, 0x0395
     1528:	90 e0       	ldi	r25, 0x00	; 0
-    152a:	20 91 9e 03 	lds	r18, 0x039E
+    152a:	20 91 96 03 	lds	r18, 0x0396
 }
     152e:	82 1b       	sub	r24, r18
     1530:	91 09       	sbc	r25, r1
@@ -4174,20 +4174,20 @@ int TwoWire::read(void)
   
   // get each successive byte on each call
   if(rxBufferIndex < rxBufferLength){
-    1534:	20 91 9e 03 	lds	r18, 0x039E
-    1538:	80 91 9d 03 	lds	r24, 0x039D
+    1534:	20 91 96 03 	lds	r18, 0x0396
+    1538:	80 91 95 03 	lds	r24, 0x0395
     153c:	28 17       	cp	r18, r24
     153e:	50 f4       	brcc	.+20     	; 0x1554 <_ZN7TwoWire4readEv+0x20>
     value = rxBuffer[rxBufferIndex];
     1540:	e2 2f       	mov	r30, r18
     1542:	f0 e0       	ldi	r31, 0x00	; 0
-    1544:	e1 56       	subi	r30, 0x61	; 97
+    1544:	e9 56       	subi	r30, 0x69	; 105
     1546:	fc 4f       	sbci	r31, 0xFC	; 252
     1548:	80 81       	ld	r24, Z
     154a:	90 e0       	ldi	r25, 0x00	; 0
     ++rxBufferIndex;
     154c:	2f 5f       	subi	r18, 0xFF	; 255
-    154e:	20 93 9e 03 	sts	0x039E, r18
+    154e:	20 93 96 03 	sts	0x0396, r18
     1552:	08 95       	ret
 // must be called in:
 // slave rx event callback
@@ -4212,13 +4212,13 @@ int TwoWire::peek(void)
   int value = -1;
   
   if(rxBufferIndex < rxBufferLength){
-    155a:	e0 91 9e 03 	lds	r30, 0x039E
-    155e:	80 91 9d 03 	lds	r24, 0x039D
+    155a:	e0 91 96 03 	lds	r30, 0x0396
+    155e:	80 91 95 03 	lds	r24, 0x0395
     1562:	e8 17       	cp	r30, r24
     1564:	30 f4       	brcc	.+12     	; 0x1572 <_ZN7TwoWire4peekEv+0x18>
     value = rxBuffer[rxBufferIndex];
     1566:	f0 e0       	ldi	r31, 0x00	; 0
-    1568:	e1 56       	subi	r30, 0x61	; 97
+    1568:	e9 56       	subi	r30, 0x69	; 105
     156a:	fc 4f       	sbci	r31, 0xFC	; 252
     156c:	80 81       	ld	r24, Z
     156e:	90 e0       	ldi	r25, 0x00	; 0
@@ -4264,7 +4264,7 @@ size_t TwoWire::write(const uint8_t *data, size_t quantity)
     158c:	cb 01       	movw	r24, r22
     158e:	8a 01       	movw	r16, r20
   if(transmitting){
-    1590:	20 91 79 03 	lds	r18, 0x0379
+    1590:	20 91 71 03 	lds	r18, 0x0371
     1594:	22 23       	and	r18, r18
     1596:	89 f0       	breq	.+34     	; 0x15ba <_ZN7TwoWire5writeEPKhj+0x40>
     1598:	eb 01       	movw	r28, r22
@@ -4322,13 +4322,13 @@ size_t TwoWire::write(uint8_t data)
     15da:	de b7       	in	r29, 0x3e	; 62
     15dc:	69 83       	std	Y+1, r22	; 0x01
   if(transmitting){
-    15de:	20 91 79 03 	lds	r18, 0x0379
+    15de:	20 91 71 03 	lds	r18, 0x0371
     15e2:	22 23       	and	r18, r18
     15e4:	d1 f0       	breq	.+52     	; 0x161a <_ZN7TwoWire5writeEh+0x48>
   // in master transmitter mode
     // don't bother if buffer is full
     if(txBufferLength >= BUFFER_LENGTH){
-    15e6:	20 91 7a 03 	lds	r18, 0x037A
+    15e6:	20 91 72 03 	lds	r18, 0x0372
     15ea:	20 32       	cpi	r18, 0x20	; 32
     15ec:	40 f0       	brcs	.+16     	; 0x15fe <_ZN7TwoWire5writeEh+0x2c>
   private:
@@ -4350,19 +4350,19 @@ size_t TwoWire::write(uint8_t data)
     }
     // put byte in tx buffer
     txBuffer[txBufferIndex] = data;
-    15fe:	80 91 7b 03 	lds	r24, 0x037B
+    15fe:	80 91 73 03 	lds	r24, 0x0373
     1602:	e8 2f       	mov	r30, r24
     1604:	f0 e0       	ldi	r31, 0x00	; 0
-    1606:	e4 58       	subi	r30, 0x84	; 132
+    1606:	ec 58       	subi	r30, 0x8C	; 140
     1608:	fc 4f       	sbci	r31, 0xFC	; 252
     160a:	99 81       	ldd	r25, Y+1	; 0x01
     160c:	90 83       	st	Z, r25
     ++txBufferIndex;
     160e:	8f 5f       	subi	r24, 0xFF	; 255
-    1610:	80 93 7b 03 	sts	0x037B, r24
+    1610:	80 93 73 03 	sts	0x0373, r24
     // update amount in buffer   
     txBufferLength = txBufferIndex;
-    1614:	80 93 7a 03 	sts	0x037A, r24
+    1614:	80 93 72 03 	sts	0x0372, r24
     1618:	04 c0       	rjmp	.+8      	; 0x1622 <_ZN7TwoWire5writeEh+0x50>
   }else{
   // in slave send mode
@@ -4421,14 +4421,14 @@ TwoWire::TwoWire()
 void TwoWire::begin(void)
 {
   rxBufferIndex = 0;
-    164e:	10 92 9e 03 	sts	0x039E, r1
+    164e:	10 92 96 03 	sts	0x0396, r1
   rxBufferLength = 0;
-    1652:	10 92 9d 03 	sts	0x039D, r1
+    1652:	10 92 95 03 	sts	0x0395, r1
 
   txBufferIndex = 0;
-    1656:	10 92 7b 03 	sts	0x037B, r1
+    1656:	10 92 73 03 	sts	0x0373, r1
   txBufferLength = 0;
-    165a:	10 92 7a 03 	sts	0x037A, r1
+    165a:	10 92 72 03 	sts	0x0372, r1
 
   twi_init();
     165e:	5c cd       	rjmp	.-1352   	; 0x1118 <twi_init>
@@ -4450,13 +4450,13 @@ uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint8_t sendStop
   }
   // perform blocking read into buffer
   uint8_t read = twi_readFrom(address, rxBuffer, quantity, sendStop);
-    1668:	6f e9       	ldi	r22, 0x9F	; 159
+    1668:	67 e9       	ldi	r22, 0x97	; 151
     166a:	73 e0       	ldi	r23, 0x03	; 3
     166c:	71 dd       	rcall	.-1310   	; 0x1150 <twi_readFrom>
-    166e:	10 92 9e 03 	sts	0x039E, r1
+    166e:	10 92 96 03 	sts	0x0396, r1
   // set rx buffer iterator vars
   rxBufferIndex = 0;
-    1672:	80 93 9d 03 	sts	0x039D, r24
+    1672:	80 93 95 03 	sts	0x0395, r24
   rxBufferLength = read;
     1676:	08 95       	ret
 
@@ -4478,15 +4478,15 @@ void TwoWire::beginTransmission(uint8_t address)
   // indicate that we are transmitting
   transmitting = 1;
     167c:	81 e0       	ldi	r24, 0x01	; 1
-    167e:	80 93 79 03 	sts	0x0379, r24
+    167e:	80 93 71 03 	sts	0x0371, r24
   // set address of targeted slave
   txAddress = address;
-    1682:	60 93 9c 03 	sts	0x039C, r22
+    1682:	60 93 94 03 	sts	0x0394, r22
   // reset tx buffer iterator vars
   txBufferIndex = 0;
-    1686:	10 92 7b 03 	sts	0x037B, r1
+    1686:	10 92 73 03 	sts	0x0373, r1
   txBufferLength = 0;
-    168a:	10 92 7a 03 	sts	0x037A, r1
+    168a:	10 92 72 03 	sts	0x0372, r1
     168e:	08 95       	ret
 
 00001690 <_ZN7TwoWire17beginTransmissionEi>:
@@ -4509,17 +4509,17 @@ uint8_t TwoWire::endTransmission(uint8_t sendStop)
   int8_t ret = twi_writeTo(txAddress, txBuffer, txBufferLength, 1, sendStop);
     1694:	06 2f       	mov	r16, r22
     1696:	21 e0       	ldi	r18, 0x01	; 1
-    1698:	40 91 7a 03 	lds	r20, 0x037A
-    169c:	6c e7       	ldi	r22, 0x7C	; 124
+    1698:	40 91 72 03 	lds	r20, 0x0372
+    169c:	64 e7       	ldi	r22, 0x74	; 116
     169e:	73 e0       	ldi	r23, 0x03	; 3
-    16a0:	80 91 9c 03 	lds	r24, 0x039C
+    16a0:	80 91 94 03 	lds	r24, 0x0394
     16a4:	99 dd       	rcall	.-1230   	; 0x11d8 <twi_writeTo>
-    16a6:	10 92 7b 03 	sts	0x037B, r1
+    16a6:	10 92 73 03 	sts	0x0373, r1
   // reset tx buffer iterator vars
   txBufferIndex = 0;
-    16aa:	10 92 7a 03 	sts	0x037A, r1
+    16aa:	10 92 72 03 	sts	0x0372, r1
   txBufferLength = 0;
-    16ae:	10 92 79 03 	sts	0x0379, r1
+    16ae:	10 92 71 03 	sts	0x0371, r1
   // indicate that we are done transmitting
   transmitting = 0;
     16b2:	0f 91       	pop	r16
@@ -4544,7 +4544,7 @@ uint8_t TwoWire::endTransmission(void)
 // Preinstantiate Objects //////////////////////////////////////////////////////
 
 TwoWire Wire = TwoWire();
-    16ba:	8d e6       	ldi	r24, 0x6D	; 109
+    16ba:	85 e6       	ldi	r24, 0x65	; 101
     16bc:	93 e0       	ldi	r25, 0x03	; 3
     16be:	b7 cf       	rjmp	.-146    	; 0x162e <_ZN7TwoWireC1Ev>
 
@@ -4617,7 +4617,7 @@ void SPIClass::begin()
   noInterrupts(); // Protect from a scheduler and prevent transactionBegin
     1714:	f8 94       	cli
   if (!initialized) {
-    1716:	80 91 c2 03 	lds	r24, 0x03C2
+    1716:	80 91 ba 03 	lds	r24, 0x03BA
     171a:	81 11       	cpse	r24, r1
     171c:	23 c0       	rjmp	.+70     	; 0x1764 <_ZN8SPIClass5beginEv+0x54>
     // Set SS to high so a connected chip will be "deselected" by default
@@ -4683,9 +4683,9 @@ void SPIClass::begin()
     1760:	8b e0       	ldi	r24, 0x0B	; 11
     1762:	44 dc       	rcall	.-1912   	; 0xfec <pinMode>
     pinMode(MOSI, OUTPUT);
-    1764:	80 91 c2 03 	lds	r24, 0x03C2
+    1764:	80 91 ba 03 	lds	r24, 0x03BA
     1768:	8f 5f       	subi	r24, 0xFF	; 255
-    176a:	80 93 c2 03 	sts	0x03C2, r24
+    176a:	80 93 ba 03 	sts	0x03BA, r24
   }
   initialized++; // reference count
     176e:	cf bf       	out	0x3f, r28	; 63
@@ -4705,8 +4705,8 @@ void SPIClass::begin()
     1776:	f8 94       	cli
       #ifdef SPI_AVR_EIMSK
       if (interruptMode == 1) {
-    1778:	20 91 c1 03 	lds	r18, 0x03C1
-    177c:	80 91 bf 03 	lds	r24, 0x03BF
+    1778:	20 91 b9 03 	lds	r18, 0x03B9
+    177c:	80 91 b7 03 	lds	r24, 0x03B7
     1780:	21 30       	cpi	r18, 0x01	; 1
     1782:	19 f4       	brne	.+6      	; 0x178a <_ZN8SPIClass14endTransactionEv.part.3+0x16>
         SPI_AVR_EIMSK = interruptSave;
@@ -4728,7 +4728,7 @@ void SPIClass::begin()
   // and configure the correct settings.
   inline static void beginTransaction(SPISettings settings) {
     if (interruptMode > 0) {
-    178e:	20 91 c1 03 	lds	r18, 0x03C1
+    178e:	20 91 b9 03 	lds	r18, 0x03B9
     1792:	22 23       	and	r18, r18
     1794:	99 f0       	breq	.+38     	; 0x17bc <_ZN8SPIClass16beginTransactionE11SPISettings+0x2e>
       uint8_t sreg = SREG;
@@ -4738,15 +4738,15 @@ void SPIClass::begin()
 
       #ifdef SPI_AVR_EIMSK
       if (interruptMode == 1) {
-    179a:	20 91 c1 03 	lds	r18, 0x03C1
+    179a:	20 91 b9 03 	lds	r18, 0x03B9
     179e:	21 30       	cpi	r18, 0x01	; 1
     17a0:	59 f4       	brne	.+22     	; 0x17b8 <_ZN8SPIClass16beginTransactionE11SPISettings+0x2a>
         interruptSave = SPI_AVR_EIMSK;
     17a2:	2d b3       	in	r18, 0x1d	; 29
-    17a4:	20 93 bf 03 	sts	0x03BF, r18
+    17a4:	20 93 b7 03 	sts	0x03B7, r18
         SPI_AVR_EIMSK &= ~interruptMask;
     17a8:	4d b3       	in	r20, 0x1d	; 29
-    17aa:	20 91 c0 03 	lds	r18, 0x03C0
+    17aa:	20 91 b8 03 	lds	r18, 0x03B8
     17ae:	20 95       	com	r18
     17b0:	24 23       	and	r18, r20
     17b2:	2d bb       	out	0x1d, r18	; 29
@@ -4757,7 +4757,7 @@ void SPIClass::begin()
       #endif
       {
         interruptSave = sreg;
-    17b8:	30 93 bf 03 	sts	0x03BF, r19
+    17b8:	30 93 b7 03 	sts	0x03B7, r19
       digitalWrite(SPI_TRANSACTION_MISMATCH_LED, HIGH);
     }
     inTransactionFlag = 1;
@@ -4813,13 +4813,13 @@ void Sd2Card::chipSelectHigh(void) {
     17d6:	fc 01       	movw	r30, r24
     17d8:	84 81       	ldd	r24, Z+4	; 0x04
     17da:	41 dc       	rcall	.-1918   	; 0x105e <digitalWrite>
-    17dc:	80 91 c3 03 	lds	r24, 0x03C3
+    17dc:	80 91 bb 03 	lds	r24, 0x03BB
 #ifdef USE_SPI_LIB
   if (chip_select_asserted) {
     17e0:	88 23       	and	r24, r24
     17e2:	31 f0       	breq	.+12     	; 0x17f0 <_ZN7Sd2Card14chipSelectHighEv+0x1c>
-    17e4:	10 92 c3 03 	sts	0x03C3, r1
-    17e8:	80 91 c1 03 	lds	r24, 0x03C1
+    17e4:	10 92 bb 03 	sts	0x03BB, r1
+    17e8:	80 91 b9 03 	lds	r24, 0x03B9
       digitalWrite(SPI_TRANSACTION_MISMATCH_LED, HIGH);
     }
     inTransactionFlag = 0;
@@ -4842,15 +4842,15 @@ void Sd2Card::chipSelectLow(void) {
     17f6:	ec 01       	movw	r28, r24
 #ifdef USE_SPI_LIB
   if (!chip_select_asserted) {
-    17f8:	80 91 c3 03 	lds	r24, 0x03C3
+    17f8:	80 91 bb 03 	lds	r24, 0x03BB
     17fc:	81 11       	cpse	r24, r1
     17fe:	08 c0       	rjmp	.+16     	; 0x1810 <_ZN7Sd2Card13chipSelectLowEv+0x1e>
     chip_select_asserted = 1;
     1800:	81 e0       	ldi	r24, 0x01	; 1
-    1802:	80 93 c3 03 	sts	0x03C3, r24
+    1802:	80 93 bb 03 	sts	0x03BB, r24
     SPI.beginTransaction(settings);
-    1806:	80 91 c4 03 	lds	r24, 0x03C4
-    180a:	90 91 c5 03 	lds	r25, 0x03C5
+    1806:	80 91 bc 03 	lds	r24, 0x03BC
+    180a:	90 91 bd 03 	lds	r25, 0x03BD
     180e:	bf df       	rcall	.-130    	; 0x178e <_ZN8SPIClass16beginTransactionE11SPISettings>
     1810:	60 e0       	ldi	r22, 0x00	; 0
   }
@@ -4981,15 +4981,15 @@ uint8_t Sd2Card::setSckRate(uint8_t sckRateID) {
     1882:	08 c0       	rjmp	.+16     	; 0x1894 <_ZN7Sd2Card10setSckRateEh+0x4a>
     case 4:  settings = SPISettings(500000, MSBFIRST, SPI_MODE0); break;
     1884:	82 e5       	ldi	r24, 0x52	; 82
-    1886:	80 93 c4 03 	sts	0x03C4, r24
+    1886:	80 93 bc 03 	sts	0x03BC, r24
     188a:	81 e0       	ldi	r24, 0x01	; 1
-    188c:	80 93 c5 03 	sts	0x03C5, r24
+    188c:	80 93 bd 03 	sts	0x03BD, r24
     1890:	08 95       	ret
     case 5:  settings = SPISettings(250000, MSBFIRST, SPI_MODE0); break;
     default: settings = SPISettings(125000, MSBFIRST, SPI_MODE0);
     1892:	83 e5       	ldi	r24, 0x53	; 83
-    1894:	80 93 c4 03 	sts	0x03C4, r24
-    1898:	10 92 c5 03 	sts	0x03C5, r1
+    1894:	80 93 bc 03 	sts	0x03BC, r24
+    1898:	10 92 bd 03 	sts	0x03BD, r1
   }
 #endif // USE_SPI_LIB
   return true;
@@ -5252,17 +5252,17 @@ uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
     19b4:	54 db       	rcall	.-2392   	; 0x105e <digitalWrite>
     19b6:	ac de       	rcall	.-680    	; 0x1710 <_ZN8SPIClass5beginEv>
     19b8:	82 e5       	ldi	r24, 0x52	; 82
-    19ba:	80 93 c4 03 	sts	0x03C4, r24
+    19ba:	80 93 bc 03 	sts	0x03BC, r24
   // Enable SPI, Master, clock rate f_osc/128
   SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR1) | (1 << SPR0);
   // clear double speed
   SPSR &= ~(1 << SPI2X);
 #else // USE_SPI_LIB
   SPI.begin();
-    19be:	10 92 c5 03 	sts	0x03C5, r1
+    19be:	10 92 bd 03 	sts	0x03BD, r1
   settings = SPISettings(250000, MSBFIRST, SPI_MODE0);
-    19c2:	80 91 c4 03 	lds	r24, 0x03C4
-    19c6:	90 91 c5 03 	lds	r25, 0x03C5
+    19c2:	80 91 bc 03 	lds	r24, 0x03BC
+    19c6:	90 91 bd 03 	lds	r25, 0x03BD
 #endif // USE_SPI_LIB
 #endif // SOFTWARE_SPI
 
@@ -5276,7 +5276,7 @@ uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
     19d2:	f7 de       	rcall	.-530    	; 0x17c2 <_ZN8SPIClass8transferEh>
     19d4:	fa 94       	dec	r15
     19d6:	e1 f7       	brne	.-8      	; 0x19d0 <_ZN7Sd2Card4initEhh+0x4a>
-    19d8:	80 91 c1 03 	lds	r24, 0x03C1
+    19d8:	80 91 b9 03 	lds	r24, 0x03B9
 #ifndef USE_SPI_LIB
   SPDR = b;
   while (!(SPSR & (1 << SPIF)))
@@ -5962,9 +5962,9 @@ uint8_t Sd2Card::writeBlock(uint32_t blockNumber, const uint8_t* src) {
     spcr = _BV(SPE) | _BV(MSTR) | ((bitOrder == LSBFIRST) ? _BV(DORD) : 0) |
       (dataMode & SPI_MODE_MASK) | ((clockDiv >> 1) & SPI_CLOCK_MASK);
     1d38:	80 e5       	ldi	r24, 0x50	; 80
-    1d3a:	80 93 c4 03 	sts	0x03C4, r24
+    1d3a:	80 93 bc 03 	sts	0x03BC, r24
     spsr = clockDiv & SPI_2XCLOCK_MASK;
-    1d3e:	10 92 c5 03 	sts	0x03C5, r1
+    1d3e:	10 92 bd 03 	sts	0x03BD, r1
     1d42:	08 95       	ret
 
 00001d44 <_ZN6SdFile10addClusterEv>:
@@ -6190,7 +6190,7 @@ dir_t* SdFile::cacheDirEntry(uint8_t action) {
     1e70:	82 9f       	mul	r24, r18
     1e72:	c0 01       	movw	r24, r0
     1e74:	11 24       	eor	r1, r1
-    1e76:	81 53       	subi	r24, 0x31	; 49
+    1e76:	89 53       	subi	r24, 0x39	; 57
     1e78:	9c 4f       	sbci	r25, 0xFC	; 252
     1e7a:	02 c0       	rjmp	.+4      	; 0x1e80 <_ZN6SdFile13cacheDirEntryEh+0x2a>
     1e7c:	80 e0       	ldi	r24, 0x00	; 0
@@ -6710,8 +6710,8 @@ int16_t SdFile::read(void* buf, uint16_t nbyte) {
     2110:	94 01       	movw	r18, r8
     2112:	ab 01       	movw	r20, r22
     2114:	bc 01       	movw	r22, r24
-    2116:	80 91 cd 03 	lds	r24, 0x03CD
-    211a:	90 91 ce 03 	lds	r25, 0x03CE
+    2116:	80 91 c5 03 	lds	r24, 0x03C5
+    211a:	90 91 c6 03 	lds	r25, 0x03C6
     211e:	00 dd       	rcall	.-1536   	; 0x1b20 <_ZN7Sd2Card8readDataEmjjPh>
     2120:	88 23       	and	r24, r24
     2122:	09 f4       	brne	.+2      	; 0x2126 <_ZN6SdFile4readEPvj+0x192>
@@ -6764,7 +6764,7 @@ int16_t SdFile::read(void* buf, uint16_t nbyte) {
     2158:	09 f4       	brne	.+2      	; 0x215c <_ZN6SdFile4readEPvj+0x1c8>
     215a:	34 cf       	rjmp	.-408    	; 0x1fc4 <_ZN6SdFile4readEPvj+0x30>
     215c:	c4 01       	movw	r24, r8
-    215e:	81 53       	subi	r24, 0x31	; 49
+    215e:	89 53       	subi	r24, 0x39	; 57
     2160:	9c 4f       	sbci	r25, 0xFC	; 252
       uint8_t* src = SdVolume::cacheBuffer_.data + offset;
     2162:	d6 01       	movw	r26, r12
@@ -6898,7 +6898,7 @@ dir_t* SdFile::readDirCache(void) {
     221a:	ff 9e       	mul	r15, r31
     221c:	c0 01       	movw	r24, r0
     221e:	11 24       	eor	r1, r1
-    2220:	81 53       	subi	r24, 0x31	; 49
+    2220:	89 53       	subi	r24, 0x39	; 57
     2222:	9c 4f       	sbci	r25, 0xFC	; 252
     2224:	0f 90       	pop	r0
 }
@@ -7195,11 +7195,11 @@ uint8_t SdFile::sync(void) {
     23b0:	75 8b       	std	Z+21, r23	; 0x15
     d->firstClusterHigh = firstCluster_ >> 16;
     23b2:	64 8b       	std	Z+20, r22	; 0x14
-    23b4:	e0 91 c6 03 	lds	r30, 0x03C6
+    23b4:	e0 91 be 03 	lds	r30, 0x03BE
 
     // set modify time if user supplied a callback date/time function
     if (dateTime_) {
-    23b8:	f0 91 c7 03 	lds	r31, 0x03C7
+    23b8:	f0 91 bf 03 	lds	r31, 0x03BF
     23bc:	30 97       	sbiw	r30, 0x00	; 0
     23be:	59 f0       	breq	.+22     	; 0x23d6 <_ZN6SdFile4syncEv+0x6e>
     23c0:	b8 01       	movw	r22, r16
@@ -7555,7 +7555,7 @@ uint8_t SdFile::openCachedEntry(uint8_t dirIndex, uint8_t oflag) {
     257e:	68 9f       	mul	r22, r24
     2580:	f0 01       	movw	r30, r0
     2582:	11 24       	eor	r1, r1
-    2584:	e1 53       	subi	r30, 0x31	; 49
+    2584:	e9 53       	subi	r30, 0x39	; 57
     2586:	fc 4f       	sbci	r31, 0xFC	; 252
 
   // write or truncate is an error for a directory or read-only file
@@ -7901,7 +7901,7 @@ uint8_t SdFile::open(SdFile* dirFile, const char* fileName, uint8_t oflag) {
     2768:	d9 f1       	breq	.+118    	; 0x27e0 <_ZN6SdFile4openEPS_PKch+0x19a>
     276a:	f7 01       	movw	r30, r14
     276c:	12 8a       	std	Z+18, r1	; 0x12
-    276e:	0f ec       	ldi	r16, 0xCF	; 207
+    276e:	07 ec       	ldi	r16, 0xC7	; 199
     2770:	13 e0       	ldi	r17, 0x03	; 3
 
     // use first entry in cluster
@@ -7924,8 +7924,8 @@ uint8_t SdFile::open(SdFile* dirFile, const char* fileName, uint8_t oflag) {
     2786:	0d 92       	st	X+, r0
     2788:	8a 95       	dec	r24
     278a:	e1 f7       	brne	.-8      	; 0x2784 <_ZN6SdFile4openEPS_PKch+0x13e>
-    278c:	e0 91 c6 03 	lds	r30, 0x03C6
-    2790:	f0 91 c7 03 	lds	r31, 0x03C7
+    278c:	e0 91 be 03 	lds	r30, 0x03BE
+    2790:	f0 91 bf 03 	lds	r31, 0x03BF
 
   // set timestamps
   if (dateTime_) {
@@ -8254,8 +8254,8 @@ size_t SdFile::write(const void* buf, uint16_t nbyte) {
     return sdCard_->writeBlock(block, dst);
     2950:	b2 01       	movw	r22, r4
     2952:	a1 01       	movw	r20, r2
-    2954:	80 91 cd 03 	lds	r24, 0x03CD
-    2958:	90 91 ce 03 	lds	r25, 0x03CE
+    2954:	80 91 c5 03 	lds	r24, 0x03C5
+    2958:	90 91 c6 03 	lds	r25, 0x03C6
     295c:	a6 d9       	rcall	.-3252   	; 0x1caa <_ZN7Sd2Card10writeBlockEmPKh>
     295e:	88 23       	and	r24, r24
     2960:	09 f4       	brne	.+2      	; 0x2964 <_ZN6SdFile5writeEPKvj+0x160>
@@ -8435,9 +8435,9 @@ size_t SdFile::write(const void* buf, uint16_t nbyte) {
     2a62:	40 92 0f 01 	sts	0x010F, r4
         SdVolume::cacheBlockNumber_ = block;
     2a66:	50 92 10 01 	sts	0x0110, r5
-    2a6a:	80 91 cc 03 	lds	r24, 0x03CC
+    2a6a:	80 91 c4 03 	lds	r24, 0x03C4
     2a6e:	81 60       	ori	r24, 0x01	; 1
-    2a70:	80 93 cc 03 	sts	0x03CC, r24
+    2a70:	80 93 c4 03 	sts	0x03C4, r24
            return dataStartBlock_ + ((cluster - 2) << clusterSizeShift_);}
   uint32_t blockNumber(uint32_t cluster, uint32_t position) const {
            return clusterStartBlock(cluster) + blockOfCluster(position);}
@@ -8457,7 +8457,7 @@ size_t SdFile::write(const void* buf, uint16_t nbyte) {
     2a80:	09 f4       	brne	.+2      	; 0x2a84 <_ZN6SdFile5writeEPKvj+0x280>
     2a82:	f8 ce       	rjmp	.-528    	; 0x2874 <_ZN6SdFile5writeEPKvj+0x70>
     2a84:	c4 01       	movw	r24, r8
-    2a86:	81 53       	subi	r24, 0x31	; 49
+    2a86:	89 53       	subi	r24, 0x39	; 57
     2a88:	9c 4f       	sbci	r25, 0xFC	; 252
     2a8a:	d7 01       	movw	r26, r14
     2a8c:	9c 01       	movw	r18, r24
@@ -8508,8 +8508,8 @@ size_t SdFile::write(const void* buf, uint16_t nbyte) {
     // update fileSize and insure sync will update dir entry
     fileSize_ = curPosition_;
     2ad0:	0c c0       	rjmp	.+24     	; 0x2aea <_ZN6SdFile5writeEPKvj+0x2e6>
-    2ad2:	80 91 c6 03 	lds	r24, 0x03C6
-    2ad6:	90 91 c7 03 	lds	r25, 0x03C7
+    2ad2:	80 91 be 03 	lds	r24, 0x03BE
+    2ad6:	90 91 bf 03 	lds	r25, 0x03BF
     flags_ |= F_FILE_DIR_DIRTY;
     2ada:	89 2b       	or	r24, r25
     2adc:	31 f0       	breq	.+12     	; 0x2aea <_ZN6SdFile5writeEPKvj+0x2e6>
@@ -8614,7 +8614,7 @@ size_t SdFile::write(uint8_t b) {
 //------------------------------------------------------------------------------
 uint8_t SdVolume::cacheFlush(void) {
   if (cacheDirty_) {
-    2b54:	80 91 cc 03 	lds	r24, 0x03CC
+    2b54:	80 91 c4 03 	lds	r24, 0x03C4
     2b58:	88 23       	and	r24, r24
     2b5a:	89 f1       	breq	.+98     	; 0x2bbe <_ZN8SdVolume10cacheFlushEv+0x6a>
     if (!sdCard_->writeBlock(cacheBlockNumber_, cacheBuffer_.data)) {
@@ -8622,42 +8622,42 @@ uint8_t SdVolume::cacheFlush(void) {
     2b60:	50 91 0e 01 	lds	r21, 0x010E
     2b64:	60 91 0f 01 	lds	r22, 0x010F
     2b68:	70 91 10 01 	lds	r23, 0x0110
-    2b6c:	2f ec       	ldi	r18, 0xCF	; 207
+    2b6c:	27 ec       	ldi	r18, 0xC7	; 199
     2b6e:	33 e0       	ldi	r19, 0x03	; 3
-    2b70:	80 91 cd 03 	lds	r24, 0x03CD
-    2b74:	90 91 ce 03 	lds	r25, 0x03CE
+    2b70:	80 91 c5 03 	lds	r24, 0x03C5
+    2b74:	90 91 c6 03 	lds	r25, 0x03C6
     2b78:	98 d8       	rcall	.-3792   	; 0x1caa <_ZN7Sd2Card10writeBlockEmPKh>
     2b7a:	88 23       	and	r24, r24
     2b7c:	11 f1       	breq	.+68     	; 0x2bc2 <_ZN8SdVolume10cacheFlushEv+0x6e>
-    2b7e:	40 91 c8 03 	lds	r20, 0x03C8
+    2b7e:	40 91 c0 03 	lds	r20, 0x03C0
       return false;
     }
     // mirror FAT tables
     if (cacheMirrorBlock_) {
-    2b82:	50 91 c9 03 	lds	r21, 0x03C9
-    2b86:	60 91 ca 03 	lds	r22, 0x03CA
-    2b8a:	70 91 cb 03 	lds	r23, 0x03CB
+    2b82:	50 91 c1 03 	lds	r21, 0x03C1
+    2b86:	60 91 c2 03 	lds	r22, 0x03C2
+    2b8a:	70 91 c3 03 	lds	r23, 0x03C3
     2b8e:	41 15       	cp	r20, r1
     2b90:	51 05       	cpc	r21, r1
     2b92:	61 05       	cpc	r22, r1
     2b94:	71 05       	cpc	r23, r1
     2b96:	89 f0       	breq	.+34     	; 0x2bba <_ZN8SdVolume10cacheFlushEv+0x66>
-    2b98:	2f ec       	ldi	r18, 0xCF	; 207
+    2b98:	27 ec       	ldi	r18, 0xC7	; 199
       if (!sdCard_->writeBlock(cacheMirrorBlock_, cacheBuffer_.data)) {
     2b9a:	33 e0       	ldi	r19, 0x03	; 3
-    2b9c:	80 91 cd 03 	lds	r24, 0x03CD
-    2ba0:	90 91 ce 03 	lds	r25, 0x03CE
+    2b9c:	80 91 c5 03 	lds	r24, 0x03C5
+    2ba0:	90 91 c6 03 	lds	r25, 0x03C6
     2ba4:	82 d8       	rcall	.-3836   	; 0x1caa <_ZN7Sd2Card10writeBlockEmPKh>
     2ba6:	88 23       	and	r24, r24
     2ba8:	61 f0       	breq	.+24     	; 0x2bc2 <_ZN8SdVolume10cacheFlushEv+0x6e>
-    2baa:	10 92 c8 03 	sts	0x03C8, r1
+    2baa:	10 92 c0 03 	sts	0x03C0, r1
         return false;
       }
       cacheMirrorBlock_ = 0;
-    2bae:	10 92 c9 03 	sts	0x03C9, r1
-    2bb2:	10 92 ca 03 	sts	0x03CA, r1
-    2bb6:	10 92 cb 03 	sts	0x03CB, r1
-    2bba:	10 92 cc 03 	sts	0x03CC, r1
+    2bae:	10 92 c1 03 	sts	0x03C1, r1
+    2bb2:	10 92 c2 03 	sts	0x03C2, r1
+    2bb6:	10 92 c3 03 	sts	0x03C3, r1
+    2bba:	10 92 c4 03 	sts	0x03C4, r1
     }
     cacheDirty_ = 0;
     2bbe:	81 e0       	ldi	r24, 0x01	; 1
@@ -8695,13 +8695,13 @@ uint8_t SdVolume::cacheRawBlock(uint32_t blockNumber, uint8_t action) {
     2bf4:	02 c0       	rjmp	.+4      	; 0x2bfa <_ZN8SdVolume13cacheRawBlockEmh+0x34>
     2bf6:	80 e0       	ldi	r24, 0x00	; 0
     2bf8:	19 c0       	rjmp	.+50     	; 0x2c2c <_ZN8SdVolume13cacheRawBlockEmh+0x66>
-    2bfa:	2f ec       	ldi	r18, 0xCF	; 207
+    2bfa:	27 ec       	ldi	r18, 0xC7	; 199
     if (!sdCard_->readBlock(blockNumber, cacheBuffer_.data)) return false;
     2bfc:	33 e0       	ldi	r19, 0x03	; 3
     2bfe:	b7 01       	movw	r22, r14
     2c00:	a6 01       	movw	r20, r12
-    2c02:	80 91 cd 03 	lds	r24, 0x03CD
-    2c06:	90 91 ce 03 	lds	r25, 0x03CE
+    2c02:	80 91 c5 03 	lds	r24, 0x03C5
+    2c06:	90 91 c6 03 	lds	r25, 0x03C6
     2c0a:	03 d8       	rcall	.-4090   	; 0x1c12 <_ZN7Sd2Card9readBlockEmPh>
     2c0c:	88 23       	and	r24, r24
     2c0e:	99 f3       	breq	.-26     	; 0x2bf6 <_ZN8SdVolume13cacheRawBlockEmh+0x30>
@@ -8710,11 +8710,11 @@ uint8_t SdVolume::cacheRawBlock(uint32_t blockNumber, uint8_t action) {
     2c14:	d0 92 0e 01 	sts	0x010E, r13
     2c18:	e0 92 0f 01 	sts	0x010F, r14
     2c1c:	f0 92 10 01 	sts	0x0110, r15
-    2c20:	80 91 cc 03 	lds	r24, 0x03CC
+    2c20:	80 91 c4 03 	lds	r24, 0x03C4
   }
   cacheDirty_ |= action;
     2c24:	8c 2b       	or	r24, r28
-    2c26:	80 93 cc 03 	sts	0x03CC, r24
+    2c26:	80 93 c4 03 	sts	0x03C4, r24
     2c2a:	81 e0       	ldi	r24, 0x01	; 1
     2c2c:	cf 91       	pop	r28
   return true;
@@ -8739,7 +8739,7 @@ uint8_t SdVolume::cacheZeroBlock(uint32_t blockNumber) {
     2c44:	87 df       	rcall	.-242    	; 0x2b54 <_ZN8SdVolume10cacheFlushEv>
     2c46:	88 23       	and	r24, r24
     2c48:	b1 f0       	breq	.+44     	; 0x2c76 <_ZN8SdVolume14cacheZeroBlockEm+0x3e>
-    2c4a:	ef ec       	ldi	r30, 0xCF	; 207
+    2c4a:	e7 ec       	ldi	r30, 0xC7	; 199
     2c4c:	f3 e0       	ldi	r31, 0x03	; 3
     2c4e:	11 92       	st	Z+, r1
 
@@ -8753,7 +8753,7 @@ uint8_t SdVolume::cacheZeroBlock(uint32_t blockNumber) {
 
   // loop take less flash than memset(cacheBuffer_.data, 0, 512);
   for (uint16_t i = 0; i < 512; i++) {
-    2c52:	ef 3c       	cpi	r30, 0xCF	; 207
+    2c52:	e7 3c       	cpi	r30, 0xC7	; 199
     2c54:	f8 07       	cpc	r31, r24
     2c56:	d9 f7       	brne	.-10     	; 0x2c4e <_ZN8SdVolume14cacheZeroBlockEm+0x16>
     2c58:	c0 92 0d 01 	sts	0x010D, r12
@@ -8763,9 +8763,9 @@ uint8_t SdVolume::cacheZeroBlock(uint32_t blockNumber) {
     2c5c:	d0 92 0e 01 	sts	0x010E, r13
     2c60:	e0 92 0f 01 	sts	0x010F, r14
     2c64:	f0 92 10 01 	sts	0x0110, r15
-    2c68:	80 91 cc 03 	lds	r24, 0x03CC
+    2c68:	80 91 c4 03 	lds	r24, 0x03C4
     2c6c:	81 60       	ori	r24, 0x01	; 1
-    2c6e:	80 93 cc 03 	sts	0x03CC, r24
+    2c6e:	80 93 c4 03 	sts	0x03C4, r24
     2c72:	81 e0       	ldi	r24, 0x01	; 1
   cacheSetDirty();
   return true;
@@ -8884,7 +8884,7 @@ uint8_t SdVolume::fatGet(uint32_t cluster, uint32_t* value) const {
     2d24:	f6 01       	movw	r30, r12
     2d26:	ee 0f       	add	r30, r30
     2d28:	ff 1f       	adc	r31, r31
-    2d2a:	e1 53       	subi	r30, 0x31	; 49
+    2d2a:	e9 53       	subi	r30, 0x39	; 57
     2d2c:	fc 4f       	sbci	r31, 0xFC	; 252
     2d2e:	80 81       	ld	r24, Z
     2d30:	91 81       	ldd	r25, Z+1	; 0x01
@@ -8917,7 +8917,7 @@ uint8_t SdVolume::fatGet(uint32_t cluster, uint32_t* value) const {
     2d50:	ff 1f       	adc	r31, r31
     2d52:	ee 0f       	add	r30, r30
     2d54:	ff 1f       	adc	r31, r31
-    2d56:	e1 53       	subi	r30, 0x31	; 49
+    2d56:	e9 53       	subi	r30, 0x39	; 57
     2d58:	fc 4f       	sbci	r31, 0xFC	; 252
     2d5a:	80 81       	ld	r24, Z
     2d5c:	91 81       	ldd	r25, Z+1	; 0x01
@@ -9207,7 +9207,7 @@ uint8_t SdVolume::fatPut(uint32_t cluster, uint32_t value) {
     2f06:	f6 01       	movw	r30, r12
     2f08:	ee 0f       	add	r30, r30
     2f0a:	ff 1f       	adc	r31, r31
-    2f0c:	e1 53       	subi	r30, 0x31	; 49
+    2f0c:	e9 53       	subi	r30, 0x39	; 57
     2f0e:	fc 4f       	sbci	r31, 0xFC	; 252
     2f10:	51 82       	std	Z+1, r5	; 0x01
     2f12:	40 82       	st	Z, r4
@@ -9241,13 +9241,13 @@ uint8_t SdVolume::fatPut(uint32_t cluster, uint32_t value) {
     2f32:	ff 1f       	adc	r31, r31
     2f34:	ee 0f       	add	r30, r30
     2f36:	ff 1f       	adc	r31, r31
-    2f38:	e1 53       	subi	r30, 0x31	; 49
+    2f38:	e9 53       	subi	r30, 0x39	; 57
     2f3a:	fc 4f       	sbci	r31, 0xFC	; 252
     2f3c:	40 82       	st	Z, r4
     2f3e:	51 82       	std	Z+1, r5	; 0x01
     2f40:	62 82       	std	Z+2, r6	; 0x02
     2f42:	73 82       	std	Z+3, r7	; 0x03
-    2f44:	80 91 cc 03 	lds	r24, 0x03CC
+    2f44:	80 91 c4 03 	lds	r24, 0x03C4
            return dataStartBlock_ + ((cluster - 2) << clusterSizeShift_);}
   uint32_t blockNumber(uint32_t cluster, uint32_t position) const {
            return clusterStartBlock(cluster) + blockOfCluster(position);}
@@ -9255,7 +9255,7 @@ uint8_t SdVolume::fatPut(uint32_t cluster, uint32_t value) {
   static uint8_t cacheRawBlock(uint32_t blockNumber, uint8_t action);
   static void cacheSetDirty(void) {cacheDirty_ |= CACHE_FOR_WRITE;}
     2f48:	81 60       	ori	r24, 0x01	; 1
-    2f4a:	80 93 cc 03 	sts	0x03CC, r24
+    2f4a:	80 93 c4 03 	sts	0x03C4, r24
     2f4e:	8a 89       	ldd	r24, Y+18	; 0x12
   }
   cacheSetDirty();
@@ -9272,10 +9272,10 @@ uint8_t SdVolume::fatPut(uint32_t cluster, uint32_t value) {
     2f5e:	99 1d       	adc	r25, r9
     2f60:	aa 1d       	adc	r26, r10
     2f62:	bb 1d       	adc	r27, r11
-    2f64:	80 93 c8 03 	sts	0x03C8, r24
-    2f68:	90 93 c9 03 	sts	0x03C9, r25
-    2f6c:	a0 93 ca 03 	sts	0x03CA, r26
-    2f70:	b0 93 cb 03 	sts	0x03CB, r27
+    2f64:	80 93 c0 03 	sts	0x03C0, r24
+    2f68:	90 93 c1 03 	sts	0x03C1, r25
+    2f6c:	a0 93 c2 03 	sts	0x03C2, r26
+    2f70:	b0 93 c3 03 	sts	0x03C3, r27
     2f74:	81 e0       	ldi	r24, 0x01	; 1
   return true;
     2f76:	01 c0       	rjmp	.+2      	; 0x2f7a <_ZN8SdVolume6fatPutEmm+0x11e>
@@ -9848,8 +9848,8 @@ uint8_t SdVolume::init(Sd2Card* dev, uint8_t part) {
     3280:	14 2f       	mov	r17, r20
   uint32_t volumeStartBlock = 0;
   sdCard_ = dev;
-    3282:	70 93 ce 03 	sts	0x03CE, r23
-    3286:	60 93 cd 03 	sts	0x03CD, r22
+    3282:	70 93 c6 03 	sts	0x03C6, r23
+    3286:	60 93 c5 03 	sts	0x03C5, r22
   // if part == 0 assume super floppy with FAT boot sector in block zero
   // if part > 0 assume mbr volume with partition table
   if (part) {
@@ -9873,7 +9873,7 @@ uint8_t SdVolume::init(Sd2Card* dev, uint8_t part) {
     32a6:	12 9f       	mul	r17, r18
     32a8:	f0 01       	movw	r30, r0
     32aa:	11 24       	eor	r1, r1
-    32ac:	e3 58       	subi	r30, 0x83	; 131
+    32ac:	eb 58       	subi	r30, 0x8B	; 139
     32ae:	fa 4f       	sbci	r31, 0xFA	; 250
     32b0:	80 81       	ld	r24, Z
     if ((p->boot & 0X7F) !=0  ||
@@ -9927,14 +9927,14 @@ uint8_t SdVolume::init(Sd2Card* dev, uint8_t part) {
     32e8:	6e dc       	rcall	.-1828   	; 0x2bc6 <_ZN8SdVolume13cacheRawBlockEmh>
     32ea:	88 23       	and	r24, r24
     32ec:	91 f2       	breq	.-92     	; 0x3292 <_ZN8SdVolume4initEP7Sd2Cardh+0x2c>
-    32ee:	80 91 da 03 	lds	r24, 0x03DA
+    32ee:	80 91 d2 03 	lds	r24, 0x03D2
   bpb_t* bpb = &cacheBuffer_.fbs.bpb;
   if (bpb->bytesPerSector != 512 ||
-    32f2:	90 91 db 03 	lds	r25, 0x03DB
+    32f2:	90 91 d3 03 	lds	r25, 0x03D3
     32f6:	81 15       	cp	r24, r1
     32f8:	92 40       	sbci	r25, 0x02	; 2
     32fa:	59 f6       	brne	.-106    	; 0x3292 <_ZN8SdVolume4initEP7Sd2Cardh+0x2c>
-    32fc:	30 91 df 03 	lds	r19, 0x03DF
+    32fc:	30 91 d7 03 	lds	r19, 0x03D7
     bpb->fatCount == 0 ||
     3300:	33 23       	and	r19, r19
     3302:	39 f2       	breq	.-114    	; 0x3292 <_ZN8SdVolume4initEP7Sd2Cardh+0x2c>
@@ -9944,13 +9944,13 @@ uint8_t SdVolume::init(Sd2Card* dev, uint8_t part) {
   if (!cacheRawBlock(volumeStartBlock, CACHE_FOR_READ)) return false;
   bpb_t* bpb = &cacheBuffer_.fbs.bpb;
   if (bpb->bytesPerSector != 512 ||
-    3304:	80 91 dd 03 	lds	r24, 0x03DD
+    3304:	80 91 d5 03 	lds	r24, 0x03D5
     bpb->fatCount == 0 ||
-    3308:	90 91 de 03 	lds	r25, 0x03DE
+    3308:	90 91 d6 03 	lds	r25, 0x03D6
     330c:	89 2b       	or	r24, r25
     330e:	09 f4       	brne	.+2      	; 0x3312 <_ZN8SdVolume4initEP7Sd2Cardh+0xac>
     3310:	c0 cf       	rjmp	.-128    	; 0x3292 <_ZN8SdVolume4initEP7Sd2Cardh+0x2c>
-    3312:	20 91 dc 03 	lds	r18, 0x03DC
+    3312:	20 91 d4 03 	lds	r18, 0x03D4
     bpb->reservedSectorCount == 0 ||
     bpb->sectorsPerCluster == 0) {
     3316:	22 23       	and	r18, r18
@@ -9998,29 +9998,29 @@ uint8_t SdVolume::init(Sd2Card* dev, uint8_t part) {
     3346:	68 30       	cpi	r22, 0x08	; 8
     3348:	78 f3       	brcs	.-34     	; 0x3328 <_ZN8SdVolume4initEP7Sd2Cardh+0xc2>
     334a:	a3 cf       	rjmp	.-186    	; 0x3292 <_ZN8SdVolume4initEP7Sd2Cardh+0x2c>
-    334c:	20 91 e5 03 	lds	r18, 0x03E5
+    334c:	20 91 dd 03 	lds	r18, 0x03DD
   }
   blocksPerFat_ = bpb->sectorsPerFat16 ?
                     bpb->sectorsPerFat16 : bpb->sectorsPerFat32;
-    3350:	30 91 e6 03 	lds	r19, 0x03E6
+    3350:	30 91 de 03 	lds	r19, 0x03DE
     3354:	21 15       	cp	r18, r1
     3356:	31 05       	cpc	r19, r1
     3358:	19 f0       	breq	.+6      	; 0x3360 <_ZN8SdVolume4initEP7Sd2Cardh+0xfa>
     335a:	40 e0       	ldi	r20, 0x00	; 0
     335c:	50 e0       	ldi	r21, 0x00	; 0
     335e:	08 c0       	rjmp	.+16     	; 0x3370 <_ZN8SdVolume4initEP7Sd2Cardh+0x10a>
-    3360:	20 91 f3 03 	lds	r18, 0x03F3
-    3364:	30 91 f4 03 	lds	r19, 0x03F4
-    3368:	40 91 f5 03 	lds	r20, 0x03F5
-    336c:	50 91 f6 03 	lds	r21, 0x03F6
+    3360:	20 91 eb 03 	lds	r18, 0x03EB
+    3364:	30 91 ec 03 	lds	r19, 0x03EC
+    3368:	40 91 ed 03 	lds	r20, 0x03ED
+    336c:	50 91 ee 03 	lds	r21, 0x03EE
     3370:	2d 83       	std	Y+5, r18	; 0x05
     3372:	3e 83       	std	Y+6, r19	; 0x06
     3374:	4f 83       	std	Y+7, r20	; 0x07
     3376:	58 87       	std	Y+8, r21	; 0x08
-    3378:	80 91 dd 03 	lds	r24, 0x03DD
+    3378:	80 91 d5 03 	lds	r24, 0x03D5
 
   fatStartBlock_ = volumeStartBlock + bpb->reservedSectorCount;
-    337c:	90 91 de 03 	lds	r25, 0x03DE
+    337c:	90 91 d6 03 	lds	r25, 0x03D6
     3380:	46 01       	movw	r8, r12
     3382:	57 01       	movw	r10, r14
     3384:	88 0e       	add	r8, r24
@@ -10031,14 +10031,14 @@ uint8_t SdVolume::init(Sd2Card* dev, uint8_t part) {
     338e:	9c 8a       	std	Y+20, r9	; 0x14
     3390:	ad 8a       	std	Y+21, r10	; 0x15
     3392:	be 8a       	std	Y+22, r11	; 0x16
-    3394:	e0 91 e0 03 	lds	r30, 0x03E0
+    3394:	e0 91 d8 03 	lds	r30, 0x03D8
 
   // count for FAT16 zero for FAT32
   rootDirEntryCount_ = bpb->rootDirEntryCount;
-    3398:	f0 91 e1 03 	lds	r31, 0x03E1
+    3398:	f0 91 d9 03 	lds	r31, 0x03D9
     339c:	f9 8f       	std	Y+25, r31	; 0x19
     339e:	e8 8f       	std	Y+24, r30	; 0x18
-    33a0:	a0 91 df 03 	lds	r26, 0x03DF
+    33a0:	a0 91 d7 03 	lds	r26, 0x03D7
 
   // directory start for FAT16 dataStart for FAT32
   rootDirStart_ = fatStartBlock_ + bpb->fatCount * blocksPerFat_;
@@ -10075,22 +10075,22 @@ uint8_t SdVolume::init(Sd2Card* dev, uint8_t part) {
     33dc:	9f 87       	std	Y+15, r25	; 0x0f
     33de:	a8 8b       	std	Y+16, r26	; 0x10
     33e0:	b9 8b       	std	Y+17, r27	; 0x11
-    33e2:	80 90 e2 03 	lds	r8, 0x03E2
+    33e2:	80 90 da 03 	lds	r8, 0x03DA
 
   // total blocks for FAT16 or FAT32
   uint32_t totalBlocks = bpb->totalSectors16 ?
                            bpb->totalSectors16 : bpb->totalSectors32;
-    33e6:	90 90 e3 03 	lds	r9, 0x03E3
+    33e6:	90 90 db 03 	lds	r9, 0x03DB
     33ea:	81 14       	cp	r8, r1
     33ec:	91 04       	cpc	r9, r1
     33ee:	19 f0       	breq	.+6      	; 0x33f6 <_ZN8SdVolume4initEP7Sd2Cardh+0x190>
     33f0:	a1 2c       	mov	r10, r1
     33f2:	b1 2c       	mov	r11, r1
     33f4:	08 c0       	rjmp	.+16     	; 0x3406 <_ZN8SdVolume4initEP7Sd2Cardh+0x1a0>
-    33f6:	80 90 ef 03 	lds	r8, 0x03EF
-    33fa:	90 90 f0 03 	lds	r9, 0x03F0
-    33fe:	a0 90 f1 03 	lds	r10, 0x03F1
-    3402:	b0 90 f2 03 	lds	r11, 0x03F2
+    33f6:	80 90 e7 03 	lds	r8, 0x03E7
+    33fa:	90 90 e8 03 	lds	r9, 0x03E8
+    33fe:	a0 90 e9 03 	lds	r10, 0x03E9
+    3402:	b0 90 ea 03 	lds	r11, 0x03EA
     3406:	a7 01       	movw	r20, r14
     3408:	96 01       	movw	r18, r12
   // total data blocks
@@ -10140,12 +10140,12 @@ uint8_t SdVolume::init(Sd2Card* dev, uint8_t part) {
     344e:	80 e1       	ldi	r24, 0x10	; 16
     3450:	0d c0       	rjmp	.+26     	; 0x346c <_ZN8SdVolume4initEP7Sd2Cardh+0x206>
     fatType_ = 16;
-    3452:	80 91 fb 03 	lds	r24, 0x03FB
+    3452:	80 91 f3 03 	lds	r24, 0x03F3
   } else {
     rootDirStart_ = bpb->fat32RootCluster;
-    3456:	90 91 fc 03 	lds	r25, 0x03FC
-    345a:	a0 91 fd 03 	lds	r26, 0x03FD
-    345e:	b0 91 fe 03 	lds	r27, 0x03FE
+    3456:	90 91 f4 03 	lds	r25, 0x03F4
+    345a:	a0 91 f5 03 	lds	r26, 0x03F5
+    345e:	b0 91 f6 03 	lds	r27, 0x03F6
     3462:	8a 8f       	std	Y+26, r24	; 0x1a
     3464:	9b 8f       	std	Y+27, r25	; 0x1b
     3466:	ac 8f       	std	Y+28, r26	; 0x1c
@@ -11292,10 +11292,10 @@ class Sd2Card {
  public:
   /** Construct an instance of Sd2Card. */
   Sd2Card(void) : errorCode_(0), inBlock_(0), partialBlockRead_(0), type_(0) {}
-    3a3a:	10 92 d4 05 	sts	0x05D4, r1
-    3a3e:	10 92 d5 05 	sts	0x05D5, r1
-    3a42:	10 92 d8 05 	sts	0x05D8, r1
-    3a46:	10 92 da 05 	sts	0x05DA, r1
+    3a3a:	10 92 cc 05 	sts	0x05CC, r1
+    3a3e:	10 92 cd 05 	sts	0x05CD, r1
+    3a42:	10 92 d0 05 	sts	0x05D0, r1
+    3a46:	10 92 d2 05 	sts	0x05D2, r1
  * \brief Access FAT16 and FAT32 volumes on SD and SDHC cards.
  */
 class SdVolume {
@@ -11306,13 +11306,13 @@ class SdVolume {
     3a4c:	90 e0       	ldi	r25, 0x00	; 0
     3a4e:	a0 e0       	ldi	r26, 0x00	; 0
     3a50:	b0 e0       	ldi	r27, 0x00	; 0
-    3a52:	80 93 db 05 	sts	0x05DB, r24
-    3a56:	90 93 dc 05 	sts	0x05DC, r25
-    3a5a:	a0 93 dd 05 	sts	0x05DD, r26
-    3a5e:	b0 93 de 05 	sts	0x05DE, r27
-    3a62:	10 92 f2 05 	sts	0x05F2, r1
-    3a66:	10 92 fc 05 	sts	0x05FC, r1
-    3a6a:	10 92 fb 05 	sts	0x05FB, r1
+    3a52:	80 93 d3 05 	sts	0x05D3, r24
+    3a56:	90 93 d4 05 	sts	0x05D4, r25
+    3a5a:	a0 93 d5 05 	sts	0x05D5, r26
+    3a5e:	b0 93 d6 05 	sts	0x05D6, r27
+    3a62:	10 92 ea 05 	sts	0x05EA, r1
+    3a66:	10 92 f4 05 	sts	0x05F4, r1
+    3a6a:	10 92 f3 05 	sts	0x05F3, r1
  * \brief Access FAT16 and FAT32 files on SD and SDHC cards.
  */
 class SdFile : public Print {
@@ -11321,9 +11321,9 @@ class SdFile : public Print {
   SdFile(void) : type_(FAT_FILE_TYPE_CLOSED) {}
     3a6e:	8c e4       	ldi	r24, 0x4C	; 76
     3a70:	91 e0       	ldi	r25, 0x01	; 1
-    3a72:	90 93 fa 05 	sts	0x05FA, r25
-    3a76:	80 93 f9 05 	sts	0x05F9, r24
-    3a7a:	10 92 fe 05 	sts	0x05FE, r1
+    3a72:	90 93 f2 05 	sts	0x05F2, r25
+    3a76:	80 93 f1 05 	sts	0x05F1, r24
+    3a7a:	10 92 f6 05 	sts	0x05F6, r1
     3a7e:	08 95       	ret
 
 00003a80 <_ZN8DateTimeC1El>:
@@ -11519,7 +11519,7 @@ DateTime::DateTime (uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uin
 
 void RTC_MCP7940::begin(){
   Wire.begin();
-    3b5c:	8d e6       	ldi	r24, 0x6D	; 109
+    3b5c:	85 e6       	ldi	r24, 0x65	; 101
     3b5e:	93 e0       	ldi	r25, 0x03	; 3
     3b60:	0c 94 27 0b 	jmp	0x164e	; 0x164e <_ZN7TwoWire5beginEv>
 
@@ -11537,17 +11537,17 @@ void RTC_MCP7940::adjust(const DateTime& dt) {	//change date and time registers 
   Wire.beginTransmission(RTC_ADD);
     3b6c:	6f e6       	ldi	r22, 0x6F	; 111
     3b6e:	70 e0       	ldi	r23, 0x00	; 0
-    3b70:	8d e6       	ldi	r24, 0x6D	; 109
+    3b70:	85 e6       	ldi	r24, 0x65	; 101
     3b72:	93 e0       	ldi	r25, 0x03	; 3
     3b74:	0e 94 48 0b 	call	0x1690	; 0x1690 <_ZN7TwoWire17beginTransmissionEi>
   Wire.write((byte) 0);
     3b78:	60 e0       	ldi	r22, 0x00	; 0
-    3b7a:	8d e6       	ldi	r24, 0x6D	; 109
+    3b7a:	85 e6       	ldi	r24, 0x65	; 101
     3b7c:	93 e0       	ldi	r25, 0x03	; 3
     3b7e:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
   Wire.write(bin2bcd((byte) 10000000));
     3b82:	68 ec       	ldi	r22, 0xC8	; 200
-    3b84:	8d e6       	ldi	r24, 0x6D	; 109
+    3b84:	85 e6       	ldi	r24, 0x65	; 101
     3b86:	93 e0       	ldi	r25, 0x03	; 3
     3b88:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
 }
@@ -11576,7 +11576,7 @@ void RTC_MCP7940::adjust(const DateTime& dt) {	//change date and time registers 
   Wire.write((byte) 0);
   Wire.write(bin2bcd((byte) 10000000));
   Wire.write(bin2bcd(dt.minute()));
-    3ba2:	8d e6       	ldi	r24, 0x6D	; 109
+    3ba2:	85 e6       	ldi	r24, 0x65	; 101
     3ba4:	93 e0       	ldi	r25, 0x03	; 3
     3ba6:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
 }
@@ -11599,12 +11599,12 @@ void RTC_MCP7940::adjust(const DateTime& dt) {	//change date and time registers 
   Wire.write(bin2bcd((byte) 10000000));
   Wire.write(bin2bcd(dt.minute()));
   Wire.write(bin2bcd(dt.hour()));
-    3bbe:	8d e6       	ldi	r24, 0x6D	; 109
+    3bbe:	85 e6       	ldi	r24, 0x65	; 101
     3bc0:	93 e0       	ldi	r25, 0x03	; 3
     3bc2:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
   Wire.write(bin2bcd(0x8)); //enable RTC battery backup function
     3bc6:	68 e0       	ldi	r22, 0x08	; 8
-    3bc8:	8d e6       	ldi	r24, 0x6D	; 109
+    3bc8:	85 e6       	ldi	r24, 0x65	; 101
     3bca:	93 e0       	ldi	r25, 0x03	; 3
     3bcc:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
 }
@@ -11628,7 +11628,7 @@ void RTC_MCP7940::adjust(const DateTime& dt) {	//change date and time registers 
   Wire.write(bin2bcd(dt.hour()));
   Wire.write(bin2bcd(0x8)); //enable RTC battery backup function
   Wire.write(bin2bcd(dt.day()));
-    3be4:	8d e6       	ldi	r24, 0x6D	; 109
+    3be4:	85 e6       	ldi	r24, 0x65	; 101
     3be6:	93 e0       	ldi	r25, 0x03	; 3
     3be8:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
 }
@@ -11652,7 +11652,7 @@ void RTC_MCP7940::adjust(const DateTime& dt) {	//change date and time registers 
   Wire.write(bin2bcd(0x8)); //enable RTC battery backup function
   Wire.write(bin2bcd(dt.day()));
   Wire.write(bin2bcd(dt.month()));
-    3c00:	8d e6       	ldi	r24, 0x6D	; 109
+    3c00:	85 e6       	ldi	r24, 0x65	; 101
     3c02:	93 e0       	ldi	r25, 0x03	; 3
     3c04:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
   Wire.write(bin2bcd(dt.year()-2000));
@@ -11665,16 +11665,16 @@ void RTC_MCP7940::adjust(const DateTime& dt) {	//change date and time registers 
     3c16:	68 0f       	add	r22, r24
     3c18:	66 0f       	add	r22, r22
     3c1a:	62 0f       	add	r22, r18
-    3c1c:	8d e6       	ldi	r24, 0x6D	; 109
+    3c1c:	85 e6       	ldi	r24, 0x65	; 101
     3c1e:	93 e0       	ldi	r25, 0x03	; 3
     3c20:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
   Wire.write((byte) 0);
     3c24:	60 e0       	ldi	r22, 0x00	; 0
-    3c26:	8d e6       	ldi	r24, 0x6D	; 109
+    3c26:	85 e6       	ldi	r24, 0x65	; 101
     3c28:	93 e0       	ldi	r25, 0x03	; 3
     3c2a:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
   Wire.endTransmission();
-    3c2e:	8d e6       	ldi	r24, 0x6D	; 109
+    3c2e:	85 e6       	ldi	r24, 0x65	; 101
     3c30:	93 e0       	ldi	r25, 0x03	; 3
 }
     3c32:	df 91       	pop	r29
@@ -11695,16 +11695,16 @@ bool RTC_MCP7940::isset(){		//check whether clock is set
   Wire.beginTransmission(RTC_ADD);
     3c3c:	6f e6       	ldi	r22, 0x6F	; 111
     3c3e:	70 e0       	ldi	r23, 0x00	; 0
-    3c40:	8d e6       	ldi	r24, 0x6D	; 109
+    3c40:	85 e6       	ldi	r24, 0x65	; 101
     3c42:	93 e0       	ldi	r25, 0x03	; 3
     3c44:	0e 94 48 0b 	call	0x1690	; 0x1690 <_ZN7TwoWire17beginTransmissionEi>
   Wire.write((byte) 0);
     3c48:	60 e0       	ldi	r22, 0x00	; 0
-    3c4a:	8d e6       	ldi	r24, 0x6D	; 109
+    3c4a:	85 e6       	ldi	r24, 0x65	; 101
     3c4c:	93 e0       	ldi	r25, 0x03	; 3
     3c4e:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
   Wire.endTransmission();
-    3c52:	8d e6       	ldi	r24, 0x6D	; 109
+    3c52:	85 e6       	ldi	r24, 0x65	; 101
     3c54:	93 e0       	ldi	r25, 0x03	; 3
     3c56:	0e 94 5b 0b 	call	0x16b6	; 0x16b6 <_ZN7TwoWire15endTransmissionEv>
   Wire.requestFrom(RTC_ADD,1);
@@ -11712,11 +11712,11 @@ bool RTC_MCP7940::isset(){		//check whether clock is set
     3c5c:	50 e0       	ldi	r21, 0x00	; 0
     3c5e:	6f e6       	ldi	r22, 0x6F	; 111
     3c60:	70 e0       	ldi	r23, 0x00	; 0
-    3c62:	8d e6       	ldi	r24, 0x6D	; 109
+    3c62:	85 e6       	ldi	r24, 0x65	; 101
     3c64:	93 e0       	ldi	r25, 0x03	; 3
     3c66:	0e 94 3c 0b 	call	0x1678	; 0x1678 <_ZN7TwoWire11requestFromEii>
   return ((Wire.read()&(1<<7))==(1<<7));
-    3c6a:	8d e6       	ldi	r24, 0x6D	; 109
+    3c6a:	85 e6       	ldi	r24, 0x65	; 101
     3c6c:	93 e0       	ldi	r25, 0x03	; 3
     3c6e:	0e 94 9a 0a 	call	0x1534	; 0x1534 <_ZN7TwoWire4readEv>
     3c72:	88 0f       	add	r24, r24
@@ -11745,16 +11745,16 @@ DateTime RTC_MCP7940::now(){					//current date and time
   Wire.beginTransmission(RTC_ADD);
     3c96:	6f e6       	ldi	r22, 0x6F	; 111
     3c98:	70 e0       	ldi	r23, 0x00	; 0
-    3c9a:	8d e6       	ldi	r24, 0x6D	; 109
+    3c9a:	85 e6       	ldi	r24, 0x65	; 101
     3c9c:	93 e0       	ldi	r25, 0x03	; 3
     3c9e:	0e 94 48 0b 	call	0x1690	; 0x1690 <_ZN7TwoWire17beginTransmissionEi>
   Wire.write((byte) 0);
     3ca2:	60 e0       	ldi	r22, 0x00	; 0
-    3ca4:	8d e6       	ldi	r24, 0x6D	; 109
+    3ca4:	85 e6       	ldi	r24, 0x65	; 101
     3ca6:	93 e0       	ldi	r25, 0x03	; 3
     3ca8:	0e 94 e9 0a 	call	0x15d2	; 0x15d2 <_ZN7TwoWire5writeEh>
   Wire.endTransmission();
-    3cac:	8d e6       	ldi	r24, 0x6D	; 109
+    3cac:	85 e6       	ldi	r24, 0x65	; 101
     3cae:	93 e0       	ldi	r25, 0x03	; 3
     3cb0:	0e 94 5b 0b 	call	0x16b6	; 0x16b6 <_ZN7TwoWire15endTransmissionEv>
   Wire.requestFrom(RTC_ADD, 7);
@@ -11762,11 +11762,11 @@ DateTime RTC_MCP7940::now(){					//current date and time
     3cb6:	50 e0       	ldi	r21, 0x00	; 0
     3cb8:	6f e6       	ldi	r22, 0x6F	; 111
     3cba:	70 e0       	ldi	r23, 0x00	; 0
-    3cbc:	8d e6       	ldi	r24, 0x6D	; 109
+    3cbc:	85 e6       	ldi	r24, 0x65	; 101
     3cbe:	93 e0       	ldi	r25, 0x03	; 3
     3cc0:	0e 94 3c 0b 	call	0x1678	; 0x1678 <_ZN7TwoWire11requestFromEii>
   uint8_t ss = bcd2bin(Wire.read())-80;
-    3cc4:	8d e6       	ldi	r24, 0x6D	; 109
+    3cc4:	85 e6       	ldi	r24, 0x65	; 101
     3cc6:	93 e0       	ldi	r25, 0x03	; 3
     3cc8:	0e 94 9a 0a 	call	0x1534	; 0x1534 <_ZN7TwoWire4readEv>
   static bool isset();									//check whether clock has been set
@@ -11788,7 +11788,7 @@ DateTime RTC_MCP7940::now(){					//current date and time
     3ce0:	70 0d       	add	r23, r0
     3ce2:	11 24       	eor	r1, r1
   uint8_t mm = bcd2bin(Wire.read());
-    3ce4:	8d e6       	ldi	r24, 0x6D	; 109
+    3ce4:	85 e6       	ldi	r24, 0x65	; 101
     3ce6:	93 e0       	ldi	r25, 0x03	; 3
     3ce8:	7b 87       	std	Y+11, r23	; 0x0b
     3cea:	0e 94 9a 0a 	call	0x1534	; 0x1534 <_ZN7TwoWire4readEv>
@@ -11804,7 +11804,7 @@ DateTime RTC_MCP7940::now(){					//current date and time
     3d00:	60 0d       	add	r22, r0
     3d02:	11 24       	eor	r1, r1
   uint8_t hh = bcd2bin(Wire.read());
-    3d04:	8d e6       	ldi	r24, 0x6D	; 109
+    3d04:	85 e6       	ldi	r24, 0x65	; 101
     3d06:	93 e0       	ldi	r25, 0x03	; 3
     3d08:	6a 87       	std	Y+10, r22	; 0x0a
     3d0a:	0e 94 9a 0a 	call	0x1534	; 0x1534 <_ZN7TwoWire4readEv>
@@ -11820,12 +11820,12 @@ DateTime RTC_MCP7940::now(){					//current date and time
     3d20:	50 0d       	add	r21, r0
     3d22:	11 24       	eor	r1, r1
   Wire.read();
-    3d24:	8d e6       	ldi	r24, 0x6D	; 109
+    3d24:	85 e6       	ldi	r24, 0x65	; 101
     3d26:	93 e0       	ldi	r25, 0x03	; 3
     3d28:	59 87       	std	Y+9, r21	; 0x09
     3d2a:	0e 94 9a 0a 	call	0x1534	; 0x1534 <_ZN7TwoWire4readEv>
   uint8_t d = bcd2bin(Wire.read());
-    3d2e:	8d e6       	ldi	r24, 0x6D	; 109
+    3d2e:	85 e6       	ldi	r24, 0x65	; 101
     3d30:	93 e0       	ldi	r25, 0x03	; 3
     3d32:	0e 94 9a 0a 	call	0x1534	; 0x1534 <_ZN7TwoWire4readEv>
     3d36:	9c 01       	movw	r18, r24
@@ -11840,7 +11840,7 @@ DateTime RTC_MCP7940::now(){					//current date and time
     3d48:	40 0d       	add	r20, r0
     3d4a:	11 24       	eor	r1, r1
   uint8_t m = bcd2bin(Wire.read());
-    3d4c:	8d e6       	ldi	r24, 0x6D	; 109
+    3d4c:	85 e6       	ldi	r24, 0x65	; 101
     3d4e:	93 e0       	ldi	r25, 0x03	; 3
     3d50:	48 87       	std	Y+8, r20	; 0x08
     3d52:	0e 94 9a 0a 	call	0x1534	; 0x1534 <_ZN7TwoWire4readEv>
@@ -11856,7 +11856,7 @@ DateTime RTC_MCP7940::now(){					//current date and time
     3d68:	30 0d       	add	r19, r0
     3d6a:	11 24       	eor	r1, r1
   uint16_t y = bcd2bin(Wire.read()) + 2000;
-    3d6c:	8d e6       	ldi	r24, 0x6D	; 109
+    3d6c:	85 e6       	ldi	r24, 0x65	; 101
     3d6e:	93 e0       	ldi	r25, 0x03	; 3
     3d70:	3f 83       	std	Y+7, r19	; 0x07
     3d72:	0e 94 9a 0a 	call	0x1534	; 0x1534 <_ZN7TwoWire4readEv>
@@ -11918,10 +11918,10 @@ void pushLog (String pushee)
   // Note that currently only one file can be open at a time.
   File open(const char *filename, uint8_t mode = FILE_READ);
   File open(const String &filename, uint8_t mode = FILE_READ) { return open( filename.c_str(), mode );}
-    3dc8:	40 91 20 06 	lds	r20, 0x0620
-    3dcc:	50 91 21 06 	lds	r21, 0x0621
+    3dc8:	40 91 18 06 	lds	r20, 0x0618
+    3dcc:	50 91 19 06 	lds	r21, 0x0619
     3dd0:	23 e1       	ldi	r18, 0x13	; 19
-    3dd2:	6f ec       	ldi	r22, 0xCF	; 207
+    3dd2:	67 ec       	ldi	r22, 0xC7	; 199
     3dd4:	75 e0       	ldi	r23, 0x05	; 5
     3dd6:	ce 01       	movw	r24, r28
     3dd8:	01 96       	adiw	r24, 0x01	; 1
@@ -11980,12 +11980,12 @@ String printDate (){
 	//date+=("date (jj/mm/yyyy) : ");
 	calendar=RTC.now();
     3e1a:	32 df       	rcall	.-412    	; 0x3c80 <_ZN11RTC_MCP79403nowEv>
-    3e1c:	20 93 1a 06 	sts	0x061A, r18
-    3e20:	30 93 1b 06 	sts	0x061B, r19
-    3e24:	40 93 1c 06 	sts	0x061C, r20
-    3e28:	50 93 1d 06 	sts	0x061D, r21
-    3e2c:	60 93 1e 06 	sts	0x061E, r22
-    3e30:	70 93 1f 06 	sts	0x061F, r23
+    3e1c:	20 93 12 06 	sts	0x0612, r18
+    3e20:	30 93 13 06 	sts	0x0613, r19
+    3e24:	40 93 14 06 	sts	0x0614, r20
+    3e28:	50 93 15 06 	sts	0x0615, r21
+    3e2c:	60 93 16 06 	sts	0x0616, r22
+    3e30:	70 93 17 06 	sts	0x0617, r23
     3e34:	4a 30       	cpi	r20, 0x0A	; 10
 	if(calendar.day()<10)
     3e36:	28 f4       	brcc	.+10     	; 0x3e42 <_Z9printDatev+0x36>
@@ -11999,7 +11999,7 @@ String printDate (){
     3e3a:	71 e0       	ldi	r23, 0x01	; 1
     3e3c:	ce 01       	movw	r24, r28
     3e3e:	0e 94 7a 06 	call	0xcf4	; 0xcf4 <_ZN6String6concatEPKc>
-    3e42:	60 91 1c 06 	lds	r22, 0x061C
+    3e42:	60 91 14 06 	lds	r22, 0x0614
 	String & operator += (char c)			{concat(c); return (*this);}
 	String & operator += (unsigned char num)		{concat(num); return (*this);}
     3e46:	ce 01       	movw	r24, r28
@@ -12014,7 +12014,7 @@ String printDate (){
     3e4e:	71 e0       	ldi	r23, 0x01	; 1
     3e50:	ce 01       	movw	r24, r28
     3e52:	0e 94 7a 06 	call	0xcf4	; 0xcf4 <_ZN6String6concatEPKc>
-    3e56:	80 91 1b 06 	lds	r24, 0x061B
+    3e56:	80 91 13 06 	lds	r24, 0x0613
 		date+=("0");
 	date+=(calendar.day());
 	date+=("/");
@@ -12025,7 +12025,7 @@ String printDate (){
     3e60:	71 e0       	ldi	r23, 0x01	; 1
     3e62:	ce 01       	movw	r24, r28
     3e64:	0e 94 7a 06 	call	0xcf4	; 0xcf4 <_ZN6String6concatEPKc>
-    3e68:	60 91 1b 06 	lds	r22, 0x061B
+    3e68:	60 91 13 06 	lds	r22, 0x0613
 	String & operator += (char c)			{concat(c); return (*this);}
 	String & operator += (unsigned char num)		{concat(num); return (*this);}
     3e6c:	ce 01       	movw	r24, r28
@@ -12040,7 +12040,7 @@ String printDate (){
     3e74:	71 e0       	ldi	r23, 0x01	; 1
     3e76:	ce 01       	movw	r24, r28
     3e78:	0e 94 7a 06 	call	0xcf4	; 0xcf4 <_ZN6String6concatEPKc>
-    3e7c:	60 91 1a 06 	lds	r22, 0x061A
+    3e7c:	60 91 12 06 	lds	r22, 0x0612
 
   DateTime(long t =0);
   DateTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour=0, uint8_t min=0, uint8_t sec=0);
@@ -12082,12 +12082,12 @@ String printTime (){
 	//time+=("time (hh:mm:ss) : ");
 	calendar=RTC.now();
     3ea2:	ee de       	rcall	.-548    	; 0x3c80 <_ZN11RTC_MCP79403nowEv>
-    3ea4:	20 93 1a 06 	sts	0x061A, r18
-    3ea8:	30 93 1b 06 	sts	0x061B, r19
-    3eac:	40 93 1c 06 	sts	0x061C, r20
-    3eb0:	50 93 1d 06 	sts	0x061D, r21
-    3eb4:	60 93 1e 06 	sts	0x061E, r22
-    3eb8:	70 93 1f 06 	sts	0x061F, r23
+    3ea4:	20 93 12 06 	sts	0x0612, r18
+    3ea8:	30 93 13 06 	sts	0x0613, r19
+    3eac:	40 93 14 06 	sts	0x0614, r20
+    3eb0:	50 93 15 06 	sts	0x0615, r21
+    3eb4:	60 93 16 06 	sts	0x0616, r22
+    3eb8:	70 93 17 06 	sts	0x0617, r23
     3ebc:	5a 30       	cpi	r21, 0x0A	; 10
 	if(calendar.hour()<10)
     3ebe:	28 f4       	brcc	.+10     	; 0x3eca <_Z9printTimev+0x36>
@@ -12101,12 +12101,12 @@ String printTime (){
     3ec2:	71 e0       	ldi	r23, 0x01	; 1
     3ec4:	ce 01       	movw	r24, r28
     3ec6:	0e 94 7a 06 	call	0xcf4	; 0xcf4 <_ZN6String6concatEPKc>
-    3eca:	60 91 1d 06 	lds	r22, 0x061D
+    3eca:	60 91 15 06 	lds	r22, 0x0615
 	String & operator += (char c)			{concat(c); return (*this);}
 	String & operator += (unsigned char num)		{concat(num); return (*this);}
     3ece:	ce 01       	movw	r24, r28
     3ed0:	0e 94 89 06 	call	0xd12	; 0xd12 <_ZN6String6concatEh>
-    3ed4:	68 e2       	ldi	r22, 0x28	; 40
+    3ed4:	60 e2       	ldi	r22, 0x20	; 32
 	unsigned char concat(const __FlashStringHelper * str);
 	
 	// if there's not enough memory for the concatenated value, the string
@@ -12116,7 +12116,7 @@ String printTime (){
     3ed6:	72 e0       	ldi	r23, 0x02	; 2
     3ed8:	ce 01       	movw	r24, r28
     3eda:	0e 94 7a 06 	call	0xcf4	; 0xcf4 <_ZN6String6concatEPKc>
-    3ede:	80 91 1e 06 	lds	r24, 0x061E
+    3ede:	80 91 16 06 	lds	r24, 0x0616
 		time+=("0");
 	time+=(calendar.hour());
 	time+=(":");
@@ -12127,12 +12127,12 @@ String printTime (){
     3ee8:	71 e0       	ldi	r23, 0x01	; 1
     3eea:	ce 01       	movw	r24, r28
     3eec:	0e 94 7a 06 	call	0xcf4	; 0xcf4 <_ZN6String6concatEPKc>
-    3ef0:	60 91 1e 06 	lds	r22, 0x061E
+    3ef0:	60 91 16 06 	lds	r22, 0x0616
 	String & operator += (char c)			{concat(c); return (*this);}
 	String & operator += (unsigned char num)		{concat(num); return (*this);}
     3ef4:	ce 01       	movw	r24, r28
     3ef6:	0e 94 89 06 	call	0xd12	; 0xd12 <_ZN6String6concatEh>
-    3efa:	68 e2       	ldi	r22, 0x28	; 40
+    3efa:	60 e2       	ldi	r22, 0x20	; 32
 	unsigned char concat(const __FlashStringHelper * str);
 	
 	// if there's not enough memory for the concatenated value, the string
@@ -12142,7 +12142,7 @@ String printTime (){
     3efc:	72 e0       	ldi	r23, 0x02	; 2
     3efe:	ce 01       	movw	r24, r28
     3f00:	0e 94 7a 06 	call	0xcf4	; 0xcf4 <_ZN6String6concatEPKc>
-    3f04:	80 91 1f 06 	lds	r24, 0x061F
+    3f04:	80 91 17 06 	lds	r24, 0x0617
 		time+=("0");
 	time+=(calendar.minute());
 	time+=(":");
@@ -12153,7 +12153,7 @@ String printTime (){
     3f0e:	71 e0       	ldi	r23, 0x01	; 1
     3f10:	ce 01       	movw	r24, r28
     3f12:	0e 94 7a 06 	call	0xcf4	; 0xcf4 <_ZN6String6concatEPKc>
-    3f16:	60 91 1f 06 	lds	r22, 0x061F
+    3f16:	60 91 17 06 	lds	r22, 0x0617
 	String & operator += (char c)			{concat(c); return (*this);}
 	String & operator += (unsigned char num)		{concat(num); return (*this);}
     3f1a:	ce 01       	movw	r24, r28
@@ -12441,8 +12441,8 @@ void motorAlign ()
     40c2:	ce 01       	movw	r24, r28
     40c4:	01 96       	adiw	r24, 0x01	; 1
     40c6:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
-    40ca:	60 91 18 06 	lds	r22, 0x0618
-    40ce:	70 91 19 06 	lds	r23, 0x0619
+    40ca:	60 91 10 06 	lds	r22, 0x0610
+    40ce:	70 91 11 06 	lds	r23, 0x0611
     40d2:	4a e0       	ldi	r20, 0x0A	; 10
     40d4:	ce 01       	movw	r24, r28
     40d6:	01 96       	adiw	r24, 0x01	; 1
@@ -12570,8 +12570,8 @@ void motorGoTo (int targetPosition)
 	int oldMotorPosition=motorPosition;
 
 	switch(oldMotorPosition%4){//use the variable as buffer before we use it for its true function
-    41a2:	80 91 18 06 	lds	r24, 0x0618
-    41a6:	90 91 19 06 	lds	r25, 0x0619
+    41a2:	80 91 10 06 	lds	r24, 0x0610
+    41a6:	90 91 11 06 	lds	r25, 0x0611
     41aa:	64 e0       	ldi	r22, 0x04	; 4
     41ac:	70 e0       	ldi	r23, 0x00	; 0
     41ae:	ad d5       	rcall	.+2906   	; 0x4d0a <__divmodhi4>
@@ -12734,10 +12734,10 @@ void motorGoTo (int targetPosition)
     4258:	21 30       	cpi	r18, 0x01	; 1
     425a:	09 f0       	breq	.+2      	; 0x425e <_Z9motorGoToi+0xec>
     425c:	41 c0       	rjmp	.+130    	; 0x42e0 <_Z9motorGoToi+0x16e>
-    425e:	80 91 18 06 	lds	r24, 0x0618
+    425e:	80 91 10 06 	lds	r24, 0x0610
 			case QUAD0 :
 				motorPosition-=1;
-    4262:	90 91 19 06 	lds	r25, 0x0619
+    4262:	90 91 11 06 	lds	r25, 0x0611
     4266:	01 97       	sbiw	r24, 0x01	; 1
     4268:	37 c0       	rjmp	.+110    	; 0x42d8 <_Z9motorGoToi+0x166>
     426a:	61 e7       	ldi	r22, 0x71	; 113
@@ -12790,19 +12790,19 @@ void motorGoTo (int targetPosition)
     42c6:	01 96       	adiw	r24, 0x01	; 1
     42c8:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
     42cc:	09 c0       	rjmp	.+18     	; 0x42e0 <_Z9motorGoToi+0x16e>
-    42ce:	80 91 18 06 	lds	r24, 0x0618
-    42d2:	90 91 19 06 	lds	r25, 0x0619
+    42ce:	80 91 10 06 	lds	r24, 0x0610
+    42d2:	90 91 11 06 	lds	r25, 0x0611
     42d6:	01 96       	adiw	r24, 0x01	; 1
 				break;
-    42d8:	90 93 19 06 	sts	0x0619, r25
+    42d8:	90 93 11 06 	sts	0x0611, r25
 			case QUAD2 :
 				motorPosition+=1;
-    42dc:	80 93 18 06 	sts	0x0618, r24
+    42dc:	80 93 10 06 	sts	0x0610, r24
     42e0:	19 30       	cpi	r17, 0x09	; 9
     42e2:	09 f4       	brne	.+2      	; 0x42e6 <_Z9motorGoToi+0x174>
     42e4:	0c c1       	rjmp	.+536    	; 0x44fe <_Z9motorGoToi+0x38c>
-    42e6:	60 90 18 06 	lds	r6, 0x0618
-    42ea:	70 90 19 06 	lds	r7, 0x0619
+    42e6:	60 90 10 06 	lds	r6, 0x0610
+    42ea:	70 90 11 06 	lds	r7, 0x0611
 		oldQuadratureB=quadratureB;
 		//Serial.print("Q");
 		//Serial.println(quadrature);
@@ -13159,8 +13159,8 @@ void motorGoTo (int targetPosition)
 void motorTurn (int16_t motorDistance)
 {
 	int16_t target=motorDistance+motorPosition;
-    452a:	20 91 18 06 	lds	r18, 0x0618
-    452e:	30 91 19 06 	lds	r19, 0x0619
+    452a:	20 91 10 06 	lds	r18, 0x0610
+    452e:	30 91 11 06 	lds	r19, 0x0611
 	motorGoTo(target);
     4532:	82 0f       	add	r24, r18
     4534:	93 1f       	adc	r25, r19
@@ -13175,7 +13175,7 @@ const uint8_t SDchipSelect = 10;
 const String logFileName = "moulog.txt";
     4538:	6f e7       	ldi	r22, 0x7F	; 127
     453a:	71 e0       	ldi	r23, 0x01	; 1
-    453c:	80 e2       	ldi	r24, 0x20	; 32
+    453c:	88 e1       	ldi	r24, 0x18	; 24
     453e:	96 e0       	ldi	r25, 0x06	; 6
     4540:	0e 94 ce 05 	call	0xb9c	; 0xb9c <_ZN6StringC1EPKc>
 //String LogText;//log format : type;subtype;timestamp;value;comment
@@ -13185,7 +13185,7 @@ DateTime calendar;
     4544:	40 e0       	ldi	r20, 0x00	; 0
     4546:	50 e0       	ldi	r21, 0x00	; 0
     4548:	ba 01       	movw	r22, r20
-    454a:	8a e1       	ldi	r24, 0x1A	; 26
+    454a:	82 e1       	ldi	r24, 0x12	; 18
     454c:	96 e0       	ldi	r25, 0x06	; 6
     454e:	98 ca       	rjmp	.-2768   	; 0x3a80 <_ZN8DateTimeC1El>
 
@@ -13196,7 +13196,7 @@ DateTime calendar;
 //SDconfig : set up variables using the SD utility library functions:
 const uint8_t SDchipSelect = 10;
 const String logFileName = "moulog.txt";
-    4550:	80 e2       	ldi	r24, 0x20	; 32
+    4550:	88 e1       	ldi	r24, 0x18	; 24
     4552:	96 e0       	ldi	r25, 0x06	; 6
     4554:	0c 94 63 05 	jmp	0xac6	; 0xac6 <_ZN6StringD1Ev>
 
@@ -13226,30 +13226,30 @@ void serialSetRtc (){
 	Serial.println("set rtc");
     4574:	6a e8       	ldi	r22, 0x8A	; 138
     4576:	71 e0       	ldi	r23, 0x01	; 1
-    4578:	88 e4       	ldi	r24, 0x48	; 72
+    4578:	80 e4       	ldi	r24, 0x40	; 64
     457a:	92 e0       	ldi	r25, 0x02	; 2
     457c:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 	Serial.println("year");
     4580:	62 e9       	ldi	r22, 0x92	; 146
     4582:	71 e0       	ldi	r23, 0x01	; 1
-    4584:	88 e4       	ldi	r24, 0x48	; 72
+    4584:	80 e4       	ldi	r24, 0x40	; 64
     4586:	92 e0       	ldi	r25, 0x02	; 2
     4588:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 	while(Serial.available()==0);
-    458c:	88 e4       	ldi	r24, 0x48	; 72
+    458c:	80 e4       	ldi	r24, 0x40	; 64
     458e:	92 e0       	ldi	r25, 0x02	; 2
     4590:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4594:	89 2b       	or	r24, r25
     4596:	d1 f3       	breq	.-12     	; 0x458c <_Z12serialSetRtcv+0x34>
 	if(Serial.available()>0)
-    4598:	88 e4       	ldi	r24, 0x48	; 72
+    4598:	80 e4       	ldi	r24, 0x40	; 64
     459a:	92 e0       	ldi	r25, 0x02	; 2
     459c:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     45a0:	18 16       	cp	r1, r24
     45a2:	19 06       	cpc	r1, r25
     45a4:	34 f4       	brge	.+12     	; 0x45b2 <_Z12serialSetRtcv+0x5a>
 		year=Serial.parseInt();
-    45a6:	88 e4       	ldi	r24, 0x48	; 72
+    45a6:	80 e4       	ldi	r24, 0x40	; 64
     45a8:	92 e0       	ldi	r25, 0x02	; 2
     45aa:	0e 94 79 04 	call	0x8f2	; 0x8f2 <_ZN6Stream8parseIntEv>
     45ae:	5b 01       	movw	r10, r22
@@ -13270,24 +13270,24 @@ void serialSetRtc (){
 	Serial.println("month");
     45b6:	67 e9       	ldi	r22, 0x97	; 151
     45b8:	71 e0       	ldi	r23, 0x01	; 1
-    45ba:	88 e4       	ldi	r24, 0x48	; 72
+    45ba:	80 e4       	ldi	r24, 0x40	; 64
     45bc:	92 e0       	ldi	r25, 0x02	; 2
     45be:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 	while(Serial.available()==0);
-    45c2:	88 e4       	ldi	r24, 0x48	; 72
+    45c2:	80 e4       	ldi	r24, 0x40	; 64
     45c4:	92 e0       	ldi	r25, 0x02	; 2
     45c6:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     45ca:	89 2b       	or	r24, r25
     45cc:	d1 f3       	breq	.-12     	; 0x45c2 <_Z12serialSetRtcv+0x6a>
 	if(Serial.available()>0)
-    45ce:	88 e4       	ldi	r24, 0x48	; 72
+    45ce:	80 e4       	ldi	r24, 0x40	; 64
     45d0:	92 e0       	ldi	r25, 0x02	; 2
     45d2:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     45d6:	18 16       	cp	r1, r24
     45d8:	19 06       	cpc	r1, r25
     45da:	34 f4       	brge	.+12     	; 0x45e8 <_Z12serialSetRtcv+0x90>
 		month=Serial.parseInt();
-    45dc:	88 e4       	ldi	r24, 0x48	; 72
+    45dc:	80 e4       	ldi	r24, 0x40	; 64
     45de:	92 e0       	ldi	r25, 0x02	; 2
     45e0:	0e 94 79 04 	call	0x8f2	; 0x8f2 <_ZN6Stream8parseIntEv>
     45e4:	16 2f       	mov	r17, r22
@@ -13307,24 +13307,24 @@ void serialSetRtc (){
 	Serial.println("day");
     45ea:	6d e9       	ldi	r22, 0x9D	; 157
     45ec:	71 e0       	ldi	r23, 0x01	; 1
-    45ee:	88 e4       	ldi	r24, 0x48	; 72
+    45ee:	80 e4       	ldi	r24, 0x40	; 64
     45f0:	92 e0       	ldi	r25, 0x02	; 2
     45f2:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 	while(Serial.available()==0);
-    45f6:	88 e4       	ldi	r24, 0x48	; 72
+    45f6:	80 e4       	ldi	r24, 0x40	; 64
     45f8:	92 e0       	ldi	r25, 0x02	; 2
     45fa:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     45fe:	89 2b       	or	r24, r25
     4600:	d1 f3       	breq	.-12     	; 0x45f6 <_Z12serialSetRtcv+0x9e>
 	if(Serial.available()>0)
-    4602:	88 e4       	ldi	r24, 0x48	; 72
+    4602:	80 e4       	ldi	r24, 0x40	; 64
     4604:	92 e0       	ldi	r25, 0x02	; 2
     4606:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     460a:	18 16       	cp	r1, r24
     460c:	19 06       	cpc	r1, r25
     460e:	34 f4       	brge	.+12     	; 0x461c <_Z12serialSetRtcv+0xc4>
 		day=Serial.parseInt();
-    4610:	88 e4       	ldi	r24, 0x48	; 72
+    4610:	80 e4       	ldi	r24, 0x40	; 64
     4612:	92 e0       	ldi	r25, 0x02	; 2
     4614:	0e 94 79 04 	call	0x8f2	; 0x8f2 <_ZN6Stream8parseIntEv>
     4618:	f6 2e       	mov	r15, r22
@@ -13344,24 +13344,24 @@ void serialSetRtc (){
 	Serial.println("hour");
     461e:	61 ea       	ldi	r22, 0xA1	; 161
     4620:	71 e0       	ldi	r23, 0x01	; 1
-    4622:	88 e4       	ldi	r24, 0x48	; 72
+    4622:	80 e4       	ldi	r24, 0x40	; 64
     4624:	92 e0       	ldi	r25, 0x02	; 2
     4626:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 	while(Serial.available()==0);
-    462a:	88 e4       	ldi	r24, 0x48	; 72
+    462a:	80 e4       	ldi	r24, 0x40	; 64
     462c:	92 e0       	ldi	r25, 0x02	; 2
     462e:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4632:	89 2b       	or	r24, r25
     4634:	d1 f3       	breq	.-12     	; 0x462a <_Z12serialSetRtcv+0xd2>
 	if(Serial.available()>0)
-    4636:	88 e4       	ldi	r24, 0x48	; 72
+    4636:	80 e4       	ldi	r24, 0x40	; 64
     4638:	92 e0       	ldi	r25, 0x02	; 2
     463a:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     463e:	18 16       	cp	r1, r24
     4640:	19 06       	cpc	r1, r25
     4642:	34 f4       	brge	.+12     	; 0x4650 <_Z12serialSetRtcv+0xf8>
 		hour=Serial.parseInt();
-    4644:	88 e4       	ldi	r24, 0x48	; 72
+    4644:	80 e4       	ldi	r24, 0x40	; 64
     4646:	92 e0       	ldi	r25, 0x02	; 2
     4648:	0e 94 79 04 	call	0x8f2	; 0x8f2 <_ZN6Stream8parseIntEv>
     464c:	06 2f       	mov	r16, r22
@@ -13381,24 +13381,24 @@ void serialSetRtc (){
 	Serial.println("minute");
     4652:	66 ea       	ldi	r22, 0xA6	; 166
     4654:	71 e0       	ldi	r23, 0x01	; 1
-    4656:	88 e4       	ldi	r24, 0x48	; 72
+    4656:	80 e4       	ldi	r24, 0x40	; 64
     4658:	92 e0       	ldi	r25, 0x02	; 2
     465a:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 	while(Serial.available()==0);
-    465e:	88 e4       	ldi	r24, 0x48	; 72
+    465e:	80 e4       	ldi	r24, 0x40	; 64
     4660:	92 e0       	ldi	r25, 0x02	; 2
     4662:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4666:	89 2b       	or	r24, r25
     4668:	d1 f3       	breq	.-12     	; 0x465e <_Z12serialSetRtcv+0x106>
 	if(Serial.available()>0)
-    466a:	88 e4       	ldi	r24, 0x48	; 72
+    466a:	80 e4       	ldi	r24, 0x40	; 64
     466c:	92 e0       	ldi	r25, 0x02	; 2
     466e:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4672:	18 16       	cp	r1, r24
     4674:	19 06       	cpc	r1, r25
     4676:	34 f4       	brge	.+12     	; 0x4684 <_Z12serialSetRtcv+0x12c>
 		minute=Serial.parseInt();
-    4678:	88 e4       	ldi	r24, 0x48	; 72
+    4678:	80 e4       	ldi	r24, 0x40	; 64
     467a:	92 e0       	ldi	r25, 0x02	; 2
     467c:	0e 94 79 04 	call	0x8f2	; 0x8f2 <_ZN6Stream8parseIntEv>
     4680:	e6 2e       	mov	r14, r22
@@ -13418,24 +13418,24 @@ void serialSetRtc (){
 	Serial.println("second");
     4686:	6d ea       	ldi	r22, 0xAD	; 173
     4688:	71 e0       	ldi	r23, 0x01	; 1
-    468a:	88 e4       	ldi	r24, 0x48	; 72
+    468a:	80 e4       	ldi	r24, 0x40	; 64
     468c:	92 e0       	ldi	r25, 0x02	; 2
     468e:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 	while(Serial.available()==0);
-    4692:	88 e4       	ldi	r24, 0x48	; 72
+    4692:	80 e4       	ldi	r24, 0x40	; 64
     4694:	92 e0       	ldi	r25, 0x02	; 2
     4696:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     469a:	89 2b       	or	r24, r25
     469c:	d1 f3       	breq	.-12     	; 0x4692 <_Z12serialSetRtcv+0x13a>
 	if(Serial.available()>0)
-    469e:	88 e4       	ldi	r24, 0x48	; 72
+    469e:	80 e4       	ldi	r24, 0x40	; 64
     46a0:	92 e0       	ldi	r25, 0x02	; 2
     46a2:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     46a6:	18 16       	cp	r1, r24
     46a8:	19 06       	cpc	r1, r25
     46aa:	2c f4       	brge	.+10     	; 0x46b6 <_Z12serialSetRtcv+0x15e>
 		second=Serial.parseInt();
-    46ac:	88 e4       	ldi	r24, 0x48	; 72
+    46ac:	80 e4       	ldi	r24, 0x40	; 64
     46ae:	92 e0       	ldi	r25, 0x02	; 2
     46b0:	0e 94 79 04 	call	0x8f2	; 0x8f2 <_ZN6Stream8parseIntEv>
     46b4:	01 c0       	rjmp	.+2      	; 0x46b8 <_Z12serialSetRtcv+0x160>
@@ -13462,7 +13462,7 @@ void serialSetRtc (){
     46c6:	86 e0       	ldi	r24, 0x06	; 6
     46c8:	fe 01       	movw	r30, r28
     46ca:	31 96       	adiw	r30, 0x01	; 1
-    46cc:	aa e1       	ldi	r26, 0x1A	; 26
+    46cc:	a2 e1       	ldi	r26, 0x12	; 18
     46ce:	b6 e0       	ldi	r27, 0x06	; 6
     46d0:	01 90       	ld	r0, Z+
     46d2:	0d 92       	st	X+, r0
@@ -13471,23 +13471,23 @@ void serialSetRtc (){
     46d8:	64 eb       	ldi	r22, 0xB4	; 180
 	Serial.println("Press");
     46da:	71 e0       	ldi	r23, 0x01	; 1
-    46dc:	88 e4       	ldi	r24, 0x48	; 72
+    46dc:	80 e4       	ldi	r24, 0x40	; 64
     46de:	92 e0       	ldi	r25, 0x02	; 2
     46e0:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
-    46e4:	88 e4       	ldi	r24, 0x48	; 72
+    46e4:	80 e4       	ldi	r24, 0x40	; 64
 	while(Serial.available()==0);
     46e6:	92 e0       	ldi	r25, 0x02	; 2
     46e8:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     46ec:	89 2b       	or	r24, r25
     46ee:	d1 f3       	breq	.-12     	; 0x46e4 <_Z12serialSetRtcv+0x18c>
-    46f0:	88 e4       	ldi	r24, 0x48	; 72
+    46f0:	80 e4       	ldi	r24, 0x40	; 64
 	if(Serial.available()>0)
     46f2:	92 e0       	ldi	r25, 0x02	; 2
     46f4:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     46f8:	18 16       	cp	r1, r24
     46fa:	19 06       	cpc	r1, r25
     46fc:	1c f4       	brge	.+6      	; 0x4704 <_Z12serialSetRtcv+0x1ac>
-    46fe:	8a e1       	ldi	r24, 0x1A	; 26
+    46fe:	82 e1       	ldi	r24, 0x12	; 18
 		RTC.adjust(calendar);
     4700:	96 e0       	ldi	r25, 0x06	; 6
     4702:	30 da       	rcall	.-2976   	; 0x3b64 <_ZN11RTC_MCP79406adjustERK8DateTime>
@@ -13537,7 +13537,7 @@ void setup()
     473c:	55 e2       	ldi	r21, 0x25	; 37
     473e:	60 e0       	ldi	r22, 0x00	; 0
     4740:	70 e0       	ldi	r23, 0x00	; 0
-    4742:	88 e4       	ldi	r24, 0x48	; 72
+    4742:	80 e4       	ldi	r24, 0x40	; 64
     4744:	92 e0       	ldi	r25, 0x02	; 2
     4746:	0e 94 7f 01 	call	0x2fe	; 0x2fe <_ZN14HardwareSerial5beginEmh>
 
@@ -13545,43 +13545,43 @@ void setup()
 // Open serial communications and wait for port to open:
 	Serial.begin(9600);
 	while(Serial.available() > 0)
-    474a:	88 e4       	ldi	r24, 0x48	; 72
+    474a:	80 e4       	ldi	r24, 0x40	; 64
     474c:	92 e0       	ldi	r25, 0x02	; 2
     474e:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4752:	18 16       	cp	r1, r24
     4754:	19 06       	cpc	r1, r25
     4756:	2c f4       	brge	.+10     	; 0x4762 <setup+0x3e>
 		Serial.read();//flush serial input
-    4758:	88 e4       	ldi	r24, 0x48	; 72
+    4758:	80 e4       	ldi	r24, 0x40	; 64
     475a:	92 e0       	ldi	r25, 0x02	; 2
     475c:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
     4760:	f4 cf       	rjmp	.-24     	; 0x474a <setup+0x26>
 	Serial.println("\n");
     4762:	68 e2       	ldi	r22, 0x28	; 40
     4764:	71 e0       	ldi	r23, 0x01	; 1
-    4766:	88 e4       	ldi	r24, 0x48	; 72
+    4766:	80 e4       	ldi	r24, 0x40	; 64
     4768:	92 e0       	ldi	r25, 0x02	; 2
     476a:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
-	Serial.println("Pressss");
-    476e:	6a eb       	ldi	r22, 0xBA	; 186
+	Serial.println("Press");
+    476e:	64 eb       	ldi	r22, 0xB4	; 180
     4770:	71 e0       	ldi	r23, 0x01	; 1
-    4772:	88 e4       	ldi	r24, 0x48	; 72
+    4772:	80 e4       	ldi	r24, 0x40	; 64
     4774:	92 e0       	ldi	r25, 0x02	; 2
     4776:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 	while (Serial.available()==0);
-    477a:	88 e4       	ldi	r24, 0x48	; 72
+    477a:	80 e4       	ldi	r24, 0x40	; 64
     477c:	92 e0       	ldi	r25, 0x02	; 2
     477e:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4782:	89 2b       	or	r24, r25
     4784:	d1 f3       	breq	.-12     	; 0x477a <setup+0x56>
 	while (Serial.available()!=0)
-    4786:	88 e4       	ldi	r24, 0x48	; 72
+    4786:	80 e4       	ldi	r24, 0x40	; 64
     4788:	92 e0       	ldi	r25, 0x02	; 2
     478a:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     478e:	89 2b       	or	r24, r25
     4790:	29 f0       	breq	.+10     	; 0x479c <setup+0x78>
 		Serial.read();
-    4792:	88 e4       	ldi	r24, 0x48	; 72
+    4792:	80 e4       	ldi	r24, 0x40	; 64
     4794:	92 e0       	ldi	r25, 0x02	; 2
     4796:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
     479a:	f5 cf       	rjmp	.-22     	; 0x4786 <setup+0x62>
@@ -13591,12 +13591,12 @@ void setup()
     479c:	df d9       	rcall	.-3138   	; 0x3b5c <_ZN11RTC_MCP79405beginEv>
     479e:	70 da       	rcall	.-2848   	; 0x3c80 <_ZN11RTC_MCP79403nowEv>
 	calendar=RTC.now();
-    47a0:	20 93 1a 06 	sts	0x061A, r18
-    47a4:	30 93 1b 06 	sts	0x061B, r19
-    47a8:	40 93 1c 06 	sts	0x061C, r20
-    47ac:	50 93 1d 06 	sts	0x061D, r21
-    47b0:	60 93 1e 06 	sts	0x061E, r22
-    47b4:	70 93 1f 06 	sts	0x061F, r23
+    47a0:	20 93 12 06 	sts	0x0612, r18
+    47a4:	30 93 13 06 	sts	0x0613, r19
+    47a8:	40 93 14 06 	sts	0x0614, r20
+    47ac:	50 93 15 06 	sts	0x0615, r21
+    47b0:	60 93 16 06 	sts	0x0616, r22
+    47b4:	70 93 17 06 	sts	0x0617, r23
     47b8:	ce 01       	movw	r24, r28
     47ba:	01 96       	adiw	r24, 0x01	; 1
 	Serial.println(printDate());
@@ -13604,7 +13604,7 @@ void setup()
     47be:	be 01       	movw	r22, r28
     47c0:	6f 5f       	subi	r22, 0xFF	; 255
     47c2:	7f 4f       	sbci	r23, 0xFF	; 255
-    47c4:	88 e4       	ldi	r24, 0x48	; 72
+    47c4:	80 e4       	ldi	r24, 0x40	; 64
     47c6:	92 e0       	ldi	r25, 0x02	; 2
     47c8:	0e 94 3d 03 	call	0x67a	; 0x67a <_ZN5Print7printlnERK6String>
     47cc:	ce 01       	movw	r24, r28
@@ -13627,28 +13627,28 @@ void setup()
 	// we'll use the initialization code from the utility libraries
 	// see if the card is present and can be initialized:
 	pinMode(SDchipSelect,OUTPUT);
-    47e6:	8f ec       	ldi	r24, 0xCF	; 207
+    47e6:	87 ec       	ldi	r24, 0xC7	; 199
     47e8:	95 e0       	ldi	r25, 0x05	; 5
     47ea:	0e 94 7f 1b 	call	0x36fe	; 0x36fe <_ZN7SDClass5beginEh>
 	if (!SD.begin(SDchipSelect)) {
     47ee:	81 11       	cpse	r24, r1
     47f0:	07 c0       	rjmp	.+14     	; 0x4800 <setup+0xdc>
-    47f2:	62 ec       	ldi	r22, 0xC2	; 194
+    47f2:	6a eb       	ldi	r22, 0xBA	; 186
     47f4:	71 e0       	ldi	r23, 0x01	; 1
-    47f6:	88 e4       	ldi	r24, 0x48	; 72
+    47f6:	80 e4       	ldi	r24, 0x40	; 64
     47f8:	92 e0       	ldi	r25, 0x02	; 2
     47fa:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 		Serial.println(ERR_SDINIT);
     47fe:	ff cf       	rjmp	.-2      	; 0x47fe <setup+0xda>
-    4800:	66 ec       	ldi	r22, 0xC6	; 198
+    4800:	6e eb       	ldi	r22, 0xBE	; 190
     4802:	71 e0       	ldi	r23, 0x01	; 1
-    4804:	88 e4       	ldi	r24, 0x48	; 72
+    4804:	80 e4       	ldi	r24, 0x40	; 64
     4806:	92 e0       	ldi	r25, 0x02	; 2
     4808:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
-    480c:	40 91 20 06 	lds	r20, 0x0620
-    4810:	50 91 21 06 	lds	r21, 0x0621
+    480c:	40 91 18 06 	lds	r20, 0x0618
+    4810:	50 91 19 06 	lds	r21, 0x0619
     4814:	23 e1       	ldi	r18, 0x13	; 19
-    4816:	6f ec       	ldi	r22, 0xCF	; 207
+    4816:	67 ec       	ldi	r22, 0xC7	; 199
     4818:	75 e0       	ldi	r23, 0x05	; 5
     481a:	ce 01       	movw	r24, r28
     481c:	01 96       	adiw	r24, 0x01	; 1
@@ -13668,10 +13668,10 @@ void setup()
     482e:	01 96       	adiw	r24, 0x01	; 1
     4830:	0e 94 60 1b 	call	0x36c0	; 0x36c0 <_ZN4File5closeEv>
     4834:	06 c0       	rjmp	.+12     	; 0x4842 <setup+0x11e>
-    4836:	6a ec       	ldi	r22, 0xCA	; 202
+    4836:	62 ec       	ldi	r22, 0xC2	; 194
 		LogFile.close();
     4838:	71 e0       	ldi	r23, 0x01	; 1
-    483a:	88 e4       	ldi	r24, 0x48	; 72
+    483a:	80 e4       	ldi	r24, 0x40	; 64
     483c:	92 e0       	ldi	r25, 0x02	; 2
     483e:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
 	}
@@ -13702,7 +13702,7 @@ void setup()
     486e:	ce 01       	movw	r24, r28
     4870:	4c 96       	adiw	r24, 0x1c	; 28
     4872:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
-    4876:	6e ec       	ldi	r22, 0xCE	; 206
+    4876:	66 ec       	ldi	r22, 0xC6	; 198
     4878:	71 e0       	ldi	r23, 0x01	; 1
     487a:	ce 01       	movw	r24, r28
     487c:	4c 96       	adiw	r24, 0x1c	; 28
@@ -13794,43 +13794,43 @@ void setup()
     4928:	00 d0       	rcall	.+0      	; 0x492a <loop+0xa>
     492a:	cd b7       	in	r28, 0x3d	; 61
     492c:	de b7       	in	r29, 0x3e	; 62
-    492e:	88 e4       	ldi	r24, 0x48	; 72
+    492e:	80 e4       	ldi	r24, 0x40	; 64
     4930:	92 e0       	ldi	r25, 0x02	; 2
     4932:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4936:	18 16       	cp	r1, r24
     4938:	19 06       	cpc	r1, r25
     493a:	2c f4       	brge	.+10     	; 0x4946 <loop+0x26>
-    493c:	88 e4       	ldi	r24, 0x48	; 72
+    493c:	80 e4       	ldi	r24, 0x40	; 64
     493e:	92 e0       	ldi	r25, 0x02	; 2
     4940:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
     4944:	f4 cf       	rjmp	.-24     	; 0x492e <loop+0xe>
-    4946:	62 ed       	ldi	r22, 0xD2	; 210
+    4946:	6a ec       	ldi	r22, 0xCA	; 202
     4948:	71 e0       	ldi	r23, 0x01	; 1
-    494a:	88 e4       	ldi	r24, 0x48	; 72
+    494a:	80 e4       	ldi	r24, 0x40	; 64
     494c:	92 e0       	ldi	r25, 0x02	; 2
     494e:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
-    4952:	6f ed       	ldi	r22, 0xDF	; 223
+    4952:	67 ed       	ldi	r22, 0xD7	; 215
     4954:	71 e0       	ldi	r23, 0x01	; 1
-    4956:	88 e4       	ldi	r24, 0x48	; 72
+    4956:	80 e4       	ldi	r24, 0x40	; 64
     4958:	92 e0       	ldi	r25, 0x02	; 2
     495a:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
-    495e:	88 e4       	ldi	r24, 0x48	; 72
+    495e:	80 e4       	ldi	r24, 0x40	; 64
     4960:	92 e0       	ldi	r25, 0x02	; 2
     4962:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4966:	89 2b       	or	r24, r25
     4968:	d1 f3       	breq	.-12     	; 0x495e <loop+0x3e>
-    496a:	88 e4       	ldi	r24, 0x48	; 72
+    496a:	80 e4       	ldi	r24, 0x40	; 64
     496c:	92 e0       	ldi	r25, 0x02	; 2
     496e:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4972:	18 16       	cp	r1, r24
     4974:	19 06       	cpc	r1, r25
     4976:	dc f6       	brge	.-74     	; 0x492e <loop+0xe>
-    4978:	88 e4       	ldi	r24, 0x48	; 72
+    4978:	80 e4       	ldi	r24, 0x40	; 64
     497a:	92 e0       	ldi	r25, 0x02	; 2
     497c:	0e 94 aa 00 	call	0x154	; 0x154 <_ZN14HardwareSerial4peekEv>
     4980:	c0 97       	sbiw	r24, 0x30	; 48
     4982:	51 f0       	breq	.+20     	; 0x4998 <loop+0x78>
-    4984:	88 e4       	ldi	r24, 0x48	; 72
+    4984:	80 e4       	ldi	r24, 0x40	; 64
     4986:	92 e0       	ldi	r25, 0x02	; 2
     4988:	0e 94 79 04 	call	0x8f2	; 0x8f2 <_ZN6Stream8parseIntEv>
     498c:	61 15       	cp	r22, r1
@@ -13839,39 +13839,39 @@ void setup()
     4992:	cb 01       	movw	r24, r22
     4994:	ca dd       	rcall	.-1132   	; 0x452a <_Z9motorTurni>
     4996:	c8 da       	rcall	.-2672   	; 0x3f28 <_Z10motorAlignv>
-    4998:	10 92 19 06 	sts	0x0619, r1
-    499c:	10 92 18 06 	sts	0x0618, r1
-    49a0:	88 e4       	ldi	r24, 0x48	; 72
+    4998:	10 92 11 06 	sts	0x0611, r1
+    499c:	10 92 10 06 	sts	0x0610, r1
+    49a0:	80 e4       	ldi	r24, 0x40	; 64
     49a2:	92 e0       	ldi	r25, 0x02	; 2
     49a4:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     49a8:	18 16       	cp	r1, r24
     49aa:	19 06       	cpc	r1, r25
     49ac:	2c f4       	brge	.+10     	; 0x49b8 <loop+0x98>
-    49ae:	88 e4       	ldi	r24, 0x48	; 72
+    49ae:	80 e4       	ldi	r24, 0x40	; 64
     49b0:	92 e0       	ldi	r25, 0x02	; 2
     49b2:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
     49b6:	f4 cf       	rjmp	.-24     	; 0x49a0 <loop+0x80>
-    49b8:	88 e4       	ldi	r24, 0x48	; 72
+    49b8:	80 e4       	ldi	r24, 0x40	; 64
     49ba:	92 e0       	ldi	r25, 0x02	; 2
     49bc:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
-    49c0:	6c ee       	ldi	r22, 0xEC	; 236
+    49c0:	64 ee       	ldi	r22, 0xE4	; 228
     49c2:	71 e0       	ldi	r23, 0x01	; 1
-    49c4:	88 e4       	ldi	r24, 0x48	; 72
+    49c4:	80 e4       	ldi	r24, 0x40	; 64
     49c6:	92 e0       	ldi	r25, 0x02	; 2
     49c8:	0e 94 32 03 	call	0x664	; 0x664 <_ZN5Print5printEPKc>
-    49cc:	88 e4       	ldi	r24, 0x48	; 72
+    49cc:	80 e4       	ldi	r24, 0x40	; 64
     49ce:	92 e0       	ldi	r25, 0x02	; 2
     49d0:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     49d4:	89 2b       	or	r24, r25
     49d6:	d1 f3       	breq	.-12     	; 0x49cc <loop+0xac>
-    49d8:	88 e4       	ldi	r24, 0x48	; 72
+    49d8:	80 e4       	ldi	r24, 0x40	; 64
     49da:	92 e0       	ldi	r25, 0x02	; 2
     49dc:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     49e0:	18 16       	cp	r1, r24
     49e2:	19 06       	cpc	r1, r25
     49e4:	0c f0       	brlt	.+2      	; 0x49e8 <loop+0xc8>
     49e6:	a3 cf       	rjmp	.-186    	; 0x492e <loop+0xe>
-    49e8:	88 e4       	ldi	r24, 0x48	; 72
+    49e8:	80 e4       	ldi	r24, 0x40	; 64
     49ea:	92 e0       	ldi	r25, 0x02	; 2
     49ec:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
     49f0:	89 37       	cpi	r24, 0x79	; 121
@@ -13887,7 +13887,7 @@ void setup()
     4a04:	ce 01       	movw	r24, r28
     4a06:	01 96       	adiw	r24, 0x01	; 1
     4a08:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
-    4a0c:	6b ef       	ldi	r22, 0xFB	; 251
+    4a0c:	63 ef       	ldi	r22, 0xF3	; 243
     4a0e:	71 e0       	ldi	r23, 0x01	; 1
     4a10:	ce 01       	movw	r24, r28
     4a12:	01 96       	adiw	r24, 0x01	; 1
@@ -13921,57 +13921,57 @@ void setup()
     4a54:	ce 01       	movw	r24, r28
     4a56:	01 96       	adiw	r24, 0x01	; 1
     4a58:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
-    4a5c:	88 e4       	ldi	r24, 0x48	; 72
+    4a5c:	80 e4       	ldi	r24, 0x40	; 64
     4a5e:	92 e0       	ldi	r25, 0x02	; 2
     4a60:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4a64:	18 16       	cp	r1, r24
     4a66:	19 06       	cpc	r1, r25
     4a68:	2c f4       	brge	.+10     	; 0x4a74 <loop+0x154>
-    4a6a:	88 e4       	ldi	r24, 0x48	; 72
+    4a6a:	80 e4       	ldi	r24, 0x40	; 64
     4a6c:	92 e0       	ldi	r25, 0x02	; 2
     4a6e:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
     4a72:	f4 cf       	rjmp	.-24     	; 0x4a5c <loop+0x13c>
-    4a74:	63 e0       	ldi	r22, 0x03	; 3
-    4a76:	72 e0       	ldi	r23, 0x02	; 2
-    4a78:	88 e4       	ldi	r24, 0x48	; 72
+    4a74:	6b ef       	ldi	r22, 0xFB	; 251
+    4a76:	71 e0       	ldi	r23, 0x01	; 1
+    4a78:	80 e4       	ldi	r24, 0x40	; 64
     4a7a:	92 e0       	ldi	r25, 0x02	; 2
     4a7c:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
-    4a80:	6f ed       	ldi	r22, 0xDF	; 223
+    4a80:	67 ed       	ldi	r22, 0xD7	; 215
     4a82:	71 e0       	ldi	r23, 0x01	; 1
-    4a84:	88 e4       	ldi	r24, 0x48	; 72
+    4a84:	80 e4       	ldi	r24, 0x40	; 64
     4a86:	92 e0       	ldi	r25, 0x02	; 2
     4a88:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
-    4a8c:	88 e4       	ldi	r24, 0x48	; 72
+    4a8c:	80 e4       	ldi	r24, 0x40	; 64
     4a8e:	92 e0       	ldi	r25, 0x02	; 2
     4a90:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4a94:	89 2b       	or	r24, r25
     4a96:	d1 f3       	breq	.-12     	; 0x4a8c <loop+0x16c>
-    4a98:	88 e4       	ldi	r24, 0x48	; 72
+    4a98:	80 e4       	ldi	r24, 0x40	; 64
     4a9a:	92 e0       	ldi	r25, 0x02	; 2
     4a9c:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4aa0:	18 16       	cp	r1, r24
     4aa2:	19 06       	cpc	r1, r25
     4aa4:	9c f4       	brge	.+38     	; 0x4acc <loop+0x1ac>
-    4aa6:	88 e4       	ldi	r24, 0x48	; 72
+    4aa6:	80 e4       	ldi	r24, 0x40	; 64
     4aa8:	92 e0       	ldi	r25, 0x02	; 2
     4aaa:	0e 94 aa 00 	call	0x154	; 0x154 <_ZN14HardwareSerial4peekEv>
     4aae:	c0 97       	sbiw	r24, 0x30	; 48
     4ab0:	c9 f0       	breq	.+50     	; 0x4ae4 <loop+0x1c4>
-    4ab2:	88 e4       	ldi	r24, 0x48	; 72
+    4ab2:	80 e4       	ldi	r24, 0x40	; 64
     4ab4:	92 e0       	ldi	r25, 0x02	; 2
     4ab6:	0e 94 79 04 	call	0x8f2	; 0x8f2 <_ZN6Stream8parseIntEv>
     4aba:	cb 01       	movw	r24, r22
     4abc:	00 97       	sbiw	r24, 0x00	; 0
     4abe:	a1 f4       	brne	.+40     	; 0x4ae8 <loop+0x1c8>
-    4ac0:	60 e1       	ldi	r22, 0x10	; 16
+    4ac0:	68 e0       	ldi	r22, 0x08	; 8
     4ac2:	72 e0       	ldi	r23, 0x02	; 2
-    4ac4:	88 e4       	ldi	r24, 0x48	; 72
+    4ac4:	80 e4       	ldi	r24, 0x40	; 64
     4ac6:	92 e0       	ldi	r25, 0x02	; 2
     4ac8:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
-    4acc:	88 e4       	ldi	r24, 0x48	; 72
+    4acc:	80 e4       	ldi	r24, 0x40	; 64
     4ace:	92 e0       	ldi	r25, 0x02	; 2
     4ad0:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
-    4ad4:	88 e4       	ldi	r24, 0x48	; 72
+    4ad4:	80 e4       	ldi	r24, 0x40	; 64
     4ad6:	92 e0       	ldi	r25, 0x02	; 2
     4ad8:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4adc:	18 16       	cp	r1, r24
@@ -13981,36 +13981,36 @@ void setup()
     4ae4:	80 e0       	ldi	r24, 0x00	; 0
     4ae6:	90 e0       	ldi	r25, 0x00	; 0
     4ae8:	20 dd       	rcall	.-1472   	; 0x452a <_Z9motorTurni>
-    4aea:	e0 90 18 06 	lds	r14, 0x0618
-    4aee:	f0 90 19 06 	lds	r15, 0x0619
-    4af2:	88 e4       	ldi	r24, 0x48	; 72
+    4aea:	e0 90 10 06 	lds	r14, 0x0610
+    4aee:	f0 90 11 06 	lds	r15, 0x0611
+    4af2:	80 e4       	ldi	r24, 0x40	; 64
     4af4:	92 e0       	ldi	r25, 0x02	; 2
     4af6:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4afa:	18 16       	cp	r1, r24
     4afc:	19 06       	cpc	r1, r25
     4afe:	2c f4       	brge	.+10     	; 0x4b0a <loop+0x1ea>
-    4b00:	88 e4       	ldi	r24, 0x48	; 72
+    4b00:	80 e4       	ldi	r24, 0x40	; 64
     4b02:	92 e0       	ldi	r25, 0x02	; 2
     4b04:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
     4b08:	f4 cf       	rjmp	.-24     	; 0x4af2 <loop+0x1d2>
-    4b0a:	63 e1       	ldi	r22, 0x13	; 19
+    4b0a:	6b e0       	ldi	r22, 0x0B	; 11
     4b0c:	72 e0       	ldi	r23, 0x02	; 2
-    4b0e:	88 e4       	ldi	r24, 0x48	; 72
+    4b0e:	80 e4       	ldi	r24, 0x40	; 64
     4b10:	92 e0       	ldi	r25, 0x02	; 2
     4b12:	0e 94 4d 03 	call	0x69a	; 0x69a <_ZN5Print7printlnEPKc>
-    4b16:	88 e4       	ldi	r24, 0x48	; 72
+    4b16:	80 e4       	ldi	r24, 0x40	; 64
     4b18:	92 e0       	ldi	r25, 0x02	; 2
     4b1a:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4b1e:	89 2b       	or	r24, r25
     4b20:	d1 f3       	breq	.-12     	; 0x4b16 <loop+0x1f6>
-    4b22:	88 e4       	ldi	r24, 0x48	; 72
+    4b22:	80 e4       	ldi	r24, 0x40	; 64
     4b24:	92 e0       	ldi	r25, 0x02	; 2
     4b26:	0e 94 9f 00 	call	0x13e	; 0x13e <_ZN14HardwareSerial9availableEv>
     4b2a:	18 16       	cp	r1, r24
     4b2c:	19 06       	cpc	r1, r25
     4b2e:	0c f0       	brlt	.+2      	; 0x4b32 <loop+0x212>
     4b30:	95 cf       	rjmp	.-214    	; 0x4a5c <loop+0x13c>
-    4b32:	88 e4       	ldi	r24, 0x48	; 72
+    4b32:	80 e4       	ldi	r24, 0x40	; 64
     4b34:	92 e0       	ldi	r25, 0x02	; 2
     4b36:	0e 94 b8 00 	call	0x170	; 0x170 <_ZN14HardwareSerial4readEv>
     4b3a:	89 37       	cpi	r24, 0x79	; 121
@@ -14026,7 +14026,7 @@ void setup()
     4b4e:	ce 01       	movw	r24, r28
     4b50:	01 96       	adiw	r24, 0x01	; 1
     4b52:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
-    4b56:	62 e2       	ldi	r22, 0x22	; 34
+    4b56:	6a e1       	ldi	r22, 0x1A	; 26
     4b58:	72 e0       	ldi	r23, 0x02	; 2
     4b5a:	ce 01       	movw	r24, r28
     4b5c:	01 96       	adiw	r24, 0x01	; 1
@@ -14059,7 +14059,7 @@ void setup()
     4b9c:	ce 01       	movw	r24, r28
     4b9e:	01 96       	adiw	r24, 0x01	; 1
     4ba0:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
-    4ba4:	88 e4       	ldi	r24, 0x48	; 72
+    4ba4:	80 e4       	ldi	r24, 0x40	; 64
     4ba6:	92 e0       	ldi	r25, 0x02	; 2
     4ba8:	0e 94 e1 01 	call	0x3c2	; 0x3c2 <_ZN14HardwareSerial3endEv>
     4bac:	80 e0       	ldi	r24, 0x00	; 0
@@ -14087,7 +14087,7 @@ void setup()
     4bd8:	ce 01       	movw	r24, r28
     4bda:	01 96       	adiw	r24, 0x01	; 1
     4bdc:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
-    4be0:	6a e2       	ldi	r22, 0x2A	; 42
+    4be0:	62 e2       	ldi	r22, 0x22	; 34
     4be2:	72 e0       	ldi	r23, 0x02	; 2
     4be4:	ce 01       	movw	r24, r28
     4be6:	01 96       	adiw	r24, 0x01	; 1
@@ -14099,7 +14099,7 @@ void setup()
     4bf4:	01 96       	adiw	r24, 0x01	; 1
     4bf6:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
     4bfa:	ff cf       	rjmp	.-2      	; 0x4bfa <loop+0x2da>
-    4bfc:	6f e2       	ldi	r22, 0x2F	; 47
+    4bfc:	67 e2       	ldi	r22, 0x27	; 39
     4bfe:	72 e0       	ldi	r23, 0x02	; 2
     4c00:	ce 01       	movw	r24, r28
     4c02:	01 96       	adiw	r24, 0x01	; 1
@@ -14143,7 +14143,7 @@ void setup()
     4c5a:	ce 01       	movw	r24, r28
     4c5c:	01 96       	adiw	r24, 0x01	; 1
     4c5e:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
-    4c62:	6a e3       	ldi	r22, 0x3A	; 58
+    4c62:	62 e3       	ldi	r22, 0x32	; 50
     4c64:	72 e0       	ldi	r23, 0x02	; 2
     4c66:	ce 01       	movw	r24, r28
     4c68:	01 96       	adiw	r24, 0x01	; 1
@@ -14171,7 +14171,7 @@ void setup()
     4c9a:	ce 01       	movw	r24, r28
     4c9c:	01 96       	adiw	r24, 0x01	; 1
     4c9e:	0e 94 63 05 	call	0xac6	; 0xac6 <_ZN6StringD1Ev>
-    4ca2:	61 e4       	ldi	r22, 0x41	; 65
+    4ca2:	69 e3       	ldi	r22, 0x39	; 57
     4ca4:	72 e0       	ldi	r23, 0x02	; 2
     4ca6:	ce 01       	movw	r24, r28
     4ca8:	01 96       	adiw	r24, 0x01	; 1
@@ -14383,8 +14383,8 @@ void setup()
     4df2:	10 f4       	brcc	.+4      	; 0x4df8 <malloc+0xe>
     4df4:	82 e0       	ldi	r24, 0x02	; 2
     4df6:	90 e0       	ldi	r25, 0x00	; 0
-    4df8:	e0 91 28 06 	lds	r30, 0x0628
-    4dfc:	f0 91 29 06 	lds	r31, 0x0629
+    4df8:	e0 91 20 06 	lds	r30, 0x0620
+    4dfc:	f0 91 21 06 	lds	r31, 0x0621
     4e00:	20 e0       	ldi	r18, 0x00	; 0
     4e02:	30 e0       	ldi	r19, 0x00	; 0
     4e04:	a0 e0       	ldi	r26, 0x00	; 0
@@ -14408,8 +14408,8 @@ void setup()
     4e28:	8e 93       	st	-X, r24
     4e2a:	12 97       	sbiw	r26, 0x02	; 2
     4e2c:	2c c0       	rjmp	.+88     	; 0x4e86 <malloc+0x9c>
-    4e2e:	90 93 29 06 	sts	0x0629, r25
-    4e32:	80 93 28 06 	sts	0x0628, r24
+    4e2e:	90 93 21 06 	sts	0x0621, r25
+    4e32:	80 93 20 06 	sts	0x0620, r24
     4e36:	27 c0       	rjmp	.+78     	; 0x4e86 <malloc+0x9c>
     4e38:	21 15       	cp	r18, r1
     4e3a:	31 05       	cpc	r19, r1
@@ -14445,8 +14445,8 @@ void setup()
     4e76:	93 83       	std	Z+3, r25	; 0x03
     4e78:	82 83       	std	Z+2, r24	; 0x02
     4e7a:	04 c0       	rjmp	.+8      	; 0x4e84 <malloc+0x9a>
-    4e7c:	90 93 29 06 	sts	0x0629, r25
-    4e80:	80 93 28 06 	sts	0x0628, r24
+    4e7c:	90 93 21 06 	sts	0x0621, r25
+    4e80:	80 93 20 06 	sts	0x0620, r24
     4e84:	fe 01       	movw	r30, r28
     4e86:	32 96       	adiw	r30, 0x02	; 2
     4e88:	44 c0       	rjmp	.+136    	; 0x4f12 <malloc+0x128>
@@ -14460,14 +14460,14 @@ void setup()
     4e98:	39 83       	std	Y+1, r19	; 0x01
     4e9a:	28 83       	st	Y, r18
     4e9c:	3a c0       	rjmp	.+116    	; 0x4f12 <malloc+0x128>
-    4e9e:	20 91 26 06 	lds	r18, 0x0626
-    4ea2:	30 91 27 06 	lds	r19, 0x0627
+    4e9e:	20 91 1e 06 	lds	r18, 0x061E
+    4ea2:	30 91 1f 06 	lds	r19, 0x061F
     4ea6:	23 2b       	or	r18, r19
     4ea8:	41 f4       	brne	.+16     	; 0x4eba <malloc+0xd0>
     4eaa:	20 91 02 01 	lds	r18, 0x0102
     4eae:	30 91 03 01 	lds	r19, 0x0103
-    4eb2:	30 93 27 06 	sts	0x0627, r19
-    4eb6:	20 93 26 06 	sts	0x0626, r18
+    4eb2:	30 93 1f 06 	sts	0x061F, r19
+    4eb6:	20 93 1e 06 	sts	0x061E, r18
     4eba:	20 91 00 01 	lds	r18, 0x0100
     4ebe:	30 91 01 01 	lds	r19, 0x0101
     4ec2:	21 15       	cp	r18, r1
@@ -14479,8 +14479,8 @@ void setup()
     4ed0:	50 91 05 01 	lds	r21, 0x0105
     4ed4:	24 1b       	sub	r18, r20
     4ed6:	35 0b       	sbc	r19, r21
-    4ed8:	e0 91 26 06 	lds	r30, 0x0626
-    4edc:	f0 91 27 06 	lds	r31, 0x0627
+    4ed8:	e0 91 1e 06 	lds	r30, 0x061E
+    4edc:	f0 91 1f 06 	lds	r31, 0x061F
     4ee0:	e2 17       	cp	r30, r18
     4ee2:	f3 07       	cpc	r31, r19
     4ee4:	a0 f4       	brcc	.+40     	; 0x4f0e <malloc+0x124>
@@ -14497,8 +14497,8 @@ void setup()
     4efa:	48 f0       	brcs	.+18     	; 0x4f0e <malloc+0x124>
     4efc:	4e 0f       	add	r20, r30
     4efe:	5f 1f       	adc	r21, r31
-    4f00:	50 93 27 06 	sts	0x0627, r21
-    4f04:	40 93 26 06 	sts	0x0626, r20
+    4f00:	50 93 1f 06 	sts	0x061F, r21
+    4f04:	40 93 1e 06 	sts	0x061E, r20
     4f08:	81 93       	st	Z+, r24
     4f0a:	91 93       	st	Z+, r25
     4f0c:	02 c0       	rjmp	.+4      	; 0x4f12 <malloc+0x128>
@@ -14519,21 +14519,21 @@ void setup()
     4f26:	32 97       	sbiw	r30, 0x02	; 2
     4f28:	13 82       	std	Z+3, r1	; 0x03
     4f2a:	12 82       	std	Z+2, r1	; 0x02
-    4f2c:	c0 91 28 06 	lds	r28, 0x0628
-    4f30:	d0 91 29 06 	lds	r29, 0x0629
+    4f2c:	c0 91 20 06 	lds	r28, 0x0620
+    4f30:	d0 91 21 06 	lds	r29, 0x0621
     4f34:	20 97       	sbiw	r28, 0x00	; 0
     4f36:	81 f4       	brne	.+32     	; 0x4f58 <free+0x3e>
     4f38:	20 81       	ld	r18, Z
     4f3a:	31 81       	ldd	r19, Z+1	; 0x01
     4f3c:	28 0f       	add	r18, r24
     4f3e:	39 1f       	adc	r19, r25
-    4f40:	80 91 26 06 	lds	r24, 0x0626
-    4f44:	90 91 27 06 	lds	r25, 0x0627
+    4f40:	80 91 1e 06 	lds	r24, 0x061E
+    4f44:	90 91 1f 06 	lds	r25, 0x061F
     4f48:	82 17       	cp	r24, r18
     4f4a:	93 07       	cpc	r25, r19
     4f4c:	79 f5       	brne	.+94     	; 0x4fac <free+0x92>
-    4f4e:	f0 93 27 06 	sts	0x0627, r31
-    4f52:	e0 93 26 06 	sts	0x0626, r30
+    4f4e:	f0 93 1f 06 	sts	0x061F, r31
+    4f52:	e0 93 1e 06 	sts	0x061E, r30
     4f56:	6d c0       	rjmp	.+218    	; 0x5032 <free+0x118>
     4f58:	de 01       	movw	r26, r28
     4f5a:	20 e0       	ldi	r18, 0x00	; 0
@@ -14577,8 +14577,8 @@ void setup()
     4fa6:	21 15       	cp	r18, r1
     4fa8:	31 05       	cpc	r19, r1
     4faa:	29 f4       	brne	.+10     	; 0x4fb6 <free+0x9c>
-    4fac:	f0 93 29 06 	sts	0x0629, r31
-    4fb0:	e0 93 28 06 	sts	0x0628, r30
+    4fac:	f0 93 21 06 	sts	0x0621, r31
+    4fb0:	e0 93 20 06 	sts	0x0620, r30
     4fb4:	3e c0       	rjmp	.+124    	; 0x5032 <free+0x118>
     4fb6:	d9 01       	movw	r26, r18
     4fb8:	13 96       	adiw	r26, 0x03	; 3
@@ -14622,20 +14622,20 @@ void setup()
     5004:	39 81       	ldd	r19, Y+1	; 0x01
     5006:	82 0f       	add	r24, r18
     5008:	93 1f       	adc	r25, r19
-    500a:	20 91 26 06 	lds	r18, 0x0626
-    500e:	30 91 27 06 	lds	r19, 0x0627
+    500a:	20 91 1e 06 	lds	r18, 0x061E
+    500e:	30 91 1f 06 	lds	r19, 0x061F
     5012:	28 17       	cp	r18, r24
     5014:	39 07       	cpc	r19, r25
     5016:	69 f4       	brne	.+26     	; 0x5032 <free+0x118>
     5018:	30 97       	sbiw	r30, 0x00	; 0
     501a:	29 f4       	brne	.+10     	; 0x5026 <free+0x10c>
-    501c:	10 92 29 06 	sts	0x0629, r1
-    5020:	10 92 28 06 	sts	0x0628, r1
+    501c:	10 92 21 06 	sts	0x0621, r1
+    5020:	10 92 20 06 	sts	0x0620, r1
     5024:	02 c0       	rjmp	.+4      	; 0x502a <free+0x110>
     5026:	13 82       	std	Z+3, r1	; 0x03
     5028:	12 82       	std	Z+2, r1	; 0x02
-    502a:	d0 93 27 06 	sts	0x0627, r29
-    502e:	c0 93 26 06 	sts	0x0626, r28
+    502a:	d0 93 1f 06 	sts	0x061F, r29
+    502e:	c0 93 1e 06 	sts	0x061E, r28
     5032:	df 91       	pop	r29
     5034:	cf 91       	pop	r28
     5036:	08 95       	ret
@@ -14697,8 +14697,8 @@ void setup()
     50a2:	4e 01       	movw	r8, r28
     50a4:	80 0e       	add	r8, r16
     50a6:	91 1e       	adc	r9, r17
-    50a8:	a0 91 28 06 	lds	r26, 0x0628
-    50ac:	b0 91 29 06 	lds	r27, 0x0629
+    50a8:	a0 91 20 06 	lds	r26, 0x0620
+    50ac:	b0 91 21 06 	lds	r27, 0x0621
     50b0:	61 2c       	mov	r6, r1
     50b2:	71 2c       	mov	r7, r1
     50b4:	60 e0       	ldi	r22, 0x00	; 0
@@ -14761,8 +14761,8 @@ void setup()
     5126:	ee 93       	st	-X, r30
     5128:	12 97       	sbiw	r26, 0x02	; 2
     512a:	41 c0       	rjmp	.+130    	; 0x51ae <realloc+0x176>
-    512c:	f0 93 29 06 	sts	0x0629, r31
-    5130:	e0 93 28 06 	sts	0x0628, r30
+    512c:	f0 93 21 06 	sts	0x0621, r31
+    5130:	e0 93 20 06 	sts	0x0620, r30
     5134:	3c c0       	rjmp	.+120    	; 0x51ae <realloc+0x176>
     5136:	6d 91       	ld	r22, X+
     5138:	7c 91       	ld	r23, X
@@ -14777,8 +14777,8 @@ void setup()
     514a:	bc 91       	ld	r27, X
     514c:	a0 2d       	mov	r26, r0
     514e:	b4 cf       	rjmp	.-152    	; 0x50b8 <realloc+0x80>
-    5150:	60 91 26 06 	lds	r22, 0x0626
-    5154:	70 91 27 06 	lds	r23, 0x0627
+    5150:	60 91 1e 06 	lds	r22, 0x061E
+    5154:	70 91 1f 06 	lds	r23, 0x061F
     5158:	68 15       	cp	r22, r8
     515a:	79 05       	cpc	r23, r9
     515c:	e9 f4       	brne	.+58     	; 0x5198 <realloc+0x160>
@@ -14799,8 +14799,8 @@ void setup()
     5182:	e4 17       	cp	r30, r20
     5184:	f5 07       	cpc	r31, r21
     5186:	a8 f4       	brcc	.+42     	; 0x51b2 <realloc+0x17a>
-    5188:	f0 93 27 06 	sts	0x0627, r31
-    518c:	e0 93 26 06 	sts	0x0626, r30
+    5188:	f0 93 1f 06 	sts	0x061F, r31
+    518c:	e0 93 1e 06 	sts	0x061E, r30
     5190:	f9 01       	movw	r30, r18
     5192:	91 83       	std	Z+1, r25	; 0x01
     5194:	80 83       	st	Z, r24
