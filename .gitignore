@@ -92,4 +92,8 @@ Thumbs.db
 
 # added by me
 # make file
-# *.mk
+*.mk
+*.lss
+*.map
+
+/Debug/
