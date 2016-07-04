@@ -95,5 +95,4 @@ Thumbs.db
 *.mk
 *.lss
 *.map
-
-/Debug/
+debug/
