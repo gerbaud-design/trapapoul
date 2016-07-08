@@ -54,8 +54,9 @@ volatile uint16_t menuPointer=0;
 void userInterface();
 uint8_t waitButton();
 #define TIMEOUT 50
-uint8_t numberInput(uint8_t min,uint8_t max);
+void numberInput(uint8_t min,uint8_t max);
 void enterTime(tmElements_t*);
+
 
 //config variables
 #define SOLEIL 1
@@ -65,6 +66,10 @@ uint8_t openMode=SOLEIL;
 uint8_t closeMode=SOLEIL;
 uint8_t cur_mm=30;
 uint8_t cur_hh=12;
+
+double latitudeNord;
+double longitudeOuest;
+void enterGPS (double*, double*);
 
 
 //analogconfig
@@ -308,7 +313,8 @@ uint8_t waitButton()
 
 }
 
-uint8_t numberInput(uint8_t min,uint8_t max){
+void numberInput(uint8_t min,uint8_t max){
+
 
 
 }
@@ -927,7 +933,68 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
+			goto MENU_GPS_DPT;
+		default:
 			goto MENU_ERROR;
+		}
+
+	MENU_GPS_DPT:
+		lcd.setCursor(0,0);
+		lcd.print("REGLAGE PAR     ");
+		lcd.setCursor(0,1);
+		lcd.print("DEPARTEMENT     ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS_DPT;
+		case BPDW:
+			goto MENU_GPS_GPS;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			goto MENU_ERROR;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_GPS_GPS:
+		lcd.setCursor(0,0);
+		lcd.print("REGLAGE DE LA   ");
+		lcd.setCursor(0,1);
+		lcd.print("POSITION GPS    ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS_DPT;
+		case BPDW:
+			goto MENU_GPS_RETOUR;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			//enterGPS(&latitudeNord,&longitudeOuest);
+			//sauver en EEPROM
+			lcd.setCursor(0,0);
+			lcd.print("POSITION GPS    ");
+			lcd.setCursor(0,1);
+			lcd.print("ENREGISTREE     ");
+			delay(1000);
+			goto MENU;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_GPS_RETOUR:
+		lcd.setCursor(0,0);
+		lcd.print("RETOUR          ");
+		lcd.setCursor(0,1);
+		lcd.print("                ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS_GPS;
+		case BPDW:
+			goto MENU_GPS_RETOUR;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			goto MENU_GPS;
 		default:
 			goto MENU_ERROR;
 		}
@@ -1069,6 +1136,69 @@ String printTime (){
 		time+=("0");
 	time+=(calendar.second());
 	return time;
+}
+*/
+
+/*
+void enterGPS (double *latN, double *lonO){
+	uint8_t val100_000000;
+	uint8_t val010_000000;
+	uint8_t val001_000000;
+	uint8_t val000_100000;
+	uint8_t val000_010000;
+	uint8_t val000_001000;
+	uint8_t val000_000100;
+	uint8_t val000_000010;
+	uint8_t val000_000001;
+	//init du timer1 et de son interrupt de clignotage
+	Timer1.initialize(500000);
+	Timer1.attachInterrupt(interrupt_blinker);
+	Timer1.start();
+
+	lcd.setCursor(0,0);
+	lcd.print("LATITUDE NORD   ");
+	lcd.setCursor(0,1);
+	lcd.print("LATITUDE SUD    ");
+	lcd.setCursor(15,0);
+	lcd.write(CHECK_CHAR);
+	while(1){
+			delay(500);
+			noInterrupts();
+			bool blinkCopy=blink;
+			interrupts();
+			if (blinkCopy==1){
+				lcd.setCursor(0,1);
+				if (te->Day<10)
+					lcd.print('0');
+				lcd.print(te->Day);
+			}else{
+				lcd.setCursor(0,1);
+				lcd.print("  ");
+			}
+			if((!digitalRead(BPUP))&&(te->Day<31)){
+				te->Day+=1;
+				lcd.setCursor(0,1);
+				if (te->Day<10)
+					lcd.print('0');
+				lcd.print(te->Day);
+			}
+			if((!digitalRead(BPDW))&&(te->Day>0)){
+				te->Day-=1;
+				lcd.setCursor(0,1);
+				if (te->Day<10)
+					lcd.print('0');
+				lcd.print(te->Day);
+			}
+			if(!digitalRead(BPOK)){
+				lcd.setCursor(0,1);
+				if (te->Day<10)
+					lcd.print('0');
+				lcd.print(te->Day);
+				break;
+			}
+		}
+	switch(waitButton()){
+	}
 }
 */
 
