@@ -8,8 +8,21 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
-#include <MCP7940.h>
+#include <DS1337RTC.h>
+#include <LiquidCrystal_I2C.h>
 #include "ERRcodes.h"
+
+
+//pin config
+#define BPUP 0
+#define BPOK 3
+#define pinQuadratureA 7
+#define pinQuadratureB 4
+#define pinMotorForward 6
+#define pinMotorBackward 5
+#define pinAlarm 2
+#define pinChargeOFF 8
+#define pinBuzzer 9
 
 
 //SDconfig : set up variables using the SD utility library functions:
@@ -17,13 +30,25 @@ const uint8_t SDchipSelect = 10;
 const String logFileName = "moulog.txt";
 //String LogText;//log format : type;subtype;timestamp;value;comment
 
-//parametres rtc
-DateTime calendar;
-RTC_MCP7940 RTC;
-void serialSetRtc ();//serial ihm set time
-void serialSetAlarm();
-String printDate ();//create string with date (jj/mm/yyyy)
-String printTime ();//create string with time (hh:mm:ss)
+//RTCconfig
+volatile bool timeToGo=0;
+tmElements_t timeElements;
+bool isTimeValid(tmElements_t*);
+bool isDateValid(tmElements_t*);
+extern DS1337RTC RTC;
+
+//timer1config
+volatile bool blink=0;
+volatile uint8_t blinkCount=0;
+
+//lcd_I2C config
+LiquidCrystal_I2C lcd(0x27,16,2);
+#define CHECK_CHAR 0
+#define CHECK2_CHAR 1
+#define CHECK3_CHAR 2
+#define BAT1_CHAR 3
+#define BAT2_CHAR 4
+#define BAT3_CHAR 5
 
 //parametres de moteur
 #define QUAD0 1
@@ -39,17 +64,36 @@ String printTime ();//create string with time (hh:mm:ss)
 const uint16_t motorTimeOut=10000;
 const uint8_t motorOverturn=10;
 int motorPosition=0;
-	//pin config
-const uint8_t pinquadratureA =4;
-const uint8_t pinquadratureB =5;
-const uint8_t pinMotorForward =6;
-const uint8_t pinMotorBackward =7;
+
 	//fonctions
 void motorInit ();
 void motorAlign ();
 void motorGoTo (int);
 void motorTurn (int);
 void pushLog(String);
+
+
+
+void serialSetRtc (uint8_t); //parameter is clock or alarm1 or alarm2
+//create string with date "jj/mm/yyyy"
+String printDate ();
+//create string with time "hh:mm:ss"
+String printTime ();
+// interrupt routine for pin2 alarm.
+void interrupt_0 () {
+	//if (digitalRead(BPOK) == 0)
+}
+
+
+void interrupt_blinker(void)
+{
+	if (blink==0) {
+		blink=1;
+		blinkCount++;  // increase when LED turns on
+	} else {
+		blink=0;
+	}
+}
 
 //The setup function is called once at startup of the sketch
 void setup()
@@ -66,14 +110,47 @@ void setup()
 	while (Serial.available()!=0)
 		Serial.read();
 
-	//Init of RTC
-	RTC.begin();
-	calendar=RTC.now();
-	Serial.println(printDate());
-	//test RTC
-	if ((RTC.isset())==0){
-		serialSetRtc();
+/*
+//setup du lcd
+	lcd.init();
+	lcd.backlight();
+	lcd.clear();
+	{
+		uint8_t check[8] = {0x0,0x1,0x3,0x16,0x1c,0x8,0x0};
+		 lcd.createChar(CHECK_CHAR, check);
+	}{
+		uint8_t check2[8] = {0x0,0x0,0x1,0x2,0x14,0x8,0x0};
+		 lcd.createChar(CHECK2_CHAR, check2);
+	}{
+		uint8_t bat1[8] = {0x0,0x0,0x0,0x0,0xe,0x1f,0x1f};
+		 lcd.createChar(BAT1_CHAR, bat1);
+	}{
+		uint8_t bat2[8] = {0x0,0x0,0xe,0x1f,0x1f,0x1f,0x1f};
+		 lcd.createChar(BAT2_CHAR, bat2);
+	}{
+		uint8_t bat3[8] = {0xe,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f};
+		 lcd.createChar(BAT3_CHAR, bat3);
 	}
+	lcd.setCursor(0,0);
+*/
+//Init of RTC
+	//RTC.set(SECS_YR_2000,CLOCK_ADDRESS);
+	Serial.print("befRTC");
+	RTC.disableAlarm(ALARM1_ADDRESS);
+	//RTC.disableAlarm(ALARM2_ADDRESS);
+	/*RTC.interruptSelect(INTB);
+	RTC.resetAlarms();
+	pinMode(pinAlarm, INPUT);
+	attachInterrupt(digitalPinToInterrupt(3), interrupt_0 , FALLING);*/
+	Serial.print(printDate());
+	Serial.print(' ');
+	Serial.print(printTime());
+	Serial.println("changer heure? (y/n)");
+	while (Serial.available()==0);
+			if(Serial.available() > 0){
+				if (Serial.read()=='y')
+					serialSetRtc(CLOCK_ADDRESS);
+			}
 
 
 //initialisation de la carte SD
@@ -105,10 +182,10 @@ void setup()
 	pushLog("\n");
 
 	//initialize motor position
-	pinMode(6,OUTPUT);
-	pinMode(7,OUTPUT);
-	pinMode(4,INPUT);
-	pinMode(5,INPUT);
+	pinMode(pinMotorForward,OUTPUT);
+	pinMode(pinMotorBackward,OUTPUT);
+	pinMode(pinQuadratureA,INPUT);
+	pinMode(pinQuadratureB,INPUT);
 	motorInit();
 }
 
@@ -243,8 +320,8 @@ void loop()
 
 void motorAlign ()
 {
-	bool quadratureA = digitalRead(pinquadratureA);
-	bool quadratureB = digitalRead(pinquadratureB);
+	bool quadratureA = digitalRead(pinQuadratureA);
+	bool quadratureB = digitalRead(pinQuadratureB);
 	uint8_t quadrature = (quadratureA + quadratureA + quadratureB);
 	//Serial.print("alignequadrature : ");
 	//Serial.println(quadrature);
@@ -257,7 +334,7 @@ void motorAlign ()
 	do
 	{
 		delay(50);
-		if (digitalRead(pinquadratureA))
+		if (digitalRead(pinQuadratureA))
 			digitalWrite(pinMotorBackward,HIGH);
 		else
 			digitalWrite(pinMotorForward,HIGH);
@@ -279,8 +356,8 @@ void motorAlign ()
 			pushLog("\n");
 			break;
 		}
-		quadratureA = digitalRead(pinquadratureA);
-		quadratureB = digitalRead(pinquadratureB);
+		quadratureA = digitalRead(pinQuadratureA);
+		quadratureB = digitalRead(pinQuadratureB);
 		quadrature = (quadratureA + quadratureA + quadratureB);
 	} while(quadrature != 1);//=quadrature=1
 
@@ -295,8 +372,8 @@ void motorAlign ()
 
 void motorInit ()
 {
-	pinMode(pinquadratureA,INPUT);
-	pinMode(pinquadratureB,INPUT);
+	pinMode(pinQuadratureA,INPUT);
+	pinMode(pinQuadratureB,INPUT);
 	pinMode(pinMotorForward,OUTPUT);
 	pinMode(pinMotorBackward,OUTPUT);
 
@@ -360,8 +437,8 @@ void motorGoTo (int targetPosition)
 		oldQuadratureB=0;
 		break;
 	}
-	quadratureA = digitalRead(pinquadratureA);
-	quadratureB = digitalRead(pinquadratureB);
+	quadratureA = digitalRead(pinQuadratureA);
+	quadratureB = digitalRead(pinQuadratureB);
 	quadrature = (quadratureA + quadratureA + quadratureB);
 	while(1){ //loop updating position starting before motor and ending after
 		oldMotorPosition=motorPosition;
@@ -466,8 +543,8 @@ void motorGoTo (int targetPosition)
 			machineState=INRUN;
 		case INRUN:
 			while(1){// wait for a change in
-				quadratureA = digitalRead(pinquadratureA);
-				quadratureB = digitalRead(pinquadratureB);
+				quadratureA = digitalRead(pinQuadratureA);
+				quadratureB = digitalRead(pinQuadratureB);
 				if (quadratureA!=oldQuadratureA)
 					break;
 				if (quadratureB!=oldQuadratureB)
@@ -510,8 +587,8 @@ void motorGoTo (int targetPosition)
 			digitalWrite(pinMotorBackward,LOW);
 			//wait for motor to stop and update quadrature
 			delay(500);
-			quadratureA = digitalRead(pinquadratureA);
-			quadratureB = digitalRead(pinquadratureB);
+			quadratureA = digitalRead(pinQuadratureA);
+			quadratureB = digitalRead(pinQuadratureB);
 			quadrature = (quadratureA + quadratureA + quadratureB);
 			machineState = EXIT;
 			break;
@@ -541,6 +618,31 @@ void motorTurn (int16_t motorDistance)
 	motorGoTo(target);
 }
 
+
+
+
+#define LEAP_YEAR(Y)     ( ((1970+Y)>0) && !((1970+Y)%4) && ( ((1970+Y)%100) || !((1970+Y)%400) ) )
+const uint8_t monthDays[]={31,28,31,30,31,30,31,31,30,31,30,31};
+bool isDateValid(tmElements_t *te){
+	if (te->Month>12)
+		return 0;
+	if ((te->Month==2)&&(!LEAP_YEAR(te->Year))&&(te->Day==29))
+		return 1;
+	if (te->Day>monthDays[(te->Month)-1])
+		return 0;
+	return 1;
+}
+
+bool isTimeValid(tmElements_t *te){
+	if (te->Second>59 || te->Minute>59 ||te->Hour>23)
+		return 0;
+	return 1;
+}
+
+
+
+
+
 void pushLog (String pushee)
 {
 	// open the file. note that only one file can be open at a time,
@@ -561,7 +663,7 @@ void pushLog (String pushee)
 }
 
 
-void serialSetRtc (){
+void serialSetRtc (uint8_t adress){
 	uint16_t year=0;
 	uint8_t month=0,day=0,hour=0,minute=0,second=0;
 	Serial.println("set rtc");
@@ -589,40 +691,34 @@ void serialSetRtc (){
 	while(Serial.available()==0);
 	if(Serial.available()>0)
 		second=Serial.parseInt();
-	calendar = DateTime(year,month,day,hour,minute,second);
+	timeElements.Year=CalendarYrToTm(year);
+	timeElements.Month=month;
+	timeElements.Day=day;
+	timeElements.Hour=hour;
+	timeElements.Minute=minute;
+	timeElements.Second=second;
 	Serial.println("Press");
 	while(Serial.available()==0);
 	if(Serial.available()>0)
-		RTC.adjust(calendar);
+		RTC.write(timeElements,adress);
 }
 
-void serialSetAlarm(){
-	/*char ok=0;
-	Serial.println("set the alarm to every minute? (y/n)");
-	while(Serial.available()==0);
-	if(Serial.available()>0)
-		if(ok!='y')
-			return;*/
-	RTC.setAlarm(B00000001);
-	RTC.configure(B10010000);
-}
-
-//create string with date (jj/mm/yyyy)
+//create string with date (jj/mm/yy)
 String printDate (){
 	String date="";
 	//date+=("date (jj/mm/yyyy) : ");
-	calendar=RTC.now();
-	if(calendar.day()<10)
+	RTC.read(timeElements,CLOCK_ADDRESS);
+	if(timeElements.Day<10)
 		date+=("0");
-	date+=(calendar.day());
+	date+=(timeElements.Day);
 	date+=("/");
-	if(calendar.month()<10)
+	if(timeElements.Month<10)
 		date+=("0");
-	date+=(calendar.month());
+	date+=(timeElements.Month);
 	date+=("/");
-	if(calendar.year()<10)
+	if((tmYearToCalendar(timeElements.Year))<10)
 		date+=("0");
-	date+=(calendar.year());
+	date+=(tmYearToCalendar(timeElements.Year));
 	return date;
 }
 
@@ -631,17 +727,17 @@ String printTime (){
 	String time="";
 
 	//time+=("time (hh:mm:ss) : ");
-	calendar=RTC.now();
-	if(calendar.hour()<10)
+	RTC.read(timeElements,CLOCK_ADDRESS);
+	if(timeElements.Hour<10)
 		time+=("0");
-	time+=(calendar.hour());
+	time+=(timeElements.Hour);
 	time+=(":");
-	if(calendar.minute()<10)
+	if(timeElements.Minute<10)
 		time+=("0");
-	time+=(calendar.minute());
+	time+=(timeElements.Minute);
 	time+=(":");
-	if(calendar.second()<10)
+	if(timeElements.Second<10)
 		time+=("0");
-	time+=(calendar.second());
+	time+=(timeElements.Second);
 	return time;
 }
