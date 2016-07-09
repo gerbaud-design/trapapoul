@@ -54,7 +54,8 @@ volatile uint16_t menuPointer=0;
 void userInterface();
 uint8_t waitButton();
 #define TIMEOUT 50
-void numberInput(uint8_t min,uint8_t max);
+void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
+		uint8_t col, uint8_t lin, uint8_t digit);
 void enterTime(tmElements_t*);
 
 
@@ -313,9 +314,60 @@ uint8_t waitButton()
 
 }
 
-void numberInput(uint8_t min,uint8_t max){
+void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
+		uint8_t col, uint8_t lin, uint8_t digit){
+
+	//init du timer1 et de son interrupt de clignotage
+	Timer1.initialize(500000);
+	Timer1.attachInterrupt(interrupt_blinker);
+	Timer1.start();
 
 
+	//print number in the right place
+	lcd.setCursor(col,lin);
+	if((*val<10) && (digit==2))
+		lcd.print('0');
+	lcd.print(*val);
+	while(1){
+		delay(500);
+		noInterrupts();
+		bool blinkCopy=blink;
+		interrupts();
+		if (blinkCopy==1){
+			lcd.setCursor(col,lin);
+			if ((*val<10) && (digit==2))
+				lcd.print('0');
+			lcd.print(*val);
+		}else{
+			lcd.setCursor(col,lin);
+			lcd.print(' ');
+			if (digit==2)
+				lcd.print(' ');
+		}
+		if((!digitalRead(BPUP))&&(*val<max)){
+			*val+=1;
+			lcd.setCursor(col,lin);
+			if ((*val<10) && (digit==2))
+				lcd.print('0');
+			lcd.print(*val);
+		}
+		if((!digitalRead(BPDW))&&(*val>min)){
+			*val-=1;
+			lcd.setCursor(col,lin);
+			if ((*val<10) && (digit==2))
+				lcd.print('0');
+			lcd.print(*val);
+		}
+		if(!digitalRead(BPOK)){
+			lcd.setCursor(col,lin);
+			if ((*val<10) && (digit==2))
+				lcd.print('0');
+			lcd.print(*val);
+			Timer1.stop();
+			Timer1.detachInterrupt();
+			return;
+		}
+	}
 
 }
 
@@ -338,7 +390,7 @@ bool isTimeValid(tmElements_t *te){
 }
 
 void enterTime(tmElements_t *te){
-
+/*
 	//init du timer1 et de son interrupt de clignotage
 	Timer1.initialize(500000);
 	Timer1.attachInterrupt(interrupt_blinker);
@@ -457,7 +509,32 @@ ENTER_DATE:
 			break;
 		}
 	}
+*/
+ENTER_DATE :
+	lcd.setCursor(0,0);
+	lcd.print("DATE:           ");
+	lcd.setCursor(0,1);
+	if (te->Day<10)
+		lcd.print('0');
+	lcd.print(te->Day);
+	lcd.print('/');
+	if (te->Month<10)
+		lcd.print('0');
+	lcd.print(te->Month);
+	lcd.print('/');
+	lcd.print((uint16_t(te->Year)+1970));
+	lcd.print("      ");
 
+	//update values
+	{
+		uint8_t tmpYear=(tmYearToY2k(te->Year));
+		enterNumber(&(te->Day),1,31,0,1,2);
+		enterNumber(&(te->Month),1,12,3,1,2);
+		enterNumber(&tmpYear,0,99,8,1,2);
+		te->Year=y2kYearToTm(tmpYear);
+	}
+
+	//check validity
 	if(!isDateValid(te)){	//check date validity
 
 		lcd.setCursor(0,0);
@@ -488,6 +565,28 @@ ENTER_TIME:
 		lcd.print('0');
 	lcd.print(te->Second);
 	lcd.print("        ");
+
+	//update values
+	enterNumber(&(te->Hour),0,23,0,1,2);
+	enterNumber(&(te->Minute),0,59,3,1,2);
+	enterNumber(&(te->Second),0,59,6,1,2);
+
+	//check validity
+	if(!isDateValid(te)){	//check date validity
+
+		lcd.setCursor(0,0);
+		lcd.print("HEURE NON VALIDE");
+		delay(1000);
+		lcd.setCursor(0,0);
+		lcd.print("                ");
+		delay(500);
+		lcd.setCursor(0,0);
+		lcd.print("HEURE NON VALIDE");
+		delay(1000);
+		goto ENTER_TIME;
+	}
+
+	/*
 	while(1){
 		delay(500);
 		noInterrupts();
@@ -614,7 +713,7 @@ ENTER_TIME:
 WRAP_UP:
 	Timer1.stop();
 	Timer1.detachInterrupt();
-
+*/
 }
 
 void userInterface()
