@@ -41,6 +41,7 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define BAT1_CHAR 3
 #define BAT2_CHAR 4
 #define BAT3_CHAR 5
+#define DEG_CHAR 6
 
 
 //boutons config
@@ -55,7 +56,7 @@ void userInterface();
 uint8_t waitButton();
 #define TIMEOUT 50
 void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
-		uint8_t col, uint8_t lin, uint8_t digit);
+		uint8_t col, uint8_t lin, uint8_t digit/*, bool print0*/);
 void enterTime(tmElements_t*);
 
 
@@ -68,9 +69,9 @@ uint8_t closeMode=SOLEIL;
 uint8_t cur_mm=30;
 uint8_t cur_hh=12;
 
-double latitudeNord;
-double longitudeOuest;
-void enterGPS (double*, double*);
+int latitudeNord=45;
+int longitudeOuest=-6;
+void enterGPS (int*, int*);
 
 
 //analogconfig
@@ -150,6 +151,9 @@ void setup()
 	}{
 		uint8_t bat3[8] = {0xe,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f};
 		 lcd.createChar(BAT3_CHAR, bat3);
+	}{
+		uint8_t deg[8] = {0xc,0x12,0x12,0x0c,0x00,0x00,0x00};
+		 lcd.createChar(DEG_CHAR, deg);
 	}
 	lcd.setCursor(0,0);
 
@@ -315,8 +319,7 @@ uint8_t waitButton()
 }
 
 void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
-		uint8_t col, uint8_t lin, uint8_t digit){
-
+		uint8_t col, uint8_t lin, uint8_t digit/*,bool print0*/){
 	//init du timer1 et de son interrupt de clignotage
 	Timer1.initialize(500000);
 	Timer1.attachInterrupt(interrupt_blinker);
@@ -325,7 +328,9 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 
 	//print number in the right place
 	lcd.setCursor(col,lin);
-	if((*val<10) && (digit==2))
+	if((*val<100) && (digit==3)/* && (print0==1)*/)
+		lcd.print('0');
+	if((*val<10) && (digit>=2)/* && (print0==1)*/)
 		lcd.print('0');
 	lcd.print(*val);
 	while(1){
@@ -335,32 +340,42 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 		interrupts();
 		if (blinkCopy==1){
 			lcd.setCursor(col,lin);
-			if ((*val<10) && (digit==2))
+			if((*val<100) && (digit==3)/* && (print0==1)*/)
+				lcd.print('0');
+			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
 				lcd.print('0');
 			lcd.print(*val);
 		}else{
 			lcd.setCursor(col,lin);
 			lcd.print(' ');
-			if (digit==2)
+			if (digit>=2)
+				lcd.print(' ');
+			if (digit==3)
 				lcd.print(' ');
 		}
 		if((!digitalRead(BPUP))&&(*val<max)){
 			*val+=1;
 			lcd.setCursor(col,lin);
-			if ((*val<10) && (digit==2))
+			if((*val<100) && (digit==3)/* && (print0==1)*/)
+				lcd.print('0');
+			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
 				lcd.print('0');
 			lcd.print(*val);
 		}
 		if((!digitalRead(BPDW))&&(*val>min)){
 			*val-=1;
 			lcd.setCursor(col,lin);
-			if ((*val<10) && (digit==2))
+			if((*val<100) && (digit==3)/* && (print0==1)*/)
+				lcd.print('0');
+			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
 				lcd.print('0');
 			lcd.print(*val);
 		}
 		if(!digitalRead(BPOK)){
 			lcd.setCursor(col,lin);
-			if ((*val<10) && (digit==2))
+			if((*val<100) && (digit==3)/* && (print0==1)*/)
+				lcd.print('0');
+			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
 				lcd.print('0');
 			lcd.print(*val);
 			Timer1.stop();
@@ -390,126 +405,7 @@ bool isTimeValid(tmElements_t *te){
 }
 
 void enterTime(tmElements_t *te){
-/*
-	//init du timer1 et de son interrupt de clignotage
-	Timer1.initialize(500000);
-	Timer1.attachInterrupt(interrupt_blinker);
-	Timer1.start();
-ENTER_DATE:
-	lcd.setCursor(0,0);
-	lcd.print("DATE:           ");
-	lcd.setCursor(0,1);
-	if (te->Day<10)
-		lcd.print('0');
-	lcd.print(te->Day);
-	lcd.print('/');
-	if (te->Month<10)
-		lcd.print('0');
-	lcd.print(te->Month);
-	lcd.print('/');
-	lcd.print((uint16_t(te->Year)+1970));
-	lcd.print("      ");
-	while(1){
-		delay(500);
-		noInterrupts();
-		bool blinkCopy=blink;
-		interrupts();
-		if (blinkCopy==1){
-			lcd.setCursor(0,1);
-			if (te->Day<10)
-				lcd.print('0');
-			lcd.print(te->Day);
-		}else{
-			lcd.setCursor(0,1);
-			lcd.print("  ");
-		}
-		if((!digitalRead(BPUP))&&(te->Day<31)){
-			te->Day+=1;
-			lcd.setCursor(0,1);
-			if (te->Day<10)
-				lcd.print('0');
-			lcd.print(te->Day);
-		}
-		if((!digitalRead(BPDW))&&(te->Day>0)){
-			te->Day-=1;
-			lcd.setCursor(0,1);
-			if (te->Day<10)
-				lcd.print('0');
-			lcd.print(te->Day);
-		}
-		if(!digitalRead(BPOK)){
-			lcd.setCursor(0,1);
-			if (te->Day<10)
-				lcd.print('0');
-			lcd.print(te->Day);
-			break;
-		}
-	}
-	while(1){
-		delay(500);
-		noInterrupts();
-		bool blinkCopy=blink;
-		interrupts();
-		if (blinkCopy==1){
-			lcd.setCursor(3,1);
-			if (te->Month<10)
-				lcd.print('0');
-			lcd.print(te->Month);
-		}else{
-			lcd.setCursor(3,1);
-			lcd.print("  ");
-		}
-		if((!digitalRead(BPUP))&&(te->Month<12)){
-			te->Month+=1;
-			lcd.setCursor(3,1);
-			if (te->Month<10)
-				lcd.print('0');
-			lcd.print(te->Month);
-		}
-		if((!digitalRead(BPDW))&&(te->Month>0)){
-			te->Month-=1;
-			lcd.setCursor(3,1);
-			if (te->Month<10)
-				lcd.print('0');
-			lcd.print(te->Month);
-		}
-		if(!digitalRead(BPOK)){
-			lcd.setCursor(3,1);
-			if (te->Month<10)
-				lcd.print('0');
-			lcd.print(te->Month);
-			break;
-		}
-	}
-	while(1){
-		delay(500);
-		noInterrupts();
-		bool blinkCopy=blink;
-		interrupts();
-		if (blinkCopy==1){
-			lcd.setCursor(6,1);
-			lcd.print(uint16_t(te->Year)+1970);
-		}else{
-			lcd.setCursor(6,1);
-			lcd.print("    ");
-		}
-		if((!digitalRead(BPUP))&&(te->Year<254)){
-			te->Year+=1;
-			lcd.setCursor(6,1);
-			lcd.print(uint16_t(te->Year)+1970);
-		}
-		if((!digitalRead(BPDW))&&(te->Year>0)){
-			te->Year-=1;
-			lcd.setCursor(6,1);
-			lcd.print(uint16_t(te->Year)+1970);
-		}
-		if(!digitalRead(BPOK)){
-			lcd.setCursor(0,1);
-			lcd.print(uint16_t(te->Year)+1970);
-			break;
-		}
-	}
-*/
+
 ENTER_DATE :
 	lcd.setCursor(0,0);
 	lcd.print("DATE:           ");
@@ -585,135 +481,6 @@ ENTER_TIME:
 		delay(1000);
 		goto ENTER_TIME;
 	}
-
-	/*
-	while(1){
-		delay(500);
-		noInterrupts();
-		bool blinkCopy=blink;
-		interrupts();
-		if (blinkCopy==1){
-			lcd.setCursor(0,1);
-			if (te->Hour<10)
-				lcd.print('0');
-			lcd.print(te->Hour);
-		}else{
-			lcd.setCursor(0,1);
-			lcd.print("  ");
-		}
-		if((!digitalRead(BPUP))&&te->Hour<23){
-			te->Hour+=1;
-			lcd.setCursor(0,1);
-			if (te->Hour<10)
-				lcd.print('0');
-			lcd.print(te->Hour);
-		}
-		if((!digitalRead(BPDW))&&te->Hour>0){
-			te->Hour-=1;
-			lcd.setCursor(0,1);
-			if (te->Hour<10)
-				lcd.print('0');
-			lcd.print(te->Hour);
-		}
-		if(!digitalRead(BPOK)){
-			lcd.setCursor(0,1);
-			if (te->Hour<10)
-				lcd.print('0');
-			lcd.print(te->Hour);
-			break;
-		}
-	}
-	while(1){
-		delay(500);
-		noInterrupts();
-		bool blinkCopy=blink;
-		interrupts();
-		if (blinkCopy==1){
-			lcd.setCursor(3,1);
-			if (te->Minute<10)
-				lcd.print('0');
-			lcd.print(te->Minute);
-		}else{
-			lcd.setCursor(3,1);
-			lcd.print("  ");
-		}
-		if((!digitalRead(BPUP))&&te->Minute<59){
-			te->Minute+=1;
-			lcd.setCursor(3,1);
-			if (te->Minute<10)
-				lcd.print('0');
-			lcd.print(te->Minute);
-		}
-		if((!digitalRead(BPDW))&&te->Minute>0){
-			te->Minute-=1;
-			lcd.setCursor(3,1);
-			if (te->Minute<10)
-				lcd.print('0');
-			lcd.print(te->Minute);
-		}
-		if(!digitalRead(BPOK)){
-			lcd.setCursor(3,1);
-			if (te->Minute<10)
-				lcd.print('0');
-			lcd.print(te->Minute);
-			break;
-		}
-	}
-	while(1){
-		delay(500);
-		noInterrupts();
-		bool blinkCopy=blink;
-		interrupts();
-		if (blinkCopy==1){
-			lcd.setCursor(6,1);
-			if (te->Second<10)
-				lcd.print('0');
-			lcd.print(te->Second);
-		}else{
-			lcd.setCursor(6,1);
-			lcd.print("  ");
-		}
-		if((!digitalRead(BPUP))&&te->Second<59){
-			te->Second+=1;
-			lcd.setCursor(6,1);
-			if (te->Second<10)
-				lcd.print('0');
-			lcd.print(te->Second);
-		}
-		if((!digitalRead(BPDW))&&te->Second>0){
-			te->Second-=1;
-			lcd.setCursor(6,1);
-			if (te->Second<10)
-				lcd.print('0');
-			lcd.print(te->Second);
-		}
-		if(!digitalRead(BPOK)){
-			lcd.setCursor(6,1);
-			if (te->Second<10)
-				lcd.print('0');
-			lcd.print(te->Second);
-			break;
-		}
-	}
-
-	if(!isDateValid(te)){	//check date validity
-
-		lcd.setCursor(0,0);
-		lcd.print("HEURE NON VALIDE");
-		delay(1000);
-		lcd.setCursor(0,0);
-		lcd.print("                ");
-		delay(500);
-		lcd.setCursor(0,0);
-		lcd.print("HEURE NON VALIDE");
-		delay(1000);
-		goto ENTER_TIME;
-	}
-
-WRAP_UP:
-	Timer1.stop();
-	Timer1.detachInterrupt();
-*/
 }
 
 void userInterface()
@@ -769,11 +536,8 @@ void userInterface()
 		lcd.setCursor(0,1);
 		lcd.print("LEVE DU SOLEIL  ");
 		if (openMode==SOLEIL){
-			lcd.setCursor(13,0);
+			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
-			lcd.print(' ');
-			lcd.write(CHECK2_CHAR);
-
 		}
 		switch(waitButton()){
 		case BPUP:
@@ -784,7 +548,7 @@ void userInterface()
 			goto MENU_TIMEOUT;
 		case BPOK:
 			openMode=SOLEIL;
-			goto MENU_OUVERTURE_SOLEIL;
+			goto MENU_OUVERTURE_ENREGISTREE;
 		default:
 			goto MENU_ERROR;
 		}
@@ -808,7 +572,7 @@ void userInterface()
 			goto MENU_TIMEOUT;
 		case BPOK:
 			openMode=FIXE;
-			goto MENU_OUVERTURE_FIXE;
+			goto MENU_OUVERTURE_ENREGISTREE;
 		default:
 			goto MENU_ERROR;
 		}
@@ -821,7 +585,7 @@ void userInterface()
 		lcd.print("HEURE MINIMUM   ");
 		if (openMode==MINIMUM){
 			lcd.setCursor(15,0);
-			lcd.write(CHECK2_CHAR);
+			lcd.write(CHECK_CHAR);
 		}
 		switch(waitButton()){
 		case BPUP:
@@ -832,7 +596,7 @@ void userInterface()
 			goto MENU_TIMEOUT;
 		case BPOK:
 			openMode=MINIMUM;
-			goto MENU_OUVERTURE_MINIMUM;
+			goto MENU_OUVERTURE_ENREGISTREE;
 		default:
 			goto MENU_ERROR;
 		}
@@ -856,6 +620,13 @@ void userInterface()
 			goto MENU_ERROR;
 		}
 
+	MENU_OUVERTURE_ENREGISTREE:
+		lcd.setCursor(0,0);
+		lcd.print("OUVERTURE       ");
+		lcd.setCursor(0,1);
+		lcd.print("ENREGISTREE     ");
+		delay(2000);
+		goto MENU;
 
 	MENU_FERMETURE:
 		lcd.setCursor(0,0);
@@ -866,7 +637,7 @@ void userInterface()
 		case BPUP:
 			goto MENU_OUVERTURE;
 		case BPDW:
-			goto MENU_HEURE;
+			goto MENU_DATE_HEURE;
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
@@ -893,7 +664,7 @@ void userInterface()
 			goto MENU_TIMEOUT;
 		case BPOK:
 			closeMode=SOLEIL;
-			goto MENU_FERMETURE_SOLEIL;
+			goto MENU_FERMETURE_ENREGISTREE;
 		default:
 			goto MENU_ERROR;
 		}
@@ -939,7 +710,7 @@ void userInterface()
 			goto MENU_TIMEOUT;
 		case BPOK:
 			closeMode=MINIMUM;
-			goto MENU_FERMETURE_MINIMUM;
+			goto MENU_FERMETURE_ENREGISTREE;
 		default:
 			goto MENU_ERROR;
 		}
@@ -962,41 +733,37 @@ void userInterface()
 			goto MENU_ERROR;
 		}
 
-	MENU_HEURE:
+	MENU_FERMETURE_ENREGISTREE:
+	lcd.setCursor(0,0);
+	lcd.print("FERMETURE       ");
+	lcd.setCursor(0,1);
+	lcd.print("ENREGISTREE     ");
+	delay(2000);
+	goto MENU;
+
+
+	MENU_DATE_HEURE:
 		lcd.setCursor(0,0);
-		lcd.print("REGLAGE HEURE   ");
+		lcd.print("REGLAGE DATE    ");
 		lcd.setCursor(0,1);
-		lcd.print("                ");
+		lcd.print("ET HEURE        ");
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_FERMETURE;
 		case BPDW:
-			goto MENU_DATE;
+			goto MENU_HAUTEUR;
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
 			RTC.read(timeElements,CLOCK_ADDRESS);
 			enterTime(&timeElements);
 			RTC.write(timeElements,CLOCK_ADDRESS);
-			goto MENU_HEURE;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_DATE:
-		lcd.setCursor(0,0);
-		lcd.print("REGLAGE DATE    ");
-		lcd.setCursor(0,1);
-		lcd.print("                ");
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_HEURE;
-		case BPDW:
-			goto MENU_HAUTEUR;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:
-			goto MENU_ERROR;
+			lcd.setCursor(0,0);
+			lcd.print("DATE ET HEURE   ");
+			lcd.setCursor(0,1);
+			lcd.print("ENREGISTREE     ");
+			delay(2000);
+			goto MENU;
 		default:
 			goto MENU_ERROR;
 		}
@@ -1008,7 +775,7 @@ void userInterface()
 		lcd.print("DE LA TRAPPE    ");
 		switch(waitButton()){
 		case BPUP:
-			goto MENU_DATE;
+			goto MENU_DATE_HEURE;
 		case BPDW:
 			goto MENU_GPS;
 		case TIMEOUT:
@@ -1057,7 +824,7 @@ void userInterface()
 
 	MENU_GPS_GPS:
 		lcd.setCursor(0,0);
-		lcd.print("REGLAGE DE LA   ");
+		lcd.print("REGLAGE PAR     ");
 		lcd.setCursor(0,1);
 		lcd.print("POSITION GPS    ");
 		switch(waitButton()){
@@ -1068,7 +835,7 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			//enterGPS(&latitudeNord,&longitudeOuest);
+			enterGPS(&latitudeNord,&longitudeOuest);
 			//sauver en EEPROM
 			lcd.setCursor(0,0);
 			lcd.print("POSITION GPS    ");
@@ -1238,68 +1005,122 @@ String printTime (){
 }
 */
 
-/*
-void enterGPS (double *latN, double *lonO){
-	uint8_t val100_000000;
-	uint8_t val010_000000;
-	uint8_t val001_000000;
-	uint8_t val000_100000;
-	uint8_t val000_010000;
-	uint8_t val000_001000;
-	uint8_t val000_000100;
-	uint8_t val000_000010;
-	uint8_t val000_000001;
-	//init du timer1 et de son interrupt de clignotage
-	Timer1.initialize(500000);
-	Timer1.attachInterrupt(interrupt_blinker);
-	Timer1.start();
+
+void enterGPS (int *latN, int *lonO){
+
+	bool latNS=1; //used also as lonEO
+	uint8_t newlat; //used also as newlon
+	bool lonPointer=0;
+
 
 	lcd.setCursor(0,0);
 	lcd.print("LATITUDE NORD   ");
 	lcd.setCursor(0,1);
 	lcd.print("LATITUDE SUD    ");
+
+LATLON_LABEL:
+	//init du timer1 et de son interrupt de clignotage
+	Timer1.initialize(500000);
+	Timer1.attachInterrupt(interrupt_blinker);
+	Timer1.start();
+	if (lonPointer==1){
+		lcd.setCursor(0,0);
+		lcd.print("LONGITUDE OUEST ");
+		lcd.setCursor(0,1);
+		lcd.print("LONGITUDE EST   ");
+		latNS=0;
+	}
 	lcd.setCursor(15,0);
 	lcd.write(CHECK_CHAR);
 	while(1){
-			delay(500);
-			noInterrupts();
-			bool blinkCopy=blink;
-			interrupts();
-			if (blinkCopy==1){
-				lcd.setCursor(0,1);
-				if (te->Day<10)
-					lcd.print('0');
-				lcd.print(te->Day);
-			}else{
-				lcd.setCursor(0,1);
-				lcd.print("  ");
-			}
-			if((!digitalRead(BPUP))&&(te->Day<31)){
-				te->Day+=1;
-				lcd.setCursor(0,1);
-				if (te->Day<10)
-					lcd.print('0');
-				lcd.print(te->Day);
-			}
-			if((!digitalRead(BPDW))&&(te->Day>0)){
-				te->Day-=1;
-				lcd.setCursor(0,1);
-				if (te->Day<10)
-					lcd.print('0');
-				lcd.print(te->Day);
-			}
-			if(!digitalRead(BPOK)){
-				lcd.setCursor(0,1);
-				if (te->Day<10)
-					lcd.print('0');
-				lcd.print(te->Day);
-				break;
-			}
+		delay(500);
+		noInterrupts();
+		bool blinkCopy=blink;
+		interrupts();
+		if (blinkCopy==1){
+			//set the selected
+			if (latNS==1)
+				lcd.setCursor(15,0);
+			else
+				lcd.setCursor(15,1);
+			//blink the selected
+			lcd.write(CHECK_CHAR);
+		}else{
+			lcd.setCursor(15,0);
+			lcd.print(' ');
+			lcd.setCursor(15,1);
+			lcd.print(' ');
 		}
-	switch(waitButton()){
+		if(!digitalRead(BPUP)){
+			latNS=1;
+			lcd.setCursor(15,0);
+			lcd.write(CHECK_CHAR);
+			lcd.setCursor(15,1);
+			lcd.print(' ');
+		}
+		if(!digitalRead(BPDW)){
+			latNS=0;
+			lcd.setCursor(15,1);
+			lcd.write(CHECK_CHAR);
+			lcd.setCursor(15,0);
+			lcd.print(' ');
+		}
+		if(!digitalRead(BPOK)){
+			Timer1.stop();
+			Timer1.detachInterrupt();
+			break;
+		}
+	}
+
+	lcd.setCursor(0,0);
+	if (latNS==1 && lonPointer==0){
+		lcd.print("LATITUDE NORD   ");
+		if ((*latN>=0 ))
+			newlat=*latN;
+		else
+			newlat=0;
+	}
+	if(latNS==0 && lonPointer==0){
+		lcd.print("LATITUDE SUD    ");
+		if (*latN<=0)
+			newlat=(*latN)*(-1);
+		else
+			newlat=0;
+	}
+	if (latNS==1 && lonPointer==1){
+		lcd.print("LONGITUDE OUEST ");
+		if ((*lonO>=0 ))
+			newlat=*lonO;
+		else
+			newlat=0;
+	}
+	if(latNS==0 && lonPointer==1){
+		lcd.print("LONGITUDE EST   ");
+		if (*lonO<=0)
+			newlat=(*lonO)*(-1);
+		else
+			newlat=0;
+	}
+
+	lcd.setCursor(0,1);
+	lcd.print("                ");
+	lcd.setCursor(3,1);
+	lcd.write(DEG_CHAR);
+	enterNumber(&newlat,0,180,0,1,3);
+	if (latNS==1 && lonPointer==0)
+		*latN=newlat;
+	if(latNS==0 && lonPointer==0)
+		*latN=(newlat)*(-1);
+	if (latNS==1 && lonPointer==1)
+		*lonO=newlat;
+	if(latNS==0 && lonPointer==1)
+		*lonO=(newlat)*(-1);
+	if (lonPointer==0){
+		lonPointer=1;
+		goto LATLON_LABEL;
 	}
 }
-*/
+
 
 void pushLog (String pushee)
 {
