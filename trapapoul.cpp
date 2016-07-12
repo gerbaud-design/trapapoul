@@ -5,7 +5,7 @@
  *      Author: guiguilours
  */
 
-#include "arduino.h"
+#include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
 #include <Wire.h>
@@ -13,6 +13,7 @@
 #include <DS1337RTC.h>
 #include <Time.h>
 #include <TimerOne.h>
+#include <EEPROM.h>
 
 
 
@@ -45,19 +46,28 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 
 
 //boutons config
-#define BPUP 1
-#define BPDW 0
-#define BPOK 3
-
+#define pinBPUP 1
+#define pinBPDW 0
+#define pinBPOK 3
+#define BPUP 0
+#define BPDW 1
+#define BPOK 2
+#define DEBOUNCE 400 //ms
+#define BUTTON_TIMEOUT 10000 //ms
+volatile unsigned long lastPush[3];
+volatile bool buttonState[3];
+volatile bool buttonPushed[3];
+void clearButtons();
+uint8_t waitButton();
 
 //menu variables
 volatile uint16_t menuPointer=0;
 void userInterface();
-uint8_t waitButton();
 #define TIMEOUT 50
 void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 		uint8_t col, uint8_t lin, uint8_t digit/*, bool print0*/);
 void enterTime(tmElements_t*);
+#define BLINK_HALF_PERIOD 500
 
 
 //config variables
@@ -73,6 +83,10 @@ int latitudeNord=45;
 int longitudeOuest=-6;
 void enterGPS (int*, int*);
 
+#define EEPROM_LON 10
+#define EEPROM_LAT 12
+
+
 
 //analogconfig
 uint16_t mes1=0,mes2=0,mes0=0;
@@ -83,7 +97,7 @@ uint8_t toti=0;
 
 // interrupt routine for pin2 alarm.
 void interrupt_0 () {
-	if (digitalRead(BPOK) == 0)
+	if (digitalRead(pinBPOK) == 0)
 		timeToGo=1;
 }
 
@@ -95,6 +109,42 @@ void interrupt_blinker(void)
 	} else {
 		blink=0;
 	}
+}
+
+//interrupt routine for pin change of port D
+ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
+	bool newState[3];
+	newState[BPOK]=(!(digitalRead(pinBPOK)));
+	newState[BPDW]=(!(digitalRead(pinBPDW)));
+	newState[BPUP]=(!(digitalRead(pinBPUP)));
+	if (newState[BPOK]!=buttonState[BPOK]){
+		if (newState[BPOK]==1 && ((millis()-lastPush[BPOK])>DEBOUNCE)){
+			lastPush[BPOK]=millis();
+			buttonPushed[BPOK]=1;
+			buttonState[BPOK]=1;
+		}else{
+			buttonState[BPOK]=0;
+		}
+	}
+	if (newState[BPDW]!=buttonState[BPDW]){
+		if (newState[BPDW]==1 && ((millis()-lastPush[BPDW])>DEBOUNCE)){
+			lastPush[BPDW]=millis();
+			buttonPushed[BPDW]=1;
+			buttonState[BPDW]=1;
+		}else{
+			buttonState[BPDW]=0;
+		}
+	}
+	if (newState[BPUP]!=buttonState[BPUP]){
+		if (newState[BPUP]==1 && ((millis()-lastPush[BPUP])>DEBOUNCE)){
+			lastPush[BPUP]=millis();
+			buttonPushed[BPUP]=1;
+			buttonState[BPUP]=1;
+		}else{
+			buttonState[BPUP]=0;
+		}
+	}
+
 }
 
 //interrupt routine for timer1
@@ -124,13 +174,23 @@ void setup()
 	Serial.println("Beggining of protortc");
 
 //setup des boutons
-	pinMode(BPUP, INPUT);
-	pinMode(BPDW, INPUT);
-	pinMode(BPOK, INPUT);
-	digitalWrite(BPUP,1);
-	digitalWrite(BPDW,1);
-	digitalWrite(BPOK,1);
-
+	pinMode(pinBPUP, INPUT);
+	pinMode(pinBPDW, INPUT);
+	pinMode(pinBPOK, INPUT);
+	digitalWrite(pinBPUP,1);
+	digitalWrite(pinBPDW,1);
+	digitalWrite(pinBPOK,1);
+//setup des interuptions boutons
+	*digitalPinToPCMSK(pinBPUP) |= bit (digitalPinToPCMSKbit(pinBPUP));  // enable pin
+ 	*digitalPinToPCMSK(pinBPDW) |= bit (digitalPinToPCMSKbit(pinBPDW));  // enable pin
+ 	*digitalPinToPCMSK(pinBPOK) |= bit (digitalPinToPCMSKbit(pinBPOK));  // enable pin
+    PCIFR  |= bit (digitalPinToPCICRbit(pinBPDW)); // clear any outstanding interrupt
+    PCICR  |= bit (digitalPinToPCICRbit(pinBPDW)); // enable interrupt for the group
+    delay(50);
+    lastPush[BPOK]=millis();
+    lastPush[BPUP]=millis();
+    lastPush[BPDW]=millis();
+    clearButtons();
 
 //setup du lcd
 	lcd.init();
@@ -257,21 +317,21 @@ void loop()
 
 	*/
 	/*
-		if(!digitalRead(BPUP)){
+		if(!digitalRead(pinBPUP)){
 			lcd.setCursor(14,0);
 			lcd.print("UP");
 		}else{
 			lcd.setCursor(14,0);
 			lcd.print("  ");
 		}
-		if(!digitalRead(BPOK)){
+		if(!digitalRead(pinBPOK)){
 			lcd.setCursor(7,0);
 			lcd.print("OK");
 		}else{
 			lcd.setCursor(7,0);
 			lcd.print("  ");
 		}
-		if(!digitalRead(BPDW)){
+		if(!digitalRead(pinBPDW)){
 			lcd.setCursor(0,0);
 			lcd.print("DW");
 		}else{
@@ -289,6 +349,8 @@ void loop()
 		}
 	*/
 
+
+		clearButtons();
 		userInterface();
 		lcd.noBacklight();
 		lcd.setCursor(0,0);
@@ -301,18 +363,40 @@ void loop()
 	}
 }
 
+void clearButtons(void){
+    buttonPushed[BPUP]=0;
+    buttonPushed[BPOK]=0;
+    buttonPushed[BPDW]=0;
+}
+
 uint8_t waitButton()
 {
-	uint32_t timeout=millis()+10000;
-	delay(500);//debouncing
+	unsigned long topTimeout=millis();
+	/*delay(500);//debouncing
 	while(1){//will have to handle timeout
-		if(!digitalRead(BPUP))
+		if(!digitalRead(pinBPUP))
 			return BPUP;
-		if(!digitalRead(BPOK))
+		if(!digitalRead(pinBPOK))
 			return BPOK;
-		if(!digitalRead(BPDW))
+		if(!digitalRead(pinBPDW))
 			return BPDW;
 		if(millis()>timeout)
+			return TIMEOUT;
+	}*/
+	while(1){
+		if(buttonPushed[BPOK]==1){
+			buttonPushed[BPOK]=0;
+			return BPOK;
+		}
+		if(buttonPushed[BPDW]==1){
+			buttonPushed[BPDW]=0;
+			return BPDW;
+		}
+		if(buttonPushed[BPUP]==1){
+			buttonPushed[BPUP]=0;
+			return BPUP;
+		}
+		if((millis()-topTimeout) > BUTTON_TIMEOUT)
 			return TIMEOUT;
 	}
 
@@ -321,10 +405,11 @@ uint8_t waitButton()
 void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 		uint8_t col, uint8_t lin, uint8_t digit/*,bool print0*/){
 	//init du timer1 et de son interrupt de clignotage
+	unsigned long blinkerTime;
 	Timer1.initialize(500000);
 	Timer1.attachInterrupt(interrupt_blinker);
 	Timer1.start();
-
+	clearButtons();
 
 	//print number in the right place
 	lcd.setCursor(col,lin);
@@ -334,11 +419,9 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 		lcd.print('0');
 	lcd.print(*val);
 	while(1){
-		delay(500);
-		noInterrupts();
-		bool blinkCopy=blink;
-		interrupts();
-		if (blinkCopy==1){
+		blinkerTime = millis();
+
+		if (blink==1){
 			lcd.setCursor(col,lin);
 			if((*val<100) && (digit==3)/* && (print0==1)*/)
 				lcd.print('0');
@@ -353,7 +436,7 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 			if (digit==3)
 				lcd.print(' ');
 		}
-		if((!digitalRead(BPUP))&&(*val<max)){
+		if((buttonState[BPUP]==1)&&(*val<max)){
 			*val+=1;
 			lcd.setCursor(col,lin);
 			if((*val<100) && (digit==3)/* && (print0==1)*/)
@@ -362,7 +445,7 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 				lcd.print('0');
 			lcd.print(*val);
 		}
-		if((!digitalRead(BPDW))&&(*val>min)){
+		if((buttonState[BPDW]==1)&&(*val>min)){
 			*val-=1;
 			lcd.setCursor(col,lin);
 			if((*val<100) && (digit==3)/* && (print0==1)*/)
@@ -371,7 +454,7 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 				lcd.print('0');
 			lcd.print(*val);
 		}
-		if(!digitalRead(BPOK)){
+		if(buttonPushed[BPOK]==1){
 			lcd.setCursor(col,lin);
 			if((*val<100) && (digit==3)/* && (print0==1)*/)
 				lcd.print('0');
@@ -382,6 +465,7 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 			Timer1.detachInterrupt();
 			return;
 		}
+		while ((millis()-blinkerTime)<BLINK_HALF_PERIOD);
 	}
 
 }
@@ -508,11 +592,12 @@ void userInterface()
 			lcd.print("OUVRIRA A HH:MM ");
 		//	lcd.print("FERMERA A HH:MM ");
 
-			if(!digitalRead(BPOK))
+			if(buttonState[BPOK]==1)
 				goto MENU_OUVERTURE;
 		}
 
 	MENU_OUVERTURE:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("REGLAGE DU MODE ");
 		lcd.setCursor(0,1);
@@ -531,6 +616,7 @@ void userInterface()
 		}
 
 	MENU_OUVERTURE_SOLEIL:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("OUVERTURE       ");
 		lcd.setCursor(0,1);
@@ -555,6 +641,7 @@ void userInterface()
 
 
 	MENU_OUVERTURE_FIXE:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("OUVERTURE       ");
 		lcd.setCursor(0,1);
@@ -579,6 +666,7 @@ void userInterface()
 
 
 	MENU_OUVERTURE_MINIMUM:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("OUVERTURE       ");
 		lcd.setCursor(0,1);
@@ -603,6 +691,7 @@ void userInterface()
 
 
 	MENU_OUVERTURE_RETOUR:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("RETOUR          ");
 		lcd.setCursor(0,1);
@@ -621,6 +710,7 @@ void userInterface()
 		}
 
 	MENU_OUVERTURE_ENREGISTREE:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("OUVERTURE       ");
 		lcd.setCursor(0,1);
@@ -629,6 +719,7 @@ void userInterface()
 		goto MENU;
 
 	MENU_FERMETURE:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("REGLAGE DU MODE ");
 		lcd.setCursor(0,1);
@@ -647,6 +738,7 @@ void userInterface()
 		}
 
 	MENU_FERMETURE_SOLEIL:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("FERMETURE       ");
 		lcd.setCursor(0,1);
@@ -670,6 +762,7 @@ void userInterface()
 		}
 
 	MENU_FERMETURE_FIXE:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("FERMETURE       ");
 		lcd.setCursor(0,1);
@@ -693,6 +786,7 @@ void userInterface()
 		}
 
 	MENU_FERMETURE_MINIMUM:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("FERMETURE       ");
 		lcd.setCursor(0,1);
@@ -716,6 +810,7 @@ void userInterface()
 		}
 
 	MENU_FERMETURE_RETOUR:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("RETOUR          ");
 		lcd.setCursor(0,1);
@@ -734,15 +829,17 @@ void userInterface()
 		}
 
 	MENU_FERMETURE_ENREGISTREE:
-	lcd.setCursor(0,0);
-	lcd.print("FERMETURE       ");
-	lcd.setCursor(0,1);
-	lcd.print("ENREGISTREE     ");
-	delay(2000);
-	goto MENU;
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print("FERMETURE       ");
+		lcd.setCursor(0,1);
+		lcd.print("ENREGISTREE     ");
+		delay(2000);
+		goto MENU;
 
 
 	MENU_DATE_HEURE:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("REGLAGE DATE    ");
 		lcd.setCursor(0,1);
@@ -769,6 +866,7 @@ void userInterface()
 		}
 
 	MENU_HAUTEUR:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("REGLAGE HAUTEUR ");
 		lcd.setCursor(0,1);
@@ -787,6 +885,7 @@ void userInterface()
 		}
 
 	MENU_GPS:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("REGLAGE DE LA   ");
 		lcd.setCursor(0,1);
@@ -805,6 +904,7 @@ void userInterface()
 		}
 
 	MENU_GPS_DPT:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("REGLAGE PAR     ");
 		lcd.setCursor(0,1);
@@ -823,6 +923,7 @@ void userInterface()
 		}
 
 	MENU_GPS_GPS:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("REGLAGE PAR     ");
 		lcd.setCursor(0,1);
@@ -835,8 +936,11 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
+			EEPROM.get(EEPROM_LAT,latitudeNord);
+			EEPROM.get(EEPROM_LON,longitudeOuest);
 			enterGPS(&latitudeNord,&longitudeOuest);
-			//sauver en EEPROM
+			EEPROM.put(EEPROM_LAT,latitudeNord);
+			EEPROM.put(EEPROM_LON,longitudeOuest);
 			lcd.setCursor(0,0);
 			lcd.print("POSITION GPS    ");
 			lcd.setCursor(0,1);
@@ -848,6 +952,7 @@ void userInterface()
 		}
 
 	MENU_GPS_RETOUR:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("RETOUR          ");
 		lcd.setCursor(0,1);
@@ -866,6 +971,7 @@ void userInterface()
 		}
 
 	MENU_EXPERT:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("REGLAGE AVANCES ");
 		lcd.setCursor(0,1);
@@ -884,6 +990,7 @@ void userInterface()
 		}
 
 	MENU_QUITTER:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("QUITTER         ");
 		lcd.setCursor(0,1);
@@ -902,6 +1009,7 @@ void userInterface()
 		}
 
 	MENU_ERROR:
+		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print("ERREUR MENU     ");
 		lcd.setCursor(0,1);
@@ -1033,7 +1141,6 @@ LATLON_LABEL:
 	lcd.setCursor(15,0);
 	lcd.write(CHECK_CHAR);
 	while(1){
-		delay(500);
 		noInterrupts();
 		bool blinkCopy=blink;
 		interrupts();
@@ -1051,21 +1158,24 @@ LATLON_LABEL:
 			lcd.setCursor(15,1);
 			lcd.print(' ');
 		}
-		if(!digitalRead(BPUP)){
+		if(buttonPushed[BPUP]==1){
+			clearButtons();
 			latNS=1;
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
 			lcd.setCursor(15,1);
 			lcd.print(' ');
 		}
-		if(!digitalRead(BPDW)){
+		if(buttonPushed[BPDW]==1){
+			clearButtons();
 			latNS=0;
 			lcd.setCursor(15,1);
 			lcd.write(CHECK_CHAR);
 			lcd.setCursor(15,0);
 			lcd.print(' ');
 		}
-		if(!digitalRead(BPOK)){
+		if(buttonPushed[BPOK]==1){
+			clearButtons();
 			Timer1.stop();
 			Timer1.detachInterrupt();
 			break;
