@@ -14,6 +14,7 @@
 #include <Time.h>
 #include <TimerOne.h>
 #include <EEPROM.h>
+#include "departementGPS.h"
 
 
 
@@ -82,9 +83,15 @@ uint8_t cur_hh=12;
 int latitudeNord=45;
 int longitudeOuest=-6;
 void enterGPS (int*, int*);
+void enterDepartement ();
+void installationTrappe();
 
-#define EEPROM_LON 10
-#define EEPROM_LAT 12
+//adressage EEPROM
+#define EEPROM_LON 10 //int
+#define EEPROM_LAT 12 //int
+#define EEPROM_POSL 14 //int
+#define EEPROM_POSH 16 //int
+
 
 
 
@@ -633,8 +640,12 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			openMode=SOLEIL;
-			goto MENU_OUVERTURE_ENREGISTREE;
+			if (openMode == SOLEIL)
+				goto MENU_OUVERTURE_ENREGISTREE;
+			else{
+				openMode=SOLEIL;
+				goto MENU_OUVERTURE_SOLEIL;
+			}
 		default:
 			goto MENU_ERROR;
 		}
@@ -658,8 +669,12 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			openMode=FIXE;
-			goto MENU_OUVERTURE_ENREGISTREE;
+			if (openMode == FIXE)
+				goto MENU_OUVERTURE_ENREGISTREE;
+			else{
+				openMode=FIXE;
+				goto MENU_OUVERTURE_FIXE;
+			}
 		default:
 			goto MENU_ERROR;
 		}
@@ -679,12 +694,16 @@ void userInterface()
 		case BPUP:
 			goto MENU_OUVERTURE_FIXE;
 		case BPDW:
-			goto MENU_OUVERTURE_RETOUR;
+			goto MENU_OUVERTURE_MINIMUM;
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			openMode=MINIMUM;
-			goto MENU_OUVERTURE_ENREGISTREE;
+			if (openMode == MINIMUM)
+				goto MENU_OUVERTURE_ENREGISTREE;
+			else{
+				openMode=MINIMUM;
+				goto MENU_OUVERTURE_MINIMUM;
+			}
 		default:
 			goto MENU_ERROR;
 		}
@@ -755,8 +774,12 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			closeMode=SOLEIL;
-			goto MENU_FERMETURE_ENREGISTREE;
+			if (closeMode == SOLEIL)
+				goto MENU_FERMETURE_ENREGISTREE;
+			else{
+				closeMode=SOLEIL;
+				goto MENU_FERMETURE_SOLEIL;
+			}
 		default:
 			goto MENU_ERROR;
 		}
@@ -779,8 +802,12 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			closeMode=FIXE;
-			goto MENU_FERMETURE_FIXE;
+			if (closeMode == FIXE)
+				goto MENU_FERMETURE_ENREGISTREE;
+			else{
+				closeMode=FIXE;
+				goto MENU_FERMETURE_FIXE;
+			}
 		default:
 			goto MENU_ERROR;
 		}
@@ -799,12 +826,16 @@ void userInterface()
 		case BPUP:
 			goto MENU_FERMETURE_FIXE;
 		case BPDW:
-			goto MENU_FERMETURE_RETOUR;
+			goto MENU_FERMETURE_MINIMUM;
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			closeMode=MINIMUM;
-			goto MENU_FERMETURE_ENREGISTREE;
+			if (closeMode == MINIMUM)
+				goto MENU_FERMETURE_ENREGISTREE;
+			else{
+				closeMode=MINIMUM;
+				goto MENU_FERMETURE_MINIMUM;
+			}
 		default:
 			goto MENU_ERROR;
 		}
@@ -848,7 +879,7 @@ void userInterface()
 		case BPUP:
 			goto MENU_FERMETURE;
 		case BPDW:
-			goto MENU_HAUTEUR;
+			goto MENU_INSTALLATION;
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
@@ -865,110 +896,25 @@ void userInterface()
 			goto MENU_ERROR;
 		}
 
-	MENU_HAUTEUR:
-		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print("REGLAGE HAUTEUR ");
-		lcd.setCursor(0,1);
-		lcd.print("DE LA TRAPPE    ");
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_DATE_HEURE;
-		case BPDW:
-			goto MENU_GPS;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:
-			goto MENU_ERROR;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_GPS:
-		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print("REGLAGE DE LA   ");
-		lcd.setCursor(0,1);
-		lcd.print("POSITION GPS    ");
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_HAUTEUR;
-		case BPDW:
-			goto MENU_EXPERT;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:
-			goto MENU_GPS_DPT;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_GPS_DPT:
-		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print("REGLAGE PAR     ");
-		lcd.setCursor(0,1);
-		lcd.print("DEPARTEMENT     ");
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_GPS_DPT;
-		case BPDW:
-			goto MENU_GPS_GPS;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:
-			goto MENU_ERROR;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_GPS_GPS:
-		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print("REGLAGE PAR     ");
-		lcd.setCursor(0,1);
-		lcd.print("POSITION GPS    ");
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_GPS_DPT;
-		case BPDW:
-			goto MENU_GPS_RETOUR;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:
-			EEPROM.get(EEPROM_LAT,latitudeNord);
-			EEPROM.get(EEPROM_LON,longitudeOuest);
-			enterGPS(&latitudeNord,&longitudeOuest);
-			EEPROM.put(EEPROM_LAT,latitudeNord);
-			EEPROM.put(EEPROM_LON,longitudeOuest);
-			lcd.setCursor(0,0);
-			lcd.print("POSITION GPS    ");
-			lcd.setCursor(0,1);
-			lcd.print("ENREGISTREE     ");
-			delay(1000);
-			goto MENU;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_GPS_RETOUR:
-		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print("RETOUR          ");
-		lcd.setCursor(0,1);
-		lcd.print("                ");
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_GPS_GPS;
-		case BPDW:
-			goto MENU_GPS_RETOUR;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:
-			goto MENU_GPS;
-		default:
-			goto MENU_ERROR;
-		}
+	MENU_INSTALLATION:
+	clearButtons();
+	lcd.setCursor(0,0);
+	lcd.print("INSTALLATION ");
+	lcd.setCursor(0,1);
+	lcd.print("DE LA TRAPPE    ");
+	switch(waitButton()){
+	case BPUP:
+		goto MENU_DATE_HEURE;
+	case BPDW:
+		goto MENU_EXPERT;
+	case TIMEOUT:
+		goto MENU_TIMEOUT;
+	case BPOK:
+		installationTrappe();
+		goto MENU_INSTALLATION;
+	default:
+		goto MENU_ERROR;
+	}
 
 	MENU_EXPERT:
 		clearButtons();
@@ -978,7 +924,7 @@ void userInterface()
 		lcd.print("                ");
 		switch(waitButton()){
 		case BPUP:
-			goto MENU_GPS;
+			goto MENU_INSTALLATION;
 		case BPDW:
 			goto MENU_QUITTER;
 		case TIMEOUT:
@@ -1112,6 +1058,204 @@ String printTime (){
 	return time;
 }
 */
+
+void installationTrappe(){
+//réglage hauteur
+	//réglage date-heure
+	//réglage gps
+
+
+	MENU_HAUTEUR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print("REGLAGE HAUTEUR ");
+		lcd.setCursor(0,1);
+		lcd.print("DE LA TRAPPE    ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_HAUTEUR;
+		case BPDW:
+			goto MENU_DATE_HEURE;
+		case TIMEOUT:
+			goto MENU_HAUTEUR;
+		case BPOK:
+			goto MENU_ERROR;
+		//	EEPROM.put(EEPROM_POSH,posH);
+		//	EEPROM.put(EEPROM_POSL,posL);
+			lcd.setCursor(0,0);
+			lcd.print("POSITION OUVERTE");
+			lcd.setCursor(0,1);
+			lcd.print("ENREGISTREE     ");
+			delay(2000);
+			goto MENU_DATE_HEURE;
+		default:
+			goto MENU_ERROR;
+		}
+
+
+	MENU_DATE_HEURE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print("REGLAGE DATE    ");
+		lcd.setCursor(0,1);
+		lcd.print("ET HEURE        ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_HAUTEUR;
+		case BPDW:
+			goto MENU_GPS;
+		case TIMEOUT:
+			goto MENU_DATE_HEURE;
+		case BPOK:
+			RTC.read(timeElements,CLOCK_ADDRESS);
+			enterTime(&timeElements);
+			RTC.write(timeElements,CLOCK_ADDRESS);
+			lcd.setCursor(0,0);
+			lcd.print("DATE ET HEURE   ");
+			lcd.setCursor(0,1);
+			lcd.print("ENREGISTREE     ");
+			delay(2000);
+			goto MENU_GPS;
+		default:
+			goto MENU_ERROR;
+		}
+
+
+	MENU_GPS:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print("MODIFIER LA     ");
+		lcd.setCursor(0,1);
+		lcd.print("POSITION GPS    ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_DATE_HEURE;
+		case BPDW:
+			goto MENU_QUITTER;
+		case TIMEOUT:
+			goto MENU_GPS;
+		case BPOK:
+			goto MENU_GPS_DPT;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_GPS_DPT:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print("POSITION GPS    ");
+		lcd.setCursor(0,1);
+		lcd.print("PAR DEPARTEMENT ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS_DPT;
+		case BPDW:
+			goto MENU_GPS_GPS;
+		case TIMEOUT:
+			goto MENU_GPS_DPT;
+		case BPOK:
+			enterDepartement();
+			EEPROM.put(EEPROM_LAT,latitudeNord);
+			EEPROM.put(EEPROM_LON,longitudeOuest);
+			lcd.setCursor(0,0);
+			lcd.print("POSITION GPS    ");
+			lcd.setCursor(0,1);
+			lcd.print("ENREGISTREE     ");
+			delay(2000);
+			goto MENU_QUITTER;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_GPS_GPS:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print("POSITION GPS    ");
+		lcd.setCursor(0,1);
+		lcd.print("MANUELLE        ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS_DPT;
+		case BPDW:
+			goto MENU_GPS_RETOUR;
+		case TIMEOUT:
+			goto MENU_GPS_GPS;
+		case BPOK:
+			EEPROM.get(EEPROM_LAT,latitudeNord);
+			EEPROM.get(EEPROM_LON,longitudeOuest);
+			enterGPS(&latitudeNord,&longitudeOuest);
+			EEPROM.put(EEPROM_LAT,latitudeNord);
+			EEPROM.put(EEPROM_LON,longitudeOuest);
+			lcd.setCursor(0,0);
+			lcd.print("POSITION GPS    ");
+			lcd.setCursor(0,1);
+			lcd.print("ENREGISTREE     ");
+			delay(2000);
+			goto MENU_QUITTER;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_GPS_RETOUR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print("RETOUR          ");
+		lcd.setCursor(0,1);
+		lcd.print("                ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS_GPS;
+		case BPDW:
+			goto MENU_GPS_RETOUR;
+		case TIMEOUT:
+			goto MENU_GPS_RETOUR;
+		case BPOK:
+			goto MENU_GPS;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_QUITTER:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print("ABANDONNER      ");
+		lcd.setCursor(0,1);
+		lcd.print("L'INSTALLATION  ");
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS;
+		case BPDW:
+			goto MENU_QUITTER;
+		case TIMEOUT:
+			goto MENU_QUITTER;
+		case BPOK:
+			return;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_ERROR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print("ERREUR MENU     ");
+		lcd.setCursor(0,1);
+		lcd.print("                ");
+		delay(5000);
+		return;
+
+}
+
+
+void enterDepartement (){
+	uint8_t dpt=38;
+	lcd.setCursor(0,0);
+	lcd.print("ENTREZ VOTRE    ");
+	lcd.setCursor(0,1);
+	lcd.print("DEPARTEMENT: 38 ");
+	enterNumber(&dpt,1,95,13,1,2);
+	latitudeNord=departement[((dpt-1)*2)];
+	longitudeOuest=departement[((dpt*2)-1)];
+}
 
 
 void enterGPS (int *latN, int *lonO){
