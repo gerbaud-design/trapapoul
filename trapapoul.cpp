@@ -44,6 +44,7 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define BAT2_CHAR 4
 #define BAT3_CHAR 5
 #define DEG_CHAR 6
+void lcdClearLine(){lcd.print(F("                "));}
 
 //boutons config
 #define pinBPUP 1
@@ -88,10 +89,20 @@ void installationTrappe();
 //adressage EEPROM
 #define EEPROM_LON 10 //int
 #define EEPROM_LAT 12 //int
-#define EEPROM_POSL 14 //int
-#define EEPROM_POSH 16 //int
-
-
+#define EEPROM_POSO 14 //int
+#define EEPROM_POSF 16 //int
+#define EEPROM_POSITION 500 //int[50]
+#define EEPROM_COUNT 600 //int[50]
+uint8_t eeBlockCount;
+uint16_t writeCount;
+/*	eeBlockCount=0;
+	do {
+		EEPROM.get((EEPROM_COUNT+eeBlockCount),writeCount);
+		if (writeCount>=10000)
+			eeBlockCount++;
+		else
+			break;
+	}while(eeBlockCount<50);*/
 
 
 //analogconfig
@@ -99,6 +110,9 @@ uint16_t mes1=0,mes2=0,mes0=0;
 uint32_t tot1=0,tot2=0,tot0=0;
 uint8_t toti=0;
 
+
+//functional variables
+int curentPosition;
 
 
 // interrupt routine for pin2 alarm.
@@ -360,9 +374,9 @@ void loop()
 		userInterface();
 		lcd.noBacklight();
 		lcd.setCursor(0,0);
-		lcd.print(F("                "));
+		lcdClearLine();
 		lcd.setCursor(0,1);
-		lcd.print(F("                "));
+		lcdClearLine();
 		delay(1000);
 		lcd.backlight();
 		delay(1000);
@@ -527,7 +541,7 @@ ENTER_DATE :
 		lcd.print(F("DATE NON VALIDE "));
 		delay(1000);
 		lcd.setCursor(0,0);
-		lcd.print(F("                "));
+		lcdClearLine();
 		delay(500);
 		lcd.setCursor(0,0);
 		lcd.print(F("DATE NON VALIDE "));
@@ -564,7 +578,7 @@ ENTER_TIME:
 		lcd.print(F("HEURE NON VALIDE"));
 		delay(1000);
 		lcd.setCursor(0,0);
-		lcd.print(F("                "));
+		lcdClearLine();
 		delay(500);
 		lcd.setCursor(0,0);
 		lcd.print(F("HEURE NON VALIDE"));
@@ -713,7 +727,7 @@ void userInterface()
 		lcd.setCursor(0,0);
 		lcd.print(F("RETOUR          "));
 		lcd.setCursor(0,1);
-		lcd.print(F("                "));
+		lcdClearLine();
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_OUVERTURE_MINIMUM;
@@ -844,7 +858,7 @@ void userInterface()
 		lcd.setCursor(0,0);
 		lcd.print(F("RETOUR          "));
 		lcd.setCursor(0,1);
-		lcd.print(F("                "));
+		lcdClearLine();
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_FERMETURE_MINIMUM;
@@ -920,7 +934,7 @@ void userInterface()
 		lcd.setCursor(0,0);
 		lcd.print(F("REGLAGE AVANCES "));
 		lcd.setCursor(0,1);
-		lcd.print(F("                "));
+		lcdClearLine();
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_INSTALLATION;
@@ -939,7 +953,7 @@ void userInterface()
 		lcd.setCursor(0,0);
 		lcd.print(F("QUITTER         "));
 		lcd.setCursor(0,1);
-		lcd.print(F("                "));
+		lcdClearLine();
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_EXPERT;
@@ -958,7 +972,7 @@ void userInterface()
 		lcd.setCursor(0,0);
 		lcd.print(F("ERREUR MENU     "));
 		lcd.setCursor(0,1);
-		lcd.print(F("                "));
+		lcdClearLine();
 		delay(5000);
 		goto MENU;
 
@@ -977,7 +991,6 @@ void installationTrappe(){
 		clearButtons();
 		lcd.setCursor(0,0);
 		lcd.print(F("REGLAGE HAUTEUR "));
-		lcd.print(F("REGLAGE HAUTEUR "));
 		lcd.setCursor(0,1);
 		lcd.print(F("DE LA TRAPPE    "));
 		switch(waitButton()){
@@ -989,8 +1002,29 @@ void installationTrappe(){
 			goto MENU_HAUTEUR;
 		case BPOK:
 			goto MENU_ERROR;
-		//	EEPROM.put(EEPROM_POSH,posH);
-		//	EEPROM.put(EEPROM_POSL,posL);
+			clearButtons();
+			lcd.setCursor(0,0);
+			lcd.print(F("REGLAGE DE LA   "));
+			lcd.setCursor(0,1);
+			lcd.print(F("POSITION FERMEE "));
+			delay(1000);
+			//reglage position fermée
+			//valider
+			EEPROM.put(EEPROM_POSF,curentPosition);
+			lcd.setCursor(0,0);
+			lcd.print(F("POSITION FERMEE "));
+			lcd.setCursor(0,1);
+			lcd.print(F("ENREGISTREE     "));
+			delay(2000);
+			clearButtons();
+			lcd.setCursor(0,0);
+			lcd.print(F("REGLAGE DE LA   "));
+			lcd.setCursor(0,1);
+			lcd.print(F("POSITION OUVERTE"));
+			delay(1000);
+			//reglage position ouverte
+			//valider
+			EEPROM.put(EEPROM_POSO,curentPosition);
 			lcd.setCursor(0,0);
 			lcd.print(F("POSITION OUVERTE"));
 			lcd.setCursor(0,1);
@@ -1000,7 +1034,6 @@ void installationTrappe(){
 		default:
 			goto MENU_ERROR;
 		}
-
 
 	MENU_DATE_HEURE:
 		clearButtons();
@@ -1064,14 +1097,7 @@ void installationTrappe(){
 			goto MENU_GPS_DPT;
 		case BPOK:
 			enterDepartement();
-			EEPROM.put(EEPROM_LAT,latitudeNord);
-			EEPROM.put(EEPROM_LON,longitudeOuest);
-			lcd.setCursor(0,0);
-			lcd.print(F("POSITION GPS    "));
-			lcd.setCursor(0,1);
-			lcd.print(F("ENREGISTREE     "));
-			delay(2000);
-			goto MENU_QUITTER;
+			goto MENU_GPS_ENREGISTRER;
 		default:
 			goto MENU_ERROR;
 		}
@@ -1095,12 +1121,7 @@ void installationTrappe(){
 			enterGPS(&latitudeNord,&longitudeOuest);
 			EEPROM.put(EEPROM_LAT,latitudeNord);
 			EEPROM.put(EEPROM_LON,longitudeOuest);
-			lcd.setCursor(0,0);
-			lcd.print(F("POSITION GPS    "));
-			lcd.setCursor(0,1);
-			lcd.print(F("ENREGISTREE     "));
-			delay(2000);
-			goto MENU_QUITTER;
+			goto MENU_GPS_ENREGISTRER;
 		default:
 			goto MENU_ERROR;
 		}
@@ -1110,7 +1131,7 @@ void installationTrappe(){
 		lcd.setCursor(0,0);
 		lcd.print(F("RETOUR          "));
 		lcd.setCursor(0,1);
-		lcd.print(F("                "));
+		lcdClearLine();
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_GPS_GPS;
@@ -1124,12 +1145,22 @@ void installationTrappe(){
 			goto MENU_ERROR;
 		}
 
+	MENU_GPS_ENREGISTRER:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("POSITION GPS    "));
+		lcd.setCursor(0,1);
+		lcd.print(F("ENREGISTREE     "));
+		delay(2000);
+		goto MENU_QUITTER;
+
+
 	MENU_QUITTER:
 		clearButtons();
 		lcd.setCursor(0,0);
-		lcd.print(F("ABANDONNER      "));
+		lcd.print(F("RETOUR          "));
 		lcd.setCursor(0,1);
-		lcd.print(F("L'INSTALLATION  "));
+		lcdClearLine();
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_GPS;
@@ -1146,9 +1177,9 @@ void installationTrappe(){
 	MENU_ERROR:
 		clearButtons();
 		lcd.setCursor(0,0);
-		lcd.print(F("ERREUR MENU     "));
+		lcd.print(F("ERREUR MENU INST"));
 		lcd.setCursor(0,1);
-		lcd.print(F("                "));
+		lcdClearLine();
 		delay(5000);
 		return;
 
@@ -1266,7 +1297,7 @@ LATLON_LABEL:
 	}
 
 	lcd.setCursor(0,1);
-	lcd.print(F("                "));
+	lcdClearLine();
 	lcd.setCursor(3,1);
 	lcd.write(DEG_CHAR);
 	enterNumber(&newlat,0,180,0,1,3);
