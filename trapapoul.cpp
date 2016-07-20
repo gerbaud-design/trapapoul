@@ -104,8 +104,8 @@ void setup()
 	Serial.begin(9600);
 	while(Serial.available() > 0)
 		Serial.read();//flush serial input
-	Serial.println("\n");
-	Serial.println("Press");
+	Serial.println(F("\n"));
+	Serial.println(F("Press"));
 	while (Serial.available()==0);
 	while (Serial.available()!=0)
 		Serial.read();
@@ -135,7 +135,7 @@ void setup()
 */
 //Init of RTC
 	//RTC.set(SECS_YR_2000,CLOCK_ADDRESS);
-	Serial.print("befRTC");
+	Serial.print(F("befRTC"));
 	RTC.disableAlarm(ALARM1_ADDRESS);
 	//RTC.disableAlarm(ALARM2_ADDRESS);
 	/*RTC.interruptSelect(INTB);
@@ -145,7 +145,7 @@ void setup()
 	Serial.print(printDate());
 	Serial.print(' ');
 	Serial.print(printTime());
-	Serial.println("changer heure? (y/n)");
+	Serial.println(F("changer heure? (y/n)"));
 	while (Serial.available()==0);
 			if(Serial.available() > 0){
 				if (Serial.read()=='y')
@@ -154,7 +154,7 @@ void setup()
 
 
 //initialisation de la carte SD
-	//Serial.println("Init SD card");
+	//Serial.println(F("Init SD card"));
 
 	// we'll use the initialization code from the utility libraries
 	// see if the card is present and can be initialized:
@@ -200,8 +200,8 @@ void loop()
 		while(1){
 			while(Serial.available() > 0)
 				Serial.read();//flush serial input
-			Serial.println("réglage posL");
-			Serial.println("0 pour finir");
+			Serial.println(F("réglage posL"));
+			Serial.println(F("0 pour finir"));
 			while (Serial.available()==0);
 			if(Serial.available() > 0){
 				if(Serial.peek()=='0'){
@@ -221,7 +221,7 @@ void loop()
 		while(Serial.available() > 0)
 			Serial.read();//flush serial input
 		Serial.read();//flush serial input
-		Serial.print("PosL ok? (y/n)");
+		Serial.print(F("PosL ok? (y/n)"));
 		while (Serial.available()==0);
 		if(Serial.available() > 0)
 			if (Serial.read()=='y'){
@@ -238,8 +238,8 @@ void loop()
 		while(1){
 			while(Serial.available() > 0)
 				Serial.read();//flush serial input
-			Serial.println("réglage posH");
-			Serial.println("0 pour finir");
+			Serial.println(F("réglage posH"));
+			Serial.println(F("0 pour finir"));
 			while (Serial.available()==0);
 			if(Serial.available() > 0){
 				if(Serial.peek()=='0'){
@@ -250,13 +250,13 @@ void loop()
 				if(motorDistance !=0)
 					break;
 				//verification
-				/*Serial.print("nombre de tour à faire : ");
+				/*Serial.print(F("nombre de tour à faire : "));
 				Serial.println(MotorDistance);
-				Serial.print("Validez (y/n)");
+				Serial.print(F("Validez (y/n)"));
 				while (Serial.available()==0);
 				if(Serial.available() > 0){
 					if (Serial.read()=='y')*/
-				Serial.println("ko");
+				Serial.println(F("ko"));
 			}
 			Serial.read();//flush serial input
 			while(Serial.available() > 0)
@@ -266,7 +266,7 @@ void loop()
 		positionHaute = motorPosition;
 		while(Serial.available() > 0)
 			Serial.read();//flush serial input
-		Serial.println("PosH ok? (y/n)");
+		Serial.println(F("PosH ok? (y/n)"));
 		while (Serial.available()==0);
 		if(Serial.available() > 0)
 			if (Serial.read()=='y'){
@@ -278,7 +278,7 @@ void loop()
 			}
 	}
 
-	Serial.end();
+	//Serial.end();
 	motorGoTo(0);
 	uint16_t nbTours=0;
 	while(1){
@@ -286,7 +286,7 @@ void loop()
 		if(nbTours%1100==0){
 			//while(Serial.available() > 0)
 			//	Serial.read();//flush serial input
-			//Serial.println("Press");
+			//Serial.println(F("Press"));
 			//while (Serial.available()==0);
 			//if(Serial.available() > 0)
 			//	Serial.read();
@@ -297,7 +297,7 @@ void loop()
 		pushLog("Iteration ");
 		pushLog(String(nbTours));
 		pushLog("\n");
-		//Serial.print("Iteration ");
+		//Serial.print(F("Iteration "));
 		//Serial.println(nbTours);
 		motorGoTo(positionHaute);
 		pushLog(printTime());
@@ -313,7 +313,7 @@ void loop()
 	pushLog(printTime());
 	pushLog(";end");
 	while(1){
-		//Serial.println("end");
+		//Serial.println(F("end"));
 		delay(2000);
 	}
 }
@@ -323,7 +323,7 @@ void motorAlign ()
 	bool quadratureA = digitalRead(pinQuadratureA);
 	bool quadratureB = digitalRead(pinQuadratureB);
 	uint8_t quadrature = (quadratureA + quadratureA + quadratureB);
-	//Serial.print("alignequadrature : ");
+	//Serial.print(F("alignequadrature : "));
 	//Serial.println(quadrature);
 	if (quadrature==2){
 		return;
@@ -338,7 +338,7 @@ void motorAlign ()
 			digitalWrite(pinMotorBackward,HIGH);
 		else
 			digitalWrite(pinMotorForward,HIGH);
-		delay(2);
+		delay(5);
 		digitalWrite(pinMotorForward,LOW);
 		digitalWrite(pinMotorBackward,LOW);
 
@@ -347,8 +347,8 @@ void motorAlign ()
 			digitalWrite(pinMotorBackward,LOW);
 
 
-			//Serial.println(ERR_TIMEOUT);
-			//Serial.println(IN_MOTALIGN);
+			Serial.print(ERR_TIMEOUT);
+			Serial.println(IN_MOTALIGN);
 			pushLog(ERR_TIMEOUT);
 			pushLog(IN_MOTALIGN);
 			pushLog(";");
@@ -368,6 +368,8 @@ void motorAlign ()
 	pushLog(";");
 	pushLog(printTime());
 	pushLog("\n");
+	Serial.print(F("moteur aligné P:"));
+	Serial.print(motorPosition);
 }
 
 void motorInit ()
@@ -379,13 +381,13 @@ void motorInit ()
 
 /*	//ask serial the safety timer
 	while(1){
-		Serial.println("entrer le timeout moteur 1 tour en millisecondes");
+		Serial.println(F("entrer le timeout moteur 1 tour en millisecondes"));
 		while (Serial.available()==0);
 		if(Serial.available() > 0){
 			MotorTimeOut = Serial.parseInt();
-			Serial.print("timeout choisi : ");
+			Serial.print(F("timeout choisi : "));
 			Serial.println(MotorTimeOut);
-			Serial.print("Validez (y/n)");
+			Serial.print(F("Validez (y/n)"));
 			while (Serial.available()==0);
 			if(Serial.available() > 0){
 				if (Serial.read()=='y')
@@ -393,7 +395,7 @@ void motorInit ()
 			}
 		}
 		else
-			Serial.println("raté essaye encore!");
+			Serial.println(F("raté essaye encore!"));
 	}*/
 	motorAlign();
 
@@ -414,7 +416,9 @@ void motorGoTo (int targetPosition)
 	uint8_t oldQuadrature;
 	uint8_t machineState=PRERUN;
 	int oldMotorPosition=motorPosition;
+	unsigned long postRunStamp;
 
+	machineState=PRERUN;
 	switch(oldMotorPosition%4){//use the variable as buffer before we use it for its true function
 	case 0:
 		oldQuadrature=QUAD0;
@@ -516,14 +520,16 @@ void motorGoTo (int targetPosition)
 		oldQuadrature=quadrature;
 		oldQuadratureA=quadratureA;
 		oldQuadratureB=quadratureB;
-		//Serial.print("Q");
-		//Serial.println(quadrature);
-		//Serial.print("P");
-		//Serial.println(motorPosition);
-		if (machineState==EXIT)//execute une dernière mise à jour position avant de quitter
+		Serial.print(F("Q"));
+		Serial.println(quadrature);
+		Serial.print(F("P"));
+		Serial.println(motorPosition);
+		if (machineState==EXIT)//here because we execute une dernière mise à jour position avant de quitter
 			break;
-		if(motorPosition==targetPosition)
+		if(motorPosition==targetPosition){
 			machineState=POSTRUN;
+			postRunStamp=(millis()+1000);
+		}
 
 
 		//gestion du prérun,inrun,postrun
@@ -553,8 +559,8 @@ void motorGoTo (int targetPosition)
 					break;
 			}
 			if (millis()>timeMax){
-				//Serial.println(ERR_TIMEOUT);
-				//Serial.println(IN_MOTALIGN);
+				Serial.println(ERR_TIMEOUT);
+				Serial.println(IN_MOTALIGN);
 				pushLog(ERR_TIMEOUT);
 				pushLog(IN_MOTGOTO);
 				pushLog(";");
@@ -566,13 +572,13 @@ void motorGoTo (int targetPosition)
 
 			}/*
 			if((oldMotorPosition>motorPosition)&&motorDirection){
-				Serial.println("sensinverse");
+				Serial.println(F("sensinverse"));
 				digitalWrite(pinMotorForward,LOW);
 				digitalWrite(pinMotorBackward,LOW);
 				machineState=PRERUN;
 			}
 			if((oldMotorPosition<motorPosition)&&!motorDirection){
-				Serial.println("sensinverse");
+				Serial.println(F("sensinverse"));
 				digitalWrite(pinMotorForward,LOW);
 				digitalWrite(pinMotorBackward,LOW);
 				machineState=PRERUN;
@@ -586,11 +592,23 @@ void motorGoTo (int targetPosition)
 			digitalWrite(pinMotorForward,LOW);
 			digitalWrite(pinMotorBackward,LOW);
 			//wait for motor to stop and update quadrature
-			delay(500);
+	/*		delay(500);
 			quadratureA = digitalRead(pinQuadratureA);
 			quadratureB = digitalRead(pinQuadratureB);
+			quadrature = (quadratureA + quadratureA + quadratureB);*/
+			while(1){// wait for a change in
+				quadratureA = digitalRead(pinQuadratureA);
+				quadratureB = digitalRead(pinQuadratureB);
+				if (quadratureA!=oldQuadratureA)
+					break;
+				if (quadratureB!=oldQuadratureB)
+					break;
+				if (millis()>timeMax)
+					break;
+			}
 			quadrature = (quadratureA + quadratureA + quadratureB);
-			machineState = EXIT;
+			if (millis()>postRunStamp)
+				machineState = EXIT;
 			break;
 		case BROKEN:
 			digitalWrite(pinMotorForward,LOW);
@@ -598,16 +616,18 @@ void motorGoTo (int targetPosition)
 			pushLog(printTime());
 			pushLog("broken");
 			pushLog("\n");
-			while(1){
-
+			Serial.println(F("Press to exit broken"));
+			while (Serial.available()==0);
+			if(Serial.available() > 0){
+				Serial.read();
+				machineState=EXIT;
 			}
-
 		}
 	}
 
 	//report
 	//Serial.print(printTime());
-	//Serial.print(" P");
+	//Serial.print(F(" P"));
 	//Serial.println(motorPosition);
 }
 
@@ -654,10 +674,10 @@ void pushLog (String pushee)
 		LogFile.close();
 
 		//Serial.print(pushee);
-		//Serial.println(" has been logged");
+		//Serial.println(F(" has been logged"));
 	}
 	else{
-		//Serial.print("logerror ");
+		//Serial.print(F("logerror "));
 		//Serial.println(pushee);
 	}
 }
@@ -666,28 +686,28 @@ void pushLog (String pushee)
 void serialSetRtc (uint8_t adress){
 	uint16_t year=0;
 	uint8_t month=0,day=0,hour=0,minute=0,second=0;
-	Serial.println("set rtc");
-	Serial.println("year");
+	Serial.println(F("set rtc"));
+	Serial.println(F("year"));
 	while(Serial.available()==0);
 	if(Serial.available()>0)
 		year=Serial.parseInt();
-	Serial.println("month");
+	Serial.println(F("month"));
 	while(Serial.available()==0);
 	if(Serial.available()>0)
 		month=Serial.parseInt();
-	Serial.println("day");
+	Serial.println(F("day"));
 	while(Serial.available()==0);
 	if(Serial.available()>0)
 		day=Serial.parseInt();
-	Serial.println("hour");
+	Serial.println(F("hour"));
 	while(Serial.available()==0);
 	if(Serial.available()>0)
 		hour=Serial.parseInt();
-	Serial.println("minute");
+	Serial.println(F("minute"));
 	while(Serial.available()==0);
 	if(Serial.available()>0)
 		minute=Serial.parseInt();
-	Serial.println("second");
+	Serial.println(F("second"));
 	while(Serial.available()==0);
 	if(Serial.available()>0)
 		second=Serial.parseInt();
@@ -697,7 +717,7 @@ void serialSetRtc (uint8_t adress){
 	timeElements.Hour=hour;
 	timeElements.Minute=minute;
 	timeElements.Second=second;
-	Serial.println("Press");
+	Serial.println(F("Press"));
 	while(Serial.available()==0);
 	if(Serial.available()>0)
 		RTC.write(timeElements,adress);
