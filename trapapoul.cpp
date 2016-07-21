@@ -16,13 +16,14 @@
 //pin config
 #define BPUP 0
 #define BPOK 3
-#define pinQuadratureA 7
-#define pinQuadratureB 4
+#define pinQuadratureA 9
+#define pinQuadratureB 8
 #define pinMotorForward 6
 #define pinMotorBackward 5
 #define pinAlarm 2
-#define pinChargeOFF 8
-#define pinBuzzer 9
+#define pinChargeOFF 4
+#define pinBuzzer 7
+
 
 
 //SDconfig : set up variables using the SD utility library functions:
@@ -58,16 +59,23 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define PRERUN 0
 #define INRUN 1
 #define POSTRUN 2
+#define OVERSHOOT 3
+#define TIMEOUT 4
+#define LOST 7
 #define BROKEN 8
 #define EXIT 9
 
-const uint16_t motorTimeOut=10000;
+volatile bool quadratureA,quadratureB;
+volatile int motorPosition=0;
+volatile unsigned long motorLastMoved;
+volatile uint8_t machineState;
 const uint8_t motorOverturn=10;
-int motorPosition=0;
+#define POST_RUN_TIME 1000
+#define MOTOR_TIME_OUT 10000
+volatile uint32_t motorStopped=0;
 
 	//fonctions
-void motorInit ();
-void motorAlign ();
+//void motorAlign ();
 void motorGoTo (int);
 void motorTurn (int);
 void pushLog(String);
@@ -80,9 +88,127 @@ String printDate ();
 //create string with time "hh:mm:ss"
 String printTime ();
 // interrupt routine for pin2 alarm.
-void interrupt_0 () {
+//void interrupt_0 () {
 	//if (digitalRead(BPOK) == 0)
+
+
+
+
+//interrupt routine for pin change of port B
+ISR (PCINT0_vect){ // handle pin change interrupt for D8 to D13 here
+	bool newQuadratureA;
+	bool newQuadratureB;
+
+	newQuadratureA=(digitalRead(pinQuadratureA));
+	newQuadratureB=(digitalRead(pinQuadratureB));
+	if(newQuadratureA != quadratureA){
+		if(newQuadratureB!=quadratureB){
+			machineState=LOST;
+			motorStopped=millis();
+			quadratureA=newQuadratureA;
+			quadratureB=newQuadratureB;
+			return;
+		}
+		if (newQuadratureB){
+			if (newQuadratureA)
+				motorPosition+=1;
+			else
+				motorPosition-=1;
+		}else {
+			if (newQuadratureA)
+				motorPosition-=1;
+			else
+				motorPosition+=1;
+		}
+	}
+	if(newQuadratureB != quadratureB){
+		if (newQuadratureB){
+			if (newQuadratureA)
+				motorPosition-=1;
+			else
+				motorPosition+=1;
+		}else {
+			if (newQuadratureA)
+				motorPosition+=1;
+			else
+				motorPosition-=1;
+		}
+	}
+	quadratureA=newQuadratureA;
+	quadratureB=newQuadratureB;
+	motorLastMoved=millis();
+
+
+/*	bool newQuadratureA;
+	bool newQuadratureB;
+	uint8_t newQuadrature;
+
+	newQuadratureA=(digitalRead(pinQuadratureA));
+	newQuadratureB=(digitalRead(pinQuadratureB));
+	if(newQuadratureA!=quadratureA || newQuadratureB!=quadratureB){
+		newQuadrature=((newQuadratureA<<1)+newQuadratureB);
+		switch(newQuadrature){//update position
+		case QUAD0 :
+			switch(quadrature){
+			case QUAD1 :
+				motorPosition-=1;
+				break;
+			case QUAD2 :
+				machineState=LOST;
+				break;
+			case QUAD3 :
+				motorPosition+=1;
+				break;
+			}
+			break;
+		case QUAD1 :
+			switch(quadrature){
+			case QUAD2 :
+				motorPosition-=1;
+				break;
+			case QUAD3 :
+				machineState=LOST;
+				break;
+			case QUAD0 :
+				motorPosition+=1;
+				break;
+			}
+			break;
+		case QUAD2 :
+			switch(quadrature){
+			case QUAD3 :
+				motorPosition-=1;
+				break;
+			case QUAD0 :
+				machineState=LOST;
+				break;
+			case QUAD1 :
+				motorPosition+=1;
+				break;
+			}
+			break;
+		case QUAD3 :
+			switch(quadrature){
+			case QUAD0 :
+				motorPosition-=1;
+				break;
+			case QUAD1 :
+				machineState=LOST;
+				break;
+			case QUAD2 :
+				motorPosition+=1;
+				break;
+			}
+			break;
+		}
+		quadrature=newQuadrature;
+		quadratureA=newQuadratureA;
+		quadratureB=newQuadratureB;
+		motorLastMoved=millis();
+	}*/
 }
+
+
 
 
 void interrupt_blinker(void)
@@ -186,7 +312,17 @@ void setup()
 	pinMode(pinMotorBackward,OUTPUT);
 	pinMode(pinQuadratureA,INPUT);
 	pinMode(pinQuadratureB,INPUT);
-	motorInit();
+	//init quadrature
+	quadratureA=digitalRead(pinQuadratureA);
+	quadratureB=digitalRead(pinQuadratureB);
+	//récupération de l'ancienne position en EEPROM à ajouter ici
+    *digitalPinToPCMSK(pinQuadratureA) |= bit (digitalPinToPCMSKbit(pinQuadratureA));  // enable pin
+    *digitalPinToPCMSK(pinQuadratureB) |= bit (digitalPinToPCMSKbit(pinQuadratureB));  // enable pin
+    PCIFR  |= bit (digitalPinToPCICRbit(pinQuadratureB)); // clear any outstanding interrupt
+    PCICR  |= bit (digitalPinToPCICRbit(pinQuadratureB)); // enable interrupt for the group
+
+	//motorAlign();
+
 }
 
 // The loop function is called in an endless loop
@@ -215,7 +351,7 @@ void loop()
 		}
 		if(motorDistance!=0){
 			motorTurn(motorDistance);
-			motorAlign();
+			//motorAlign();
 		}
 		motorPosition=0;
 		while(Serial.available() > 0)
@@ -317,15 +453,15 @@ void loop()
 		delay(2000);
 	}
 }
-
+/*
 void motorAlign ()
 {
-	bool quadratureA = digitalRead(pinQuadratureA);
-	bool quadratureB = digitalRead(pinQuadratureB);
-	uint8_t quadrature = (quadratureA + quadratureA + quadratureB);
+	bool maquadratureA = digitalRead(pinQuadratureA);
+	bool maquadratureB = digitalRead(pinQuadratureB);
+	uint8_t maquadrature = (maquadratureA + maquadratureA + maquadratureB);
 	//Serial.print(F("alignequadrature : "));
 	//Serial.println(quadrature);
-	if (quadrature==2){
+	if (maquadrature==2){
 		return;
 	}
 	digitalWrite(pinMotorForward,LOW);
@@ -356,10 +492,10 @@ void motorAlign ()
 			pushLog("\n");
 			break;
 		}
-		quadratureA = digitalRead(pinQuadratureA);
-		quadratureB = digitalRead(pinQuadratureB);
-		quadrature = (quadratureA + quadratureA + quadratureB);
-	} while(quadrature != 1);//=quadrature=1
+		maquadratureA = digitalRead(pinQuadratureA);
+		maquadratureB = digitalRead(pinQuadratureB);
+		maquadrature = (maquadratureA + maquadratureA + maquadratureB);
+	} while(maquadrature != 1);//=quadrature=1
 
 	//report
 	pushLog(INF_POSITION);
@@ -370,55 +506,9 @@ void motorAlign ()
 	pushLog("\n");
 	Serial.print(F("moteur aligné P:"));
 	Serial.print(motorPosition);
-}
+}*/
 
-void motorInit ()
-{
-	pinMode(pinQuadratureA,INPUT);
-	pinMode(pinQuadratureB,INPUT);
-	pinMode(pinMotorForward,OUTPUT);
-	pinMode(pinMotorBackward,OUTPUT);
-
-/*	//ask serial the safety timer
-	while(1){
-		Serial.println(F("entrer le timeout moteur 1 tour en millisecondes"));
-		while (Serial.available()==0);
-		if(Serial.available() > 0){
-			MotorTimeOut = Serial.parseInt();
-			Serial.print(F("timeout choisi : "));
-			Serial.println(MotorTimeOut);
-			Serial.print(F("Validez (y/n)"));
-			while (Serial.available()==0);
-			if(Serial.available() > 0){
-				if (Serial.read()=='y')
-					break;
-			}
-		}
-		else
-			Serial.println(F("raté essaye encore!"));
-	}*/
-	motorAlign();
-
-
-}
-
-
-void motorGoTo (int targetPosition)
-{
-
-	unsigned long timeMax=0;
-	bool motorDirection;
-	bool quadratureA;
-	bool quadratureB;
-	bool oldQuadratureA;
-	bool oldQuadratureB;
-	uint8_t quadrature;
-	uint8_t oldQuadrature;
-	uint8_t machineState=PRERUN;
-	int oldMotorPosition=motorPosition;
-	unsigned long postRunStamp;
-
-	machineState=PRERUN;
+void loadPosition(void){/*
 	switch(oldMotorPosition%4){//use the variable as buffer before we use it for its true function
 	case 0:
 		oldQuadrature=QUAD0;
@@ -443,92 +533,118 @@ void motorGoTo (int targetPosition)
 	}
 	quadratureA = digitalRead(pinQuadratureA);
 	quadratureB = digitalRead(pinQuadratureB);
-	quadrature = (quadratureA + quadratureA + quadratureB);
-	while(1){ //loop updating position starting before motor and ending after
-		oldMotorPosition=motorPosition;
-		switch(quadrature){//update position
-		case QUAD0 :
-			switch(oldQuadrature){
-			case QUAD1 :
-				motorPosition-=1;
-				break;
-			case QUAD2 :
-				//Serial.println(ERR_POSLOSS);
-				pushLog(ERR_POSLOSS);
-				pushLog(";");
-				pushLog(printTime());
-				pushLog("\n");
-				break;
-			case QUAD3 :
-				motorPosition+=1;
-				break;
-			}
-			break;
-		case QUAD1 :
-			switch(oldQuadrature){
-			case QUAD2 :
-				motorPosition-=1;
-				break;
-			case QUAD3 :
-				//Serial.println(ERR_POSLOSS);
-				pushLog(ERR_POSLOSS);
-				pushLog(";");
-				pushLog(printTime());
-				pushLog("\n");
-				break;
-			case QUAD0 :
-				motorPosition+=1;
-				break;
-			}
-			break;
-		case QUAD2 :
-			switch(oldQuadrature){
-			case QUAD3 :
-				motorPosition-=1;
-				break;
-			case QUAD0 :
-				//Serial.println(ERR_POSLOSS);
-				pushLog(ERR_POSLOSS);
-				pushLog(";");
-				pushLog(printTime());
-				pushLog("\n");
-				break;
-			case QUAD1 :
-				motorPosition+=1;
-				break;
-			}
-			break;
-		case QUAD3 :
-			switch(oldQuadrature){
-			case QUAD0 :
-				motorPosition-=1;
-				break;
-			case QUAD1 :
-				//Serial.println(ERR_POSLOSS);
-				pushLog(ERR_POSLOSS);
-				pushLog(";");
-				pushLog(printTime());
-				pushLog("\n");
-				break;
-			case QUAD2 :
-				motorPosition+=1;
-				break;
-			}
-			break;
+	quadrature = (quadratureA + quadratureA + quadratureB);*/
+}
+void motorGoTo (int targetPosition)
+{
+	bool motorDirection;
 
+	Serial.print("P:");
+	Serial.print(motorPosition);
+	Serial.print("  ");
+	Serial.print(quadratureA);
+	Serial.println(quadratureB);
+	delay(100);
+	Serial.end();
+	delay(100);
+	machineState=INRUN;
+	motorDirection = (targetPosition>motorPosition);
+	motorLastMoved=millis();
+	if(motorDirection){//start motor
+		digitalWrite(pinMotorBackward,LOW);
+		delay(100);
+		digitalWrite(pinMotorForward,HIGH);
+	}else{
+		digitalWrite(pinMotorForward,LOW);
+		delay(100);
+		digitalWrite(pinMotorBackward,HIGH);
+	}
+	while (1){
+		if(machineState==LOST){
+		//	Serial.print("P:");
+		//	Serial.print(motorPosition);
+		//	Serial.print("  ");
+		//	Serial.print(quadratureA);
+		//	Serial.println(quadratureB);
+			digitalWrite(pinMotorForward,LOW);
+			digitalWrite(pinMotorBackward,LOW);
+			//Serial.print(ERR_POSLOSS);
+			//Serial.print(IN_MOTGOTO);
+			//pushLog(ERR_POSLOSS);
+			//pushLog(IN_MOTGOTO);
+			if ((millis()-motorStopped)>POST_RUN_TIME)
+					break;
 		}
-		oldQuadrature=quadrature;
-		oldQuadratureA=quadratureA;
-		oldQuadratureB=quadratureB;
-		Serial.print(F("Q"));
-		Serial.println(quadrature);
-		Serial.print(F("P"));
-		Serial.println(motorPosition);
+		noInterrupts();
+		if(motorPosition==targetPosition){
+			machineState=POSTRUN;
+			interrupts();
+			break;
+		}
+		if ((millis()-motorLastMoved)>(MOTOR_TIME_OUT)){
+			digitalWrite(pinMotorForward,LOW);
+			digitalWrite(pinMotorBackward,LOW);
+			machineState=TIMEOUT;
+			interrupts();
+			break;
+		}
+		if(motorDirection != (targetPosition>motorPosition)){
+			digitalWrite(pinMotorForward,LOW);
+			digitalWrite(pinMotorBackward,LOW);
+			machineState=OVERSHOOT;
+			interrupts();
+			break;
+		}
+		interrupts();
+
+	}
+
+	digitalWrite(pinMotorForward,LOW);
+	digitalWrite(pinMotorBackward,LOW);
+
+	Serial.begin(9600);
+	delay(100);
+	if(machineState==TIMEOUT){
+		Serial.println(ERR_TIMEOUT);
+		Serial.println(IN_MOTGOTO);
+		pushLog(ERR_TIMEOUT);
+		pushLog(IN_MOTGOTO);
+		pushLog(printTime());
+		pushLog("broken");
+		pushLog("\n");
+		Serial.println(F("Press to exit broken"));
+		while (Serial.available()==0);
+		if(Serial.available() > 0){
+			Serial.read();
+			machineState=BROKEN;
+		}
+	}
+	if(machineState==LOST){
+		Serial.print(ERR_POSLOSS);
+		Serial.print(IN_MOTGOTO);
+		pushLog(ERR_POSLOSS);
+		pushLog(IN_MOTGOTO);
+	}
+	Serial.print("S:");
+	Serial.println(machineState);
+	Serial.print(" P:");
+	Serial.print(motorPosition);
+	Serial.print("  ");
+	Serial.print(quadratureA);
+	Serial.println(quadratureB);
+
+
+
+
+	/*
+	machineState=PRERUN;
+	while(1){
+
 		if (machineState==EXIT)//here because we execute une dernière mise à jour position avant de quitter
 			break;
 		if(motorPosition==targetPosition){
 			machineState=POSTRUN;
-			postRunStamp=(millis()+1000);
+			postRunStamp=(millis()+POST_RUN_TIME);
 		}
 
 
@@ -536,7 +652,7 @@ void motorGoTo (int targetPosition)
 		switch(machineState){
 		case PRERUN:
 			 motorDirection = (targetPosition>motorPosition);
-			 timeMax=millis()+motorTimeOut;
+			 motorLastMoved=millis();
 			 if(motorDirection){
 				digitalWrite(pinMotorBackward,LOW);
 				delay(100);
@@ -570,19 +686,7 @@ void motorGoTo (int targetPosition)
 				digitalWrite(pinMotorBackward,LOW);
 				machineState=BROKEN;
 
-			}/*
-			if((oldMotorPosition>motorPosition)&&motorDirection){
-				Serial.println(F("sensinverse"));
-				digitalWrite(pinMotorForward,LOW);
-				digitalWrite(pinMotorBackward,LOW);
-				machineState=PRERUN;
 			}
-			if((oldMotorPosition<motorPosition)&&!motorDirection){
-				Serial.println(F("sensinverse"));
-				digitalWrite(pinMotorForward,LOW);
-				digitalWrite(pinMotorBackward,LOW);
-				machineState=PRERUN;
-			}*/
 
 			quadrature = (quadratureA + quadratureA + quadratureB);
 			if (quadrature==QUAD0)
@@ -591,11 +695,6 @@ void motorGoTo (int targetPosition)
 		case POSTRUN:
 			digitalWrite(pinMotorForward,LOW);
 			digitalWrite(pinMotorBackward,LOW);
-			//wait for motor to stop and update quadrature
-	/*		delay(500);
-			quadratureA = digitalRead(pinQuadratureA);
-			quadratureB = digitalRead(pinQuadratureB);
-			quadrature = (quadratureA + quadratureA + quadratureB);*/
 			while(1){// wait for a change in
 				quadratureA = digitalRead(pinQuadratureA);
 				quadratureB = digitalRead(pinQuadratureB);
@@ -624,11 +723,7 @@ void motorGoTo (int targetPosition)
 			}
 		}
 	}
-
-	//report
-	//Serial.print(printTime());
-	//Serial.print(F(" P"));
-	//Serial.println(motorPosition);
+*/
 }
 
 
