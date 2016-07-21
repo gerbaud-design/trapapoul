@@ -125,13 +125,12 @@ void DS1337RTC::enableAlarm(int address){  //turn on the A1IE or A2IE bit
 
 void DS1337RTC::disableAlarm(int address){  // turn off the A1IE or A2IE bit
   Wire.beginTransmission(DS1337_CTRL_ID);
-  Wire.write(CONTROL_ADDRESS);  
+  Wire.write(CONTROL_ADDRESS);
   if(address == ALARM1_ADDRESS){
     controlRegister &= 0xFE;
   }else{
     controlRegister &= 0xFD;
   }
-  
   Wire.write(controlRegister);
   Wire.endTransmission();
 }
