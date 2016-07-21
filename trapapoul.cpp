@@ -11,11 +11,15 @@
 #include <DS1337RTC.h>
 #include <LiquidCrystal_I2C.h>
 #include "ERRcodes.h"
+#include <Wire.h>
+#include <Time.h>
+#include <TimerOne.h>
+#include <EEPROM.h>
+#include "departementGPS.h"
+#include <AVR/pgmspace.h>
 
 
 //pin config
-#define BPUP 0
-#define BPOK 3
 #define pinQuadratureA 9
 #define pinQuadratureB 8
 #define pinMotorForward 6
@@ -23,6 +27,9 @@
 #define pinAlarm 2
 #define pinChargeOFF 4
 #define pinBuzzer 7
+#define pinBPUP 1
+#define pinBPDW 0
+#define pinBPOK 3
 
 
 
@@ -50,6 +57,8 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define BAT1_CHAR 3
 #define BAT2_CHAR 4
 #define BAT3_CHAR 5
+#define DEG_CHAR 6
+void lcdClearLine(){lcd.print(F("                "));}
 
 //parametres de moteur
 #define QUAD0 1
@@ -60,10 +69,31 @@ LiquidCrystal_I2C lcd(0x27,16,2);
 #define INRUN 1
 #define POSTRUN 2
 #define OVERSHOOT 3
-#define TIMEOUT 4
+#define TIMEOUT 50
 #define LOST 7
 #define BROKEN 8
 #define EXIT 9
+
+//boutons config
+#define BPUP 0
+#define BPDW 1
+#define BPOK 2
+#define DEBOUNCE 400 //ms
+#define BUTTON_TIMEOUT 10000 //ms
+volatile unsigned long lastPush[3];
+volatile bool buttonState[3];
+volatile bool buttonPushed[3];
+void clearButtons();
+uint8_t waitButton();
+
+//menu variables
+volatile uint16_t menuPointer=0;
+void userInterface();
+void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
+		uint8_t col, uint8_t lin, uint8_t digit/*, bool print0*/);
+void enterTime(tmElements_t*);
+#define BLINK_HALF_PERIOD 500
+
 
 volatile bool quadratureA,quadratureB;
 volatile int motorPosition=0;
@@ -80,7 +110,41 @@ void motorGoTo (int);
 void motorTurn (int);
 void pushLog(String);
 
+//config variables
+#define SOLEIL 1
+#define FIXE 2
+#define MINIMUM 3
+uint8_t openMode=SOLEIL;
+uint8_t closeMode=SOLEIL;
+uint8_t cur_mm=30;
+uint8_t cur_hh=12;
 
+int latitudeNord=45;
+int longitudeOuest=-6;
+void enterGPS (int*, int*);
+void enterDepartement ();
+void installationTrappe();
+
+//adressage EEPROM
+#define EEPROM_LON 10 //int
+#define EEPROM_LAT 12 //int
+#define EEPROM_POSO 14 //int
+#define EEPROM_POSF 16 //int
+#define EEPROM_POSITION 500 //int[50]
+#define EEPROM_COUNT 600 //int[50]
+uint8_t eeBlockCount;
+uint16_t writeCount;
+/*	eeBlockCount=0;
+	do {
+		EEPROM.get((EEPROM_COUNT+eeBlockCount),writeCount);
+		if (writeCount>=10000)
+			eeBlockCount++;
+		else
+			break;
+	}while(eeBlockCount<50);*/
+
+//functional variables
+int curentPosition;
 
 void serialSetRtc (uint8_t); //parameter is clock or alarm1 or alarm2
 //create string with date "jj/mm/yyyy"
@@ -138,78 +202,50 @@ ISR (PCINT0_vect){ // handle pin change interrupt for D8 to D13 here
 	quadratureB=newQuadratureB;
 	motorLastMoved=millis();
 
+}
 
-/*	bool newQuadratureA;
-	bool newQuadratureB;
-	uint8_t newQuadrature;
-
-	newQuadratureA=(digitalRead(pinQuadratureA));
-	newQuadratureB=(digitalRead(pinQuadratureB));
-	if(newQuadratureA!=quadratureA || newQuadratureB!=quadratureB){
-		newQuadrature=((newQuadratureA<<1)+newQuadratureB);
-		switch(newQuadrature){//update position
-		case QUAD0 :
-			switch(quadrature){
-			case QUAD1 :
-				motorPosition-=1;
-				break;
-			case QUAD2 :
-				machineState=LOST;
-				break;
-			case QUAD3 :
-				motorPosition+=1;
-				break;
-			}
-			break;
-		case QUAD1 :
-			switch(quadrature){
-			case QUAD2 :
-				motorPosition-=1;
-				break;
-			case QUAD3 :
-				machineState=LOST;
-				break;
-			case QUAD0 :
-				motorPosition+=1;
-				break;
-			}
-			break;
-		case QUAD2 :
-			switch(quadrature){
-			case QUAD3 :
-				motorPosition-=1;
-				break;
-			case QUAD0 :
-				machineState=LOST;
-				break;
-			case QUAD1 :
-				motorPosition+=1;
-				break;
-			}
-			break;
-		case QUAD3 :
-			switch(quadrature){
-			case QUAD0 :
-				motorPosition-=1;
-				break;
-			case QUAD1 :
-				machineState=LOST;
-				break;
-			case QUAD2 :
-				motorPosition+=1;
-				break;
-			}
-			break;
+//interrupt routine for pin change of port D
+ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
+	bool newState[3];
+	newState[BPOK]=(!(digitalRead(pinBPOK)));
+	newState[BPDW]=(!(digitalRead(pinBPDW)));
+	newState[BPUP]=(!(digitalRead(pinBPUP)));
+	if (newState[BPOK]!=buttonState[BPOK]){
+		if (newState[BPOK]==1 && ((millis()-lastPush[BPOK])>DEBOUNCE)){
+			lastPush[BPOK]=millis();
+			buttonPushed[BPOK]=1;
+			buttonState[BPOK]=1;
+		}else{
+			buttonState[BPOK]=0;
 		}
-		quadrature=newQuadrature;
-		quadratureA=newQuadratureA;
-		quadratureB=newQuadratureB;
-		motorLastMoved=millis();
-	}*/
+	}
+	if (newState[BPDW]!=buttonState[BPDW]){
+		if (newState[BPDW]==1 && ((millis()-lastPush[BPDW])>DEBOUNCE)){
+			lastPush[BPDW]=millis();
+			buttonPushed[BPDW]=1;
+			buttonState[BPDW]=1;
+		}else{
+			buttonState[BPDW]=0;
+		}
+	}
+	if (newState[BPUP]!=buttonState[BPUP]){
+		if (newState[BPUP]==1 && ((millis()-lastPush[BPUP])>DEBOUNCE)){
+			lastPush[BPUP]=millis();
+			buttonPushed[BPUP]=1;
+			buttonState[BPUP]=1;
+		}else{
+			buttonState[BPUP]=0;
+		}
+	}
+
 }
 
 
-
+// interrupt routine for pin2 alarm.
+void interrupt_0 () {
+	if (digitalRead(pinBPOK) == 0)
+		timeToGo=1;
+}
 
 void interrupt_blinker(void)
 {
@@ -236,7 +272,7 @@ void setup()
 	while (Serial.available()!=0)
 		Serial.read();
 
-/*
+
 //setup du lcd
 	lcd.init();
 	lcd.backlight();
@@ -256,18 +292,20 @@ void setup()
 	}{
 		uint8_t bat3[8] = {0xe,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f};
 		 lcd.createChar(BAT3_CHAR, bat3);
+	}{
+		uint8_t deg[8] = {0xc,0x12,0x12,0x0c,0x00,0x00,0x00};
+		 lcd.createChar(DEG_CHAR, deg);
 	}
 	lcd.setCursor(0,0);
-*/
+
 //Init of RTC
 	//RTC.set(SECS_YR_2000,CLOCK_ADDRESS);
-	Serial.print(F("befRTC"));
 	RTC.disableAlarm(ALARM1_ADDRESS);
-	//RTC.disableAlarm(ALARM2_ADDRESS);
-	/*RTC.interruptSelect(INTB);
+	RTC.disableAlarm(ALARM2_ADDRESS);
+	RTC.interruptSelect(INTB);
 	RTC.resetAlarms();
 	pinMode(pinAlarm, INPUT);
-	attachInterrupt(digitalPinToInterrupt(3), interrupt_0 , FALLING);*/
+	attachInterrupt(digitalPinToInterrupt(3), interrupt_0 , FALLING);
 	Serial.print(printDate());
 	Serial.print(' ');
 	Serial.print(printTime());
@@ -321,7 +359,29 @@ void setup()
     PCIFR  |= bit (digitalPinToPCICRbit(pinQuadratureB)); // clear any outstanding interrupt
     PCICR  |= bit (digitalPinToPCICRbit(pinQuadratureB)); // enable interrupt for the group
 
-	//motorAlign();
+    //motorAlign();
+
+//setup des boutons
+	pinMode(pinBPUP, INPUT);
+	pinMode(pinBPDW, INPUT);
+	pinMode(pinBPOK, INPUT);
+	digitalWrite(pinBPUP,1);
+	digitalWrite(pinBPDW,1);
+	digitalWrite(pinBPOK,1);
+//setup des interuptions boutons
+	*digitalPinToPCMSK(pinBPUP) |= bit (digitalPinToPCMSKbit(pinBPUP));  // enable pin
+	*digitalPinToPCMSK(pinBPDW) |= bit (digitalPinToPCMSKbit(pinBPDW));  // enable pin
+	*digitalPinToPCMSK(pinBPOK) |= bit (digitalPinToPCMSKbit(pinBPOK));  // enable pin
+	PCIFR  |= bit (digitalPinToPCICRbit(pinBPDW)); // clear any outstanding interrupt
+	PCICR  |= bit (digitalPinToPCICRbit(pinBPDW)); // enable interrupt for the group
+	delay(50);
+	lastPush[BPOK]=millis();
+	lastPush[BPUP]=millis();
+	lastPush[BPDW]=millis();
+	clearButtons();
+
+	Serial.println(F("end of setup"));
+
 
 }
 
@@ -330,6 +390,19 @@ void loop()
 {
 	int motorDistance=0;
 	int16_t positionHaute = 0;
+
+	//debut import ihm
+	clearButtons();
+	userInterface();
+	lcd.noBacklight();
+	lcd.setCursor(0,0);
+	lcdClearLine();
+	lcd.setCursor(0,1);
+	lcdClearLine();
+	delay(1000);
+	lcd.backlight();
+	delay(1000);
+	//fin import ihm
 
 	//set up low position
 	while(1){
@@ -855,4 +928,926 @@ String printTime (){
 		time+=("0");
 	time+=(timeElements.Second);
 	return time;
+}
+
+
+
+
+//
+//debut import fonctions ihm
+//
+//
+
+void clearButtons(void){
+    buttonPushed[BPUP]=0;
+    buttonPushed[BPOK]=0;
+    buttonPushed[BPDW]=0;
+}
+
+uint8_t waitButton()
+{
+	unsigned long topTimeout=millis();
+	/*delay(500);//debouncing
+	while(1){//will have to handle timeout
+		if(!digitalRead(pinBPUP))
+			return BPUP;
+		if(!digitalRead(pinBPOK))
+			return BPOK;
+		if(!digitalRead(pinBPDW))
+			return BPDW;
+		if(millis()>timeout)
+			return TIMEOUT;
+	}*/
+	while(1){
+		if(buttonPushed[BPOK]==1){
+			buttonPushed[BPOK]=0;
+			return BPOK;
+		}
+		if(buttonPushed[BPDW]==1){
+			buttonPushed[BPDW]=0;
+			return BPDW;
+		}
+		if(buttonPushed[BPUP]==1){
+			buttonPushed[BPUP]=0;
+			return BPUP;
+		}
+		if((millis()-topTimeout) > BUTTON_TIMEOUT)
+			return TIMEOUT;
+	}
+
+}
+
+void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
+		uint8_t col, uint8_t lin, uint8_t digit/*,bool print0*/){
+	//init du timer1 et de son interrupt de clignotage
+	unsigned long blinkerTime;
+	Timer1.initialize(500000);
+	Timer1.attachInterrupt(interrupt_blinker);
+	Timer1.start();
+	clearButtons();
+
+	//print number in the right place
+	lcd.setCursor(col,lin);
+	if((*val<100) && (digit==3)/* && (print0==1)*/)
+		lcd.print('0');
+	if((*val<10) && (digit>=2)/* && (print0==1)*/)
+		lcd.print('0');
+	lcd.print(*val);
+	while(1){
+		blinkerTime = millis();
+
+		if (blink==1){
+			lcd.setCursor(col,lin);
+			if((*val<100) && (digit==3)/* && (print0==1)*/)
+				lcd.print('0');
+			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
+				lcd.print('0');
+			lcd.print(*val);
+		}else{
+			lcd.setCursor(col,lin);
+			lcd.print(' ');
+			if (digit>=2)
+				lcd.print(' ');
+			if (digit==3)
+				lcd.print(' ');
+		}
+		if((buttonState[BPUP]==1)&&(*val<max)){
+			*val+=1;
+			lcd.setCursor(col,lin);
+			if((*val<100) && (digit==3)/* && (print0==1)*/)
+				lcd.print('0');
+			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
+				lcd.print('0');
+			lcd.print(*val);
+		}
+		if((buttonState[BPDW]==1)&&(*val>min)){
+			*val-=1;
+			lcd.setCursor(col,lin);
+			if((*val<100) && (digit==3)/* && (print0==1)*/)
+				lcd.print('0');
+			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
+				lcd.print('0');
+			lcd.print(*val);
+		}
+		if(buttonPushed[BPOK]==1){
+			lcd.setCursor(col,lin);
+			if((*val<100) && (digit==3)/* && (print0==1)*/)
+				lcd.print('0');
+			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
+				lcd.print('0');
+			lcd.print(*val);
+			Timer1.stop();
+			Timer1.detachInterrupt();
+			return;
+		}
+		while ((millis()-blinkerTime)<BLINK_HALF_PERIOD);
+	}
+
+}
+
+void enterTime(tmElements_t *te){
+
+ENTER_DATE :
+	lcd.setCursor(0,0);
+	lcd.print(F("DATE:           "));
+	lcd.setCursor(0,1);
+	if (te->Day<10)
+		lcd.print('0');
+	lcd.print(te->Day);
+	lcd.print('/');
+	if (te->Month<10)
+		lcd.print('0');
+	lcd.print(te->Month);
+	lcd.print('/');
+	lcd.print((uint16_t(te->Year)+1970));
+	lcd.print(F("      "));
+
+	//update values
+	{
+		uint8_t tmpYear=(tmYearToY2k(te->Year));
+		enterNumber(&(te->Day),1,31,0,1,2);
+		enterNumber(&(te->Month),1,12,3,1,2);
+		enterNumber(&tmpYear,0,99,8,1,2);
+		te->Year=y2kYearToTm(tmpYear);
+	}
+
+	//check validity
+	if(!isDateValid(te)){	//check date validity
+
+		lcd.setCursor(0,0);
+		lcd.print(F("DATE NON VALIDE "));
+		delay(1000);
+		lcd.setCursor(0,0);
+		lcdClearLine();
+		delay(500);
+		lcd.setCursor(0,0);
+		lcd.print(F("DATE NON VALIDE "));
+		delay(1000);
+		goto ENTER_DATE;
+	}
+
+ENTER_TIME:
+	lcd.setCursor(0,0);
+	lcd.print(F("HEURE:          "));
+	lcd.setCursor(0,1);
+	if (te->Hour<10)
+		lcd.print('0');
+	lcd.print(te->Hour);
+	lcd.print(':');
+	if (te->Minute<10)
+		lcd.print('0');
+	lcd.print(te->Minute);
+	lcd.print(':');
+	if (te->Second<10)
+		lcd.print('0');
+	lcd.print(te->Second);
+	lcd.print(F("        "));
+
+	//update values
+	enterNumber(&(te->Hour),0,23,0,1,2);
+	enterNumber(&(te->Minute),0,59,3,1,2);
+	enterNumber(&(te->Second),0,59,6,1,2);
+
+	//check validity
+	if(!isDateValid(te)){	//check date validity
+
+		lcd.setCursor(0,0);
+		lcd.print(F("HEURE NON VALIDE"));
+		delay(1000);
+		lcd.setCursor(0,0);
+		lcdClearLine();
+		delay(500);
+		lcd.setCursor(0,0);
+		lcd.print(F("HEURE NON VALIDE"));
+		delay(1000);
+		goto ENTER_TIME;
+	}
+}
+
+void userInterface()
+{
+	MENU:
+		delay(500);
+		while(1){
+			RTC.read(timeElements,CLOCK_ADDRESS);
+			lcd.setCursor(0,0);
+			if (timeElements.Hour<10)
+				lcd.print('0');
+			lcd.print(timeElements.Hour);
+			lcd.print('H');
+			if (timeElements.Minute<10)
+				lcd.print('0');
+			lcd.print(timeElements.Minute);
+			lcd.print(':');
+			lcd.print(timeElements.Second);
+			lcd.print(F(" BAT:XX%"));
+	/*		lcd.setCursor(9,0);
+			lcd.write(BAT1_CHAR);
+			lcd.write(BAT2_CHAR);
+			lcd.write(BAT3_CHAR);*/
+			lcd.setCursor(0,1);
+			lcd.print(F("OUVRIRA A HH:MM "));
+		//	lcd.print(F("FERMERA A HH:MM "));
+
+			if(buttonState[BPOK]==1)
+				goto MENU_OUVERTURE;
+		}
+
+	MENU_OUVERTURE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("REGLAGE DU MODE "));
+		lcd.setCursor(0,1);
+		lcd.print(F("D'OUVERTURE     "));
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_OUVERTURE;
+		case BPDW:
+			goto MENU_FERMETURE;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			goto MENU_OUVERTURE_SOLEIL;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_OUVERTURE_SOLEIL:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("OUVERTURE       "));
+		lcd.setCursor(0,1);
+		lcd.print(F("LEVE DU SOLEIL  "));
+		if (openMode==SOLEIL){
+			lcd.setCursor(15,0);
+			lcd.write(CHECK_CHAR);
+		}
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_OUVERTURE_SOLEIL;
+		case BPDW:
+			goto MENU_OUVERTURE_FIXE;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			if (openMode == SOLEIL)
+				goto MENU_OUVERTURE_ENREGISTREE;
+			else{
+				openMode=SOLEIL;
+				goto MENU_OUVERTURE_SOLEIL;
+			}
+		default:
+			goto MENU_ERROR;
+		}
+
+
+	MENU_OUVERTURE_FIXE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("OUVERTURE       "));
+		lcd.setCursor(0,1);
+		lcd.print(F("HEURE FIXE      "));
+		if (openMode==FIXE){
+			lcd.setCursor(15,0);
+			lcd.write(CHECK_CHAR);
+		}
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_OUVERTURE_SOLEIL;
+		case BPDW:
+			goto MENU_OUVERTURE_MINIMUM;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			if (openMode == FIXE)
+				goto MENU_OUVERTURE_ENREGISTREE;
+			else{
+				openMode=FIXE;
+				goto MENU_OUVERTURE_FIXE;
+			}
+		default:
+			goto MENU_ERROR;
+		}
+
+
+	MENU_OUVERTURE_MINIMUM:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("OUVERTURE       "));
+		lcd.setCursor(0,1);
+		lcd.print(F("HEURE MINIMUM   "));
+		if (openMode==MINIMUM){
+			lcd.setCursor(15,0);
+			lcd.write(CHECK_CHAR);
+		}
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_OUVERTURE_FIXE;
+		case BPDW:
+			goto MENU_OUVERTURE_MINIMUM;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			if (openMode == MINIMUM)
+				goto MENU_OUVERTURE_ENREGISTREE;
+			else{
+				openMode=MINIMUM;
+				goto MENU_OUVERTURE_MINIMUM;
+			}
+		default:
+			goto MENU_ERROR;
+		}
+
+
+	MENU_OUVERTURE_RETOUR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("RETOUR          "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_OUVERTURE_MINIMUM;
+		case BPDW:
+			goto MENU_OUVERTURE_RETOUR;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			goto MENU_OUVERTURE;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_OUVERTURE_ENREGISTREE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("OUVERTURE       "));
+		lcd.setCursor(0,1);
+		lcd.print(F("ENREGISTREE     "));
+		delay(2000);
+		goto MENU;
+
+	MENU_FERMETURE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("REGLAGE DU MODE "));
+		lcd.setCursor(0,1);
+		lcd.print(F("DE FERMETURE    "));
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_OUVERTURE;
+		case BPDW:
+			goto MENU_DATE_HEURE;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			goto MENU_FERMETURE_SOLEIL;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_FERMETURE_SOLEIL:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("FERMETURE       "));
+		lcd.setCursor(0,1);
+		lcd.print(F("COUCHE DU SOLEIL"));
+		if (closeMode==SOLEIL){
+			lcd.setCursor(15,0);
+			lcd.write(CHECK_CHAR);
+		}
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_FERMETURE_SOLEIL;
+		case BPDW:
+			goto MENU_FERMETURE_FIXE;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			if (closeMode == SOLEIL)
+				goto MENU_FERMETURE_ENREGISTREE;
+			else{
+				closeMode=SOLEIL;
+				goto MENU_FERMETURE_SOLEIL;
+			}
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_FERMETURE_FIXE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("FERMETURE       "));
+		lcd.setCursor(0,1);
+		lcd.print(F("HEURE FIXE      "));
+		if (closeMode==FIXE){
+			lcd.setCursor(15,0);
+			lcd.write(CHECK_CHAR);
+		}
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_FERMETURE_SOLEIL;
+		case BPDW:
+			goto MENU_FERMETURE_MINIMUM;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			if (closeMode == FIXE)
+				goto MENU_FERMETURE_ENREGISTREE;
+			else{
+				closeMode=FIXE;
+				goto MENU_FERMETURE_FIXE;
+			}
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_FERMETURE_MINIMUM:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("FERMETURE       "));
+		lcd.setCursor(0,1);
+		lcd.print(F("HEURE MINIMUM   "));
+		if (closeMode==MINIMUM){
+			lcd.setCursor(15,0);
+			lcd.write(CHECK_CHAR);
+		}
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_FERMETURE_FIXE;
+		case BPDW:
+			goto MENU_FERMETURE_MINIMUM;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			if (closeMode == MINIMUM)
+				goto MENU_FERMETURE_ENREGISTREE;
+			else{
+				closeMode=MINIMUM;
+				goto MENU_FERMETURE_MINIMUM;
+			}
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_FERMETURE_RETOUR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("RETOUR          "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_FERMETURE_MINIMUM;
+		case BPDW:
+			goto MENU_FERMETURE_RETOUR;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			goto MENU_FERMETURE;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_FERMETURE_ENREGISTREE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("FERMETURE       "));
+		lcd.setCursor(0,1);
+		lcd.print(F("ENREGISTREE     "));
+		delay(2000);
+		goto MENU;
+
+
+	MENU_DATE_HEURE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("REGLAGE DATE    "));
+		lcd.setCursor(0,1);
+		lcd.print(F("ET HEURE        "));
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_FERMETURE;
+		case BPDW:
+			goto MENU_INSTALLATION;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			RTC.read(timeElements,CLOCK_ADDRESS);
+			enterTime(&timeElements);
+			RTC.write(timeElements,CLOCK_ADDRESS);
+			lcd.setCursor(0,0);
+			lcd.print(F("DATE ET HEURE   "));
+			lcd.setCursor(0,1);
+			lcd.print(F("ENREGISTREE     "));
+			delay(2000);
+			goto MENU;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_INSTALLATION:
+	clearButtons();
+	lcd.setCursor(0,0);
+	lcd.print(F("INSTALLATION "));
+	lcd.setCursor(0,1);
+	lcd.print(F("DE LA TRAPPE    "));
+	switch(waitButton()){
+	case BPUP:
+		goto MENU_DATE_HEURE;
+	case BPDW:
+		goto MENU_EXPERT;
+	case TIMEOUT:
+		goto MENU_TIMEOUT;
+	case BPOK:
+		installationTrappe();
+		goto MENU_INSTALLATION;
+	default:
+		goto MENU_ERROR;
+	}
+
+	MENU_EXPERT:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("REGLAGE AVANCES "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_INSTALLATION;
+		case BPDW:
+			goto MENU_QUITTER;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			goto MENU_ERROR;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_QUITTER:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("QUITTER         "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_EXPERT;
+		case BPDW:
+			goto MENU_QUITTER;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			goto MENU;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_ERROR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("ERREUR MENU     "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		delay(5000);
+		goto MENU;
+
+	MENU_TIMEOUT:
+		return;
+
+}
+
+void installationTrappe(){
+//réglage hauteur
+	//réglage date-heure
+	//réglage gps
+
+
+	MENU_HAUTEUR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("REGLAGE HAUTEUR "));
+		lcd.setCursor(0,1);
+		lcd.print(F("DE LA TRAPPE    "));
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_HAUTEUR;
+		case BPDW:
+			goto MENU_DATE_HEURE;
+		case TIMEOUT:
+			goto MENU_HAUTEUR;
+		case BPOK:
+			goto MENU_ERROR;
+			clearButtons();
+			lcd.setCursor(0,0);
+			lcd.print(F("REGLAGE DE LA   "));
+			lcd.setCursor(0,1);
+			lcd.print(F("POSITION FERMEE "));
+			delay(1000);
+			//reglage position fermée
+			//valider
+			EEPROM.put(EEPROM_POSF,curentPosition);
+			lcd.setCursor(0,0);
+			lcd.print(F("POSITION FERMEE "));
+			lcd.setCursor(0,1);
+			lcd.print(F("ENREGISTREE     "));
+			delay(2000);
+			clearButtons();
+			lcd.setCursor(0,0);
+			lcd.print(F("REGLAGE DE LA   "));
+			lcd.setCursor(0,1);
+			lcd.print(F("POSITION OUVERTE"));
+			delay(1000);
+			//reglage position ouverte
+			//valider
+			EEPROM.put(EEPROM_POSO,curentPosition);
+			lcd.setCursor(0,0);
+			lcd.print(F("POSITION OUVERTE"));
+			lcd.setCursor(0,1);
+			lcd.print(F("ENREGISTREE     "));
+			delay(2000);
+			goto MENU_DATE_HEURE;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_DATE_HEURE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("REGLAGE DATE    "));
+		lcd.setCursor(0,1);
+		lcd.print(F("ET HEURE        "));
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_HAUTEUR;
+		case BPDW:
+			goto MENU_GPS;
+		case TIMEOUT:
+			goto MENU_DATE_HEURE;
+		case BPOK:
+			RTC.read(timeElements,CLOCK_ADDRESS);
+			enterTime(&timeElements);
+			RTC.write(timeElements,CLOCK_ADDRESS);
+			lcd.setCursor(0,0);
+			lcd.print(F("DATE ET HEURE   "));
+			lcd.setCursor(0,1);
+			lcd.print(F("ENREGISTREE     "));
+			delay(2000);
+			goto MENU_GPS;
+		default:
+			goto MENU_ERROR;
+		}
+
+
+	MENU_GPS:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("MODIFIER LA     "));
+		lcd.setCursor(0,1);
+		lcd.print(F("POSITION GPS    "));
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_DATE_HEURE;
+		case BPDW:
+			goto MENU_QUITTER;
+		case TIMEOUT:
+			goto MENU_GPS;
+		case BPOK:
+			goto MENU_GPS_DPT;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_GPS_DPT:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("POSITION GPS    "));
+		lcd.setCursor(0,1);
+		lcd.print(F("PAR DEPARTEMENT "));
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS_DPT;
+		case BPDW:
+			goto MENU_GPS_GPS;
+		case TIMEOUT:
+			goto MENU_GPS_DPT;
+		case BPOK:
+			enterDepartement();
+			goto MENU_GPS_ENREGISTRER;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_GPS_GPS:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("POSITION GPS    "));
+		lcd.setCursor(0,1);
+		lcd.print(F("MANUELLE        "));
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS_DPT;
+		case BPDW:
+			goto MENU_GPS_RETOUR;
+		case TIMEOUT:
+			goto MENU_GPS_GPS;
+		case BPOK:
+			EEPROM.get(EEPROM_LAT,latitudeNord);
+			EEPROM.get(EEPROM_LON,longitudeOuest);
+			enterGPS(&latitudeNord,&longitudeOuest);
+			EEPROM.put(EEPROM_LAT,latitudeNord);
+			EEPROM.put(EEPROM_LON,longitudeOuest);
+			goto MENU_GPS_ENREGISTRER;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_GPS_RETOUR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("RETOUR          "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS_GPS;
+		case BPDW:
+			goto MENU_GPS_RETOUR;
+		case TIMEOUT:
+			goto MENU_GPS_RETOUR;
+		case BPOK:
+			goto MENU_GPS;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_GPS_ENREGISTRER:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("POSITION GPS    "));
+		lcd.setCursor(0,1);
+		lcd.print(F("ENREGISTREE     "));
+		delay(2000);
+		goto MENU_QUITTER;
+
+
+	MENU_QUITTER:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("RETOUR          "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_GPS;
+		case BPDW:
+			goto MENU_QUITTER;
+		case TIMEOUT:
+			goto MENU_QUITTER;
+		case BPOK:
+			return;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_ERROR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("ERREUR MENU INST"));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		delay(5000);
+		return;
+
+}
+
+
+void enterDepartement (){
+	uint8_t dpt=38;
+	lcd.setCursor(0,0);
+	lcd.print(F("ENTREZ VOTRE    "));
+	lcd.setCursor(0,1);
+	lcd.print(F("DEPARTEMENT: 38 "));
+	enterNumber(&dpt,1,95,13,1,2);
+	latitudeNord=departement[((dpt-1)*2)];
+	longitudeOuest=departement[((dpt*2)-1)];
+}
+
+
+void enterGPS (int *latN, int *lonO){
+
+	bool latNS=1; //used also as lonEO
+	uint8_t newlat; //used also as newlon
+	bool lonPointer=0;
+
+
+	lcd.setCursor(0,0);
+	lcd.print(F("LATITUDE NORD   "));
+	lcd.setCursor(0,1);
+	lcd.print(F("LATITUDE SUD    "));
+
+LATLON_LABEL:
+	//init du timer1 et de son interrupt de clignotage
+	Timer1.initialize(500000);
+	Timer1.attachInterrupt(interrupt_blinker);
+	Timer1.start();
+	if (lonPointer==1){
+		lcd.setCursor(0,0);
+		lcd.print(F("LONGITUDE OUEST "));
+		lcd.setCursor(0,1);
+		lcd.print(F("LONGITUDE EST   "));
+		latNS=0;
+	}
+	lcd.setCursor(15,0);
+	lcd.write(CHECK_CHAR);
+	while(1){
+		noInterrupts();
+		bool blinkCopy=blink;
+		interrupts();
+		if (blinkCopy==1){
+			//set the selected
+			if (latNS==1)
+				lcd.setCursor(15,0);
+			else
+				lcd.setCursor(15,1);
+			//blink the selected
+			lcd.write(CHECK_CHAR);
+		}else{
+			lcd.setCursor(15,0);
+			lcd.print(' ');
+			lcd.setCursor(15,1);
+			lcd.print(' ');
+		}
+		if(buttonPushed[BPUP]==1){
+			clearButtons();
+			latNS=1;
+			lcd.setCursor(15,0);
+			lcd.write(CHECK_CHAR);
+			lcd.setCursor(15,1);
+			lcd.print(' ');
+		}
+		if(buttonPushed[BPDW]==1){
+			clearButtons();
+			latNS=0;
+			lcd.setCursor(15,1);
+			lcd.write(CHECK_CHAR);
+			lcd.setCursor(15,0);
+			lcd.print(' ');
+		}
+		if(buttonPushed[BPOK]==1){
+			clearButtons();
+			Timer1.stop();
+			Timer1.detachInterrupt();
+			break;
+		}
+	}
+
+	lcd.setCursor(0,0);
+	if (latNS==1 && lonPointer==0){
+		lcd.print(F("LATITUDE NORD   "));
+		if ((*latN>=0 ))
+			newlat=*latN;
+		else
+			newlat=0;
+	}
+	if(latNS==0 && lonPointer==0){
+		lcd.print(F("LATITUDE SUD    "));
+		if (*latN<=0)
+			newlat=(*latN)*(-1);
+		else
+			newlat=0;
+	}
+	if (latNS==1 && lonPointer==1){
+		lcd.print(F("LONGITUDE OUEST "));
+		if ((*lonO>=0 ))
+			newlat=*lonO;
+		else
+			newlat=0;
+	}
+	if(latNS==0 && lonPointer==1){
+		lcd.print(F("LONGITUDE EST   "));
+		if (*lonO<=0)
+			newlat=(*lonO)*(-1);
+		else
+			newlat=0;
+	}
+
+	lcd.setCursor(0,1);
+	lcdClearLine();
+	lcd.setCursor(3,1);
+	lcd.write(DEG_CHAR);
+	enterNumber(&newlat,0,180,0,1,3);
+	if (latNS==1 && lonPointer==0)
+		*latN=newlat;
+	if(latNS==0 && lonPointer==0)
+		*latN=(newlat)*(-1);
+	if (latNS==1 && lonPointer==1)
+		*lonO=newlat;
+	if(latNS==0 && lonPointer==1)
+		*lonO=(newlat)*(-1);
+	if (lonPointer==0){
+		lonPointer=1;
+		goto LATLON_LABEL;
+	}
 }
