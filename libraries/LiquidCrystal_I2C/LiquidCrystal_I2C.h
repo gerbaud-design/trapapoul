@@ -5,7 +5,6 @@
 #define LiquidCrystal_I2C_h
 
 #include <inttypes.h>
-#include "Print.h" 
 #include <Wire.h>
 
 // commands
