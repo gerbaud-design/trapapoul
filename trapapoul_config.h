@@ -42,7 +42,7 @@ const uint8_t motorOverturn=10;
 
 //log config
 
-const String logFileName = "moulog.txt";
+const String logFileName = "bat_test.txt";
 
 //LCD special chars#define CHECK_CHAR 0
 #define CHECK_CHAR 0
