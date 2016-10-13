@@ -10,17 +10,18 @@
 
 
 //pins
-#define pinQuadratureA 9
-#define pinQuadratureB 8
-#define pinMotorForward 6
-#define pinMotorBackward 5
+#define pinQuadratureA 5
+#define pinQuadratureB 4
+#define pinMotorForward 7
+#define pinMotorBackward 8
 #define pinAlarm 2
-#define pinChargeOFF 4
-#define pinBuzzer 7
-#define pinBPUP 1
-#define pinBPDW 0
-#define pinBPOK 3
+#define pinChargeOFF 6
+#define pinBuzzer 9
+#define pinBPUP 3
+#define pinBPDW 1
+#define pinBPOK 0
 #define pinSDSS 10
+
 
 //button timing const
 #define DEBOUNCE 400 //ms
