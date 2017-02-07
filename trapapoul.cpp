@@ -176,7 +176,6 @@ void setup()
 // The loop function is called in an endless loop
 void loop()
 {
-	int motorDistance=0;
 
 	//debut import ihm
 	clearButtons();
