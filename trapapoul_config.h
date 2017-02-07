@@ -10,13 +10,13 @@
 
 
 //pins
-#define pinQuadratureA 5
-#define pinQuadratureB 4
+#define pinQuadratureA 11
+#define pinQuadratureB 10
 #define pinMotorForward 7
 #define pinMotorBackward 8
 #define pinAlarm 2
 #define pinChargeOFF 6
-#define pinBuzzer 9
+#define pinVppEn 9
 #define pinBPUP 3
 #define pinBPDW 1
 #define pinBPOK 0
