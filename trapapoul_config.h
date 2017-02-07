@@ -16,17 +16,17 @@
 #define pinMotorBackward 8
 #define pinAlarm 2
 #define pinChargeOFF 6
-#define pinVppEn 7
-#define pinBPUP 4
-#define pinBPDW 5
-#define pinBPOK 3
-#define pinSDSS 9
+#define pinVppEn 9
+#define pinBPUP 3
+#define pinBPDW 1
+#define pinBPOK 0
+#define pinSDSS 10
+
 
 //analog pins
 #define pinMesImot 0
 #define pinMesVbat 7
 #define pinMesVsol 6
-
 
 //button timing const
 #define DEBOUNCE 400 //ms
@@ -49,7 +49,6 @@ const uint8_t motorOverturn=10;
 //log config
 
 const String logFileName = "moulog.txt";
-
 
 //LCD
 #define LCD_ADDRESS 0x27
