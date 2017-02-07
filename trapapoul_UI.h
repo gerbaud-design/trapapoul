@@ -19,7 +19,7 @@
 
 
 //lcd_I2C config
-LiquidCrystal_I2C lcd(0x20,16,2);
+LiquidCrystal_I2C lcd(LCD_ADDRESS,16,2);
 void uploadChar (uint8_t location, const uint8_t charmap[]);
 
 
@@ -37,6 +37,7 @@ bool isDateValid(tmElements_t*);
 String printDate ();
 //create string with time "hh:mm:ss"
 String printTime ();
+void julianTranslate(uint8_t*hour,uint8_t*minute,uint8_t*second, double);
 
 //timer1config
 volatile bool blink=0;
@@ -114,6 +115,12 @@ void clearButtons(void){
     buttonPushed[BPUP]=0;
     buttonPushed[BPOK]=0;
     buttonPushed[BPDW]=0;
+    buttonState[BPUP]=0;
+    buttonState[BPOK]=0;
+    buttonState[BPDW]=0;/*
+    lastPush[BPUP]=millis();
+    lastPush[BPOK]=millis();
+    lastPush[BPDW]=millis();*/
 }
 
 uint8_t waitButton()
@@ -429,6 +436,11 @@ LATLON_LABEL:
 }
 
 
+void updateTime (){
+RTC.read(timeElements,CLOCK_ADDRESS);
+}
+
+
 //create string with date (jj/mm/yy)
 String printDate (){
 	String date="";
@@ -468,6 +480,13 @@ String printTime (){
 	return time;
 }
 
+void julianTranslate(uint8_t *hour,uint8_t *minute,uint8_t *second, double julian){
+	julian+=0.5;
+	uint32_t julianSec =julian*SECS_PER_DAY;
+	*second=(julianSec%SECS_PER_MIN);
+	*minute=(julianSec%SECS_PER_HOUR)/SECS_PER_MIN;
+	*hour=julianSec/SECS_PER_HOUR;
+}
 
 
 #endif /* TRAPAPOUL_UI_H_ */

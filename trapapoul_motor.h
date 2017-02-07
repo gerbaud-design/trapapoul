@@ -52,7 +52,7 @@ void resetPosition();
 #define quadratureOff PCIFR  &= ~(bit (digitalPinToPCICRbit(pinQuadratureB)))/*disable interrupt for the group*/
 
 //interrupt routine for pin change of port B
-ISR (PCINT0_vect){ // handle pin change interrupt for D8 to D13 here
+ISR (PCINT1_vect){ // handle pin change interrupt for A0 to A7 here
 	bool newQuadratureA;
 	bool newQuadratureB;
 
@@ -99,7 +99,6 @@ ISR (PCINT0_vect){ // handle pin change interrupt for D8 to D13 here
 
 void activateMotor ()
 {
-
 	pinMode(pinVppEn,OUTPUT);
 	digitalWrite(pinVppEn,1);
 	delay(1000);//just in case, can be quicken after tests
@@ -218,9 +217,7 @@ void motorTurn (int16_t motorDistance)
 void motorInit (){
 
 	pinMode(pinMotorForward,OUTPUT);
-	digitalWrite(pinMotorForward,0);
 	pinMode(pinMotorBackward,OUTPUT);
-	digitalWrite(pinMotorBackward,0);
 	pinMode(pinQuadratureA,INPUT);
 	pinMode(pinQuadratureB,INPUT);
 	//init quadrature
@@ -253,6 +250,7 @@ void motorStop(){
 void resetPosition(){
 	motorPosition=0;
 }
+
 
 
 
@@ -297,33 +295,7 @@ uint8_t manualMoveMachineState=0;	//1=frd 2=bkw
 			return;
 		}
 	}
-}	/*
-BEGIN:
-	switch(waitButton()){
-	case BPUP:
-		motorForward();
-		while(buttonState[BPUP]){
-			lcd.setCursor(13,1);
-			lcd.print(motorPosition);
-		}
-		motorStop();
-		goto BEGIN;
-	case BPDW:
-		motorBackward();
-		while(buttonState[BPDW]){
-			lcd.setCursor(13,1);
-			lcd.print(motorPosition);
-		}
-		motorStop();
-		goto BEGIN;
-	case TIMEOUT:
-		goto BEGIN;
-	case BPOK:
-		return;
-	}
-}*/
-
-
+}
 
 
 #endif /* TRAPAPOUL_MOTOR_H_ */

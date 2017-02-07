@@ -8,7 +8,7 @@
 #ifndef DEPARTEMENTGPS_H_
 #define DEPARTEMENTGPS_H_
 
-const int8_t departement[(95*2)]={
+const int8_t departement[(95*2)]={//latitude,longitude
 		46,-5,//01
 		50,-4,//02
 		46,-3,//03

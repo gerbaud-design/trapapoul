@@ -16,8 +16,13 @@
 #include "trapapoul_config.h"
 #include "trapapoul_motor.h"
 #include "logSD.h"
+#include "ephemeride.h"
 
 extern volatile int motorPosition;
+//extern tmElements_t timeElements;
+
+//iterateurs
+uint8_t i8_1;
 
 //config variables
 #define SOLEIL 1
@@ -25,14 +30,26 @@ extern volatile int motorPosition;
 #define MINIMUM 3
 uint8_t openMode=SOLEIL;
 uint8_t closeMode=SOLEIL;
+#define WAKEUPBUTTON 1
+#define WAKEUPALARM 2
+#define WAKEUPUNKNOWN 3
+uint8_t wakeUpSource=WAKEUPUNKNOWN;
 uint8_t cur_mm=30;
 uint8_t cur_hh=12;
 int16_t positionHaute = 0;
 extern volatile uint8_t machineState;
 uint16_t nbCycles;
+uint32_t chargeStartTime=0;
+
+uint16_t anaRead;
+
+double lever,meridien,coucher;
+uint8_t hh, mm, ss;
+
 
 void installationTrappe();
 void manualMoveMotor();
+void dooring();
 
 //adressage EEPROM
 uint8_t eeBlockCount;
@@ -68,27 +85,24 @@ ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
 			lastPush[BPOK]=millis();
 			buttonPushed[BPOK]=1;
 			buttonState[BPOK]=1;
-		}else{
-			buttonState[BPOK]=0;
 		}
+		if(newState[BPOK]==0) buttonState[BPOK]=0;
 	}
 	if (newState[BPDW]!=buttonState[BPDW]){
 		if (newState[BPDW]==1 && ((millis()-lastPush[BPDW])>DEBOUNCE)){
 			lastPush[BPDW]=millis();
 			buttonPushed[BPDW]=1;
 			buttonState[BPDW]=1;
-		}else{
-			buttonState[BPDW]=0;
 		}
+		if(newState[BPDW]==0) buttonState[BPOK]=0;
 	}
 	if (newState[BPUP]!=buttonState[BPUP]){
 		if (newState[BPUP]==1 && ((millis()-lastPush[BPUP])>DEBOUNCE)){
 			lastPush[BPUP]=millis();
 			buttonPushed[BPUP]=1;
 			buttonState[BPUP]=1;
-		}else{
-			buttonState[BPUP]=0;
 		}
+		if(newState[BPUP]==0) buttonState[BPOK]=0;
 	}
 
 }
@@ -147,6 +161,10 @@ void setup()
 	//initialize motor
 	motorInit();
 
+	//init charge
+	pinMode(pinChargeOff,OUTPUT);
+	digitalWrite(pinChargeOff,0);
+
 
 //setup des boutons
 	pinMode(pinBPUP, INPUT);
@@ -156,13 +174,23 @@ void setup()
 	digitalWrite(pinBPDW,1);
 	digitalWrite(pinBPOK,1);
 
+//initialisation of analog inputs
+	analogReference(EXTERNAL);
+	analogRead(pinMesVbat);
+	analogRead(pinMesVbat);
+	analogRead(pinMesVbat);
+	analogRead(pinMesVbat);
+
+//desactive int1 on pin3 (or loop in int1 while pbok pushed)
+	detachInterrupt(digitalPinToInterrupt(pinBPOK));
+
 //setup des interuptions boutons
 	*digitalPinToPCMSK(pinBPUP) |= bit (digitalPinToPCMSKbit(pinBPUP));  // enable pin
 	*digitalPinToPCMSK(pinBPDW) |= bit (digitalPinToPCMSKbit(pinBPDW));  // enable pin
 	*digitalPinToPCMSK(pinBPOK) |= bit (digitalPinToPCMSKbit(pinBPOK));  // enable pin
-	PCIFR  |= bit (digitalPinToPCICRbit(pinBPDW)); // clear any outstanding interrupt
-	PCICR  |= bit (digitalPinToPCICRbit(pinBPDW)); // enable interrupt for the group
-	delay(50);
+	PCIFR  |= bit (digitalPinToPCICRbit(pinBPOK)); // clear any outstanding interrupt
+	PCICR  |= bit (digitalPinToPCICRbit(pinBPOK)); // enable interrupt for the group
+	delay(5);
 	lastPush[BPOK]=millis();
 	lastPush[BPUP]=millis();
 	lastPush[BPDW]=millis();
@@ -176,8 +204,19 @@ void setup()
 // The loop function is called in an endless loop
 void loop()
 {
+/*
+	switch(wakeUpSource){
+	case WAKEUPBUTTON:
+		userInterface();
+		break;
+	case WAKEUPALARM:
+		dooring();
+		break;
+	//case WAKEUPUNKNOWN:
+	default:
+		break;
+	}*/
 
-	//debut import ihm
 	clearButtons();
 	userInterface();
 	lcd.noBacklight();
@@ -189,122 +228,6 @@ void loop()
 	lcd.backlight();
 	delay(1000);
 	lcd.noBacklight();
-	//fin import ihm
-/*
-	//set up low position
-	while(1){
-		while(1){
-			while(Serial.available() > 0)
-				Serial.read();//flush serial input
-			Serial.println(F("réglage posL"));
-			Serial.println(F("0 pour finir"));
-			while (Serial.available()==0);
-			if(Serial.available() > 0){
-				if(Serial.peek()=='0'){
-					motorDistance=0;
-					break;
-				}
-				motorDistance = Serial.parseInt();
-				if(motorDistance !=0)
-					break;
-			}
-		}
-		if(motorDistance!=0){
-			motorTurn(motorDistance);
-			//motorAlign();
-		}
-		motorPosition=0;
-		while(Serial.available() > 0)
-			Serial.read();//flush serial input
-		Serial.read();//flush serial input
-		Serial.print(F("PosL ok? (y/n)"));
-		while (Serial.available()==0);
-		if(Serial.available() > 0)
-			if (Serial.read()=='y'){
-				pushLog(printTime());
-				pushLog(";PosL :");
-				pushLog(String(positionHaute));
-				pushLog("\n");
-				break;
-			}
-	}
-
-	//set up high position
-	while(1){
-		while(1){
-			while(Serial.available() > 0)
-				Serial.read();//flush serial input
-			Serial.println(F("réglage posH"));
-			Serial.println(F("0 pour finir"));
-			while (Serial.available()==0);
-			if(Serial.available() > 0){
-				if(Serial.peek()=='0'){
-					motorDistance=0;
-					break;
-				}
-				motorDistance = Serial.parseInt();
-				if(motorDistance !=0)
-					break;
-				Serial.println(F("ko"));
-			}
-			Serial.read();//flush serial input
-			while(Serial.available() > 0)
-				Serial.read();//flush serial input
-		}
-		motorTurn(motorDistance);
-		positionHaute = motorPosition;
-		while(Serial.available() > 0)
-			Serial.read();//flush serial input
-		Serial.println(F("PosH ok? (y/n)"));
-		while (Serial.available()==0);
-		if(Serial.available() > 0)
-			if (Serial.read()=='y'){
-				pushLog(printTime());
-				pushLog(";PosH :");
-				pushLog(String(positionHaute));
-				pushLog("\n");
-				break;
-			}
-	}
-
-	//Serial.end();
-	motorGoTo(0);
-	uint16_t nbTours=0;
-	while(1){
-		nbTours++;
-		if(nbTours%1100==0){
-			//while(Serial.available() > 0)
-			//	Serial.read();//flush serial input
-			//Serial.println(F("Press"));
-			//while (Serial.available()==0);
-			//if(Serial.available() > 0)
-			//	Serial.read();
-			pushLog(printTime());
-			pushLog(";end");
-			while(1);
-		}
-		pushLog("Iteration ");
-		pushLog(String(nbTours));
-		pushLog("\n");
-		//Serial.print(F("Iteration "));
-		//Serial.println(nbTours);
-		motorGoTo(positionHaute);
-		pushLog(printTime());
-		pushLog(";PosH\n");
-		delay(10000);
-		motorGoTo(0);
-		pushLog(printTime());
-		pushLog(";PosL\n");
-		delay(10000);
-
-	}
-
-	pushLog(printTime());
-	pushLog(";end");
-	while(1){
-		//Serial.println(F("end"));
-		delay(2000);
-	}*/
 }
 
 
@@ -384,6 +307,7 @@ void userInterface()
 	lcd.backlight();
 	MENU:
 		delay(500);
+
 		while(1){
 			RTC.read(timeElements,CLOCK_ADDRESS);
 			lcd.setCursor(0,0);
@@ -405,8 +329,9 @@ void userInterface()
 			lcd.print(F("OUVRIRA A HH:MM "));
 		//	lcd.print(F("FERMERA A HH:MM "));
 
-			if(buttonState[BPOK]==1)
+			if(buttonPushed[BPOK]==1)
 				goto MENU_OUVERTURE;
+			Serial.println("top");
 		}
 
 	MENU_OUVERTURE:
@@ -705,7 +630,7 @@ void userInterface()
 	MENU_INSTALLATION:
 	clearButtons();
 	lcd.setCursor(0,0);
-	lcd.print(F("INSTALLATION "));
+	lcd.print(F("INSTALLATION    "));
 	lcd.setCursor(0,1);
 	lcd.print(F("DE LA TRAPPE    "));
 	switch(waitButton()){
@@ -736,6 +661,76 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
+			goto MENU_EXPERT_CHARGE;
+		default:
+			goto MENU_ERROR;
+		}
+
+MENU_EXPERT_CHARGE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("CHARGE          "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_EXPERT_CHARGE;
+		case BPDW:
+			goto MENU_EXPERT_CYCLAGE;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			clearButtons();
+			pinMode(pinVppEn,OUTPUT);
+			digitalWrite(pinVppEn,1);
+			lcd.setCursor(0,0);
+			lcd.print(F("CHARGE READY    "));
+			lcd.setCursor(0,1);
+			lcdClearLine();
+			while(waitButton()!=BPOK);
+			lcd.setCursor(0,0);
+			lcd.print(F("CHARGE ON       "));
+			chargeStartTime=millis();
+			digitalWrite(pinChargeOff,1);
+			while((millis()-chargeStartTime)<3600000){
+				float batVoltage;
+				anaRead=0;
+				for (i8_1=0;i8_1<10;i8_1++){
+					anaRead += analogRead(pinMesVbat);
+					delay(10);
+				}
+				batVoltage=anaRead*vrefVoltage*3.13/10240;
+				lcd.setCursor(0,1);
+				lcd.print(batVoltage);
+				lcd.print('V');
+				if (batVoltage>7.2) break;
+				delay(1000);
+			}
+			digitalWrite(pinChargeOff,0);
+			digitalWrite(pinVppEn,0);
+			pinMode(pinVppEn,INPUT);
+			clearButtons();
+			waitButton();
+
+			goto MENU;
+		default:
+			goto MENU_ERROR;
+		}
+
+	MENU_EXPERT_CYCLAGE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("CYCLAGE         "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_EXPERT_CHARGE;
+		case BPDW:
+			goto MENU_EXPERT_EPHEMERIDES;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:/*
 			activateMotor();
 			lcd.setCursor(0,0);
 			lcd.print(F("CYCLAGE EN COURS"));
@@ -770,7 +765,104 @@ void userInterface()
 				lcd.print(F("BROKEN AT       "));
 			}
 			manualMoveMotor();
-			deactivateMotor();
+			deactivateMotor();*/
+			goto MENU_EXPERT;
+		default:
+			goto MENU_ERROR;
+		}
+	MENU_EXPERT_EPHEMERIDES:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("EPHEMERIDES     "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_EXPERT_CYCLAGE;
+		case BPDW:
+			goto MENU_EXPERT_DEBUG;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
+			updateTime();
+			//calculerEphemeride(timeElements.Day,timeElements.Month,timeElements.Year,\
+			//					45,-5,&lever,&meridien,&coucher);
+			calculerEphemeride(17,7,2016,-5,45,&lever,&meridien,&coucher);
+			lcd.setCursor(0,0);
+			lcd.print(lever);
+			waitButton();
+			lcd.setCursor(0,1);
+			lcd.print(coucher);
+			waitButton();
+			lcd.clear();
+			julianTranslate(&hh,&mm,&ss,lever);
+			lcd.setCursor(0,1);
+			lcd.print(hh);
+			lcd.print(":");
+			lcd.print(mm);
+			julianTranslate(&hh,&mm,&ss,coucher);
+			lcd.setCursor(9,1);
+			lcd.print(hh);
+			lcd.print(":");
+			lcd.print(mm);
+			waitButton();
+			goto MENU_EXPERT_EPHEMERIDES;
+		default:
+			goto MENU_ERROR;
+		}
+
+		MENU_EXPERT_DEBUG:
+			clearButtons();
+			lcd.setCursor(0,0);
+			lcd.print(F("DEBUG           "));
+			lcd.setCursor(0,1);
+			lcdClearLine();
+			switch(waitButton()){
+			case BPUP:
+				goto MENU_EXPERT_EPHEMERIDES;
+			case BPDW:
+				goto MENU_EXPERT_RETOUR;
+			case TIMEOUT:
+				goto MENU_TIMEOUT;
+			case BPOK:
+				activateMotor();
+				motorForward();
+				clearButtons();
+				lcd.setCursor(0,0);
+				lcd.print(F("MOTOR ON        "));
+				lcd.setCursor(0,1);
+				lcdClearLine();
+				float mamot;
+				while(1){
+					anaRead = analogRead(pinMesImot);
+					mamot=anaRead*ratioImot*vrefVoltage/1024;
+					lcd.setCursor(10,0);
+					lcd.print(anaRead);
+					lcd.print("  ");
+					lcd.setCursor(0,1);
+					lcd.print(mamot);
+					lcd.print("mA  ");
+					delay(2000);
+				}
+				goto MENU_EXPERT;
+			default:
+				goto MENU_ERROR;
+			}
+
+	MENU_EXPERT_RETOUR:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("RETOUR          "));
+		lcd.setCursor(0,1);
+		lcdClearLine();
+		switch(waitButton()){
+		case BPUP:
+			goto MENU_EXPERT_EPHEMERIDES;
+		case BPDW:
+			goto MENU_EXPERT_RETOUR;
+		case TIMEOUT:
+			goto MENU_TIMEOUT;
+		case BPOK:
 			goto MENU_EXPERT;
 		default:
 			goto MENU_ERROR;
@@ -830,7 +922,6 @@ void installationTrappe(){
 		case TIMEOUT:
 			goto MENU_HAUTEUR;
 		case BPOK:
-			delay(1000);
 			clearButtons();
 			activateMotor();
 
@@ -1014,5 +1105,8 @@ void installationTrappe(){
 }
 
 
+void dooring(){
 
+
+}
 

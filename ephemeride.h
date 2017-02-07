@@ -139,6 +139,8 @@ double calculerCoordonneeDecimale(int degre, int minute, int seconde)
     return (double) degre - minute / 60.0 - seconde / 3600.0;
   }
 }
+
+
 /*
 
 int nb_calculs = 0;
