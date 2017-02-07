@@ -9,23 +9,23 @@
 #define TRAPAPOUL_CONFIG_H_
 
 
-//digital pins
-#define pinQuadratureA 17
-#define pinQuadratureB 16
-#define pinMotorForward 8
-#define pinMotorBackward 9
+//pins
+#define pinQuadratureA 11
+#define pinQuadratureB 10
+#define pinMotorForward 7
+#define pinMotorBackward 8
 #define pinAlarm 2
 #define pinChargeOFF 6
 #define pinVppEn 7
 #define pinBPUP 4
 #define pinBPDW 5
 #define pinBPOK 3
-#define pinSDSS 10
+#define pinSDSS 9
+
 //analog pins
 #define pinMesImot 0
-#define pinMesVbat 1
+#define pinMesVbat 7
 #define pinMesVsol 6
-
 
 
 //button timing const
@@ -50,8 +50,11 @@ const uint8_t motorOverturn=10;
 
 const String logFileName = "moulog.txt";
 
+
 //LCD
 #define LCD_ADDRESS 0x27
+
+//LCD special chars#define CHECK_CHAR 0
 #define CHECK_CHAR 0
 #define BAT1_CHAR 3
 #define BAT2_CHAR 4

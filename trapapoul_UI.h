@@ -19,7 +19,7 @@
 
 
 //lcd_I2C config
-LiquidCrystal_I2C lcd(LCD_ADDRESS,16,2);
+LiquidCrystal_I2C lcd(0x20,16,2);
 void uploadChar (uint8_t location, const uint8_t charmap[]);
 
 
