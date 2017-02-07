@@ -99,6 +99,7 @@ ISR (PCINT1_vect){ // handle pin change interrupt for A0 to A7 here
 
 void activateMotor ()
 {
+
 	pinMode(pinVppEn,OUTPUT);
 	digitalWrite(pinVppEn,1);
 	delay(1000);//just in case, can be quicken after tests
@@ -217,7 +218,9 @@ void motorTurn (int16_t motorDistance)
 void motorInit (){
 
 	pinMode(pinMotorForward,OUTPUT);
+	digitalWrite(pinMotorForward,0);
 	pinMode(pinMotorBackward,OUTPUT);
+	digitalWrite(pinMotorBackward,0);
 	pinMode(pinQuadratureA,INPUT);
 	pinMode(pinQuadratureB,INPUT);
 	//init quadrature
@@ -250,5 +253,77 @@ void motorStop(){
 void resetPosition(){
 	motorPosition=0;
 }
+
+
+
+void manualMoveMotor(){
+uint8_t manualMoveMachineState=0;	//1=frd 2=bkw
+//uint32_t millisMarker=0;
+	manualMoveMachineState=0;
+	while(1){
+		if (manualMoveMachineState==0){
+			if(digitalRead(pinBPUP)==0){
+				manualMoveMachineState=1;
+				motorForward();
+			}
+			if(digitalRead(pinBPDW)==0){
+				manualMoveMachineState=2;
+				motorBackward();
+			}
+		}
+		if (manualMoveMachineState==1){
+			if(digitalRead(pinBPUP)==1){
+				manualMoveMachineState=0;
+				motorStop();
+			}
+			if(digitalRead(pinBPDW)==0){
+				manualMoveMachineState=0;
+				motorStop();
+			}
+		}
+		if (manualMoveMachineState==2){
+			if(digitalRead(pinBPUP)==0){
+				manualMoveMachineState=0;
+				motorStop();
+			}
+			if(digitalRead(pinBPDW)==1){
+				manualMoveMachineState=0;
+				motorStop();
+			}
+		}
+		if(digitalRead(pinBPOK)==0){
+			motorStop();
+			clearButtons();
+			return;
+		}
+	}
+}	/*
+BEGIN:
+	switch(waitButton()){
+	case BPUP:
+		motorForward();
+		while(buttonState[BPUP]){
+			lcd.setCursor(13,1);
+			lcd.print(motorPosition);
+		}
+		motorStop();
+		goto BEGIN;
+	case BPDW:
+		motorBackward();
+		while(buttonState[BPDW]){
+			lcd.setCursor(13,1);
+			lcd.print(motorPosition);
+		}
+		motorStop();
+		goto BEGIN;
+	case TIMEOUT:
+		goto BEGIN;
+	case BPOK:
+		return;
+	}
+}*/
+
+
+
 
 #endif /* TRAPAPOUL_MOTOR_H_ */

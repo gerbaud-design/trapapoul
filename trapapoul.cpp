@@ -831,6 +831,7 @@ void installationTrappe(){
 		case TIMEOUT:
 			goto MENU_HAUTEUR;
 		case BPOK:
+			delay(1000);
 			clearButtons();
 			activateMotor();
 
@@ -1014,30 +1015,5 @@ void installationTrappe(){
 }
 
 
-void manualMoveMotor(){
-BEGIN:
-	switch(waitButton()){
-	case BPUP:
-		motorForward();
-		while(buttonState[BPUP]){
-			lcd.setCursor(13,1);
-			lcd.print(motorPosition);
-		}
-		motorStop();
-		goto BEGIN;
-	case BPDW:
-		motorBackward();
-		while(buttonState[BPDW]){
-			lcd.setCursor(13,1);
-			lcd.print(motorPosition);
-		}
-		motorStop();
-		goto BEGIN;
-	case TIMEOUT:
-		goto BEGIN;
-	case BPOK:
-		return;
-	}
-}
 
 

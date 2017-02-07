@@ -17,8 +17,8 @@
 #define pinAlarm 2
 #define pinChargeOFF 6
 #define pinVppEn 7
-#define pinBPUP 5
-#define pinBPDW 4
+#define pinBPUP 4
+#define pinBPDW 5
 #define pinBPOK 3
 #define pinSDSS 10
 //analog pins
@@ -51,7 +51,7 @@ const uint8_t motorOverturn=10;
 const String logFileName = "moulog.txt";
 
 //LCD
-#define LCD_ADDRESS 0x20
+#define LCD_ADDRESS 0x27
 #define CHECK_CHAR 0
 #define BAT1_CHAR 3
 #define BAT2_CHAR 4
