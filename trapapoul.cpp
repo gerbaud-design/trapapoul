@@ -131,7 +131,7 @@ void setup()
 	RTC.interruptSelect(INTB);
 	RTC.resetAlarms();
 	pinMode(pinAlarm, INPUT);
-	attachInterrupt(digitalPinToInterrupt(pinAlarm), interrupt_0 , FALLING);
+	attachInterrupt(digitalPinToInterrupt(3), interrupt_0 , FALLING);
 /*	Serial.print(printDate());
 	Serial.print(' ');
 	Serial.print(printTime());
@@ -737,7 +737,6 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			activateMotor();
 			lcd.setCursor(0,0);
 			lcd.print(F("CYCLAGE EN COURS"));
 			lcd.setCursor(0,1);
@@ -771,7 +770,6 @@ void userInterface()
 				lcd.print(F("BROKEN AT       "));
 			}
 			manualMoveMotor();
-			deactivateMotor();
 			goto MENU_EXPERT;
 		default:
 			goto MENU_ERROR;
@@ -833,7 +831,6 @@ void installationTrappe(){
 		case BPOK:
 			delay(1000);
 			clearButtons();
-			activateMotor();
 
 			lcd.setCursor(0,0);
 			lcd.print(F("REGLAGE DE LA   "));
@@ -854,7 +851,6 @@ void installationTrappe(){
 			manualMoveMotor();
 			positionHaute=motorPosition;
 			EEPROM.put(EEPROM_POSOPEN,positionHaute);
-			deactivateMotor();
 			lcd.setCursor(0,0);
 			lcd.print(F("POSITION OUVERTE"));
 			lcd.setCursor(0,1);

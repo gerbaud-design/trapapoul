@@ -44,13 +44,6 @@ void motorBackward();
 void motorStop();
 void resetPosition();
 
-#define quadratureOn {\
-				PCIFR  |= bit (digitalPinToPCICRbit(pinQuadratureB));/*enable interrupt for the group*/\
-				PCICR  |= bit (digitalPinToPCICRbit(pinQuadratureB));/*clear outstanding interrupt*/\
-				}
-
-#define quadratureOff PCIFR  &= ~(bit (digitalPinToPCICRbit(pinQuadratureB)))/*disable interrupt for the group*/
-
 //interrupt routine for pin change of port B
 ISR (PCINT0_vect){ // handle pin change interrupt for D8 to D13 here
 	bool newQuadratureA;
