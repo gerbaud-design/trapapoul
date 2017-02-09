@@ -69,8 +69,6 @@
   #define SPI_AVR_EIMSK  GIMSK
 #endif
 
-
-
 class SPISettings {
 public:
   SPISettings(uint32_t clock, uint8_t bitOrder, uint8_t dataMode) {
@@ -152,7 +150,6 @@ private:
   uint8_t spcr;
   uint8_t spsr;
   friend class SPIClass;
-
 };
 
 

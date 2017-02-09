@@ -77,6 +77,10 @@ void interrupt_blinker(void)
 	}
 }
 
+
+
+
+
 void uploadChar (uint8_t location, const uint8_t charmap[]){
 	uint8_t lcdchar[7] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,};
 	for (uint8_t k = 0; k < 7; k++)
@@ -484,6 +488,5 @@ void julianTranslate(uint8_t *hour,uint8_t *minute,uint8_t *second, double julia
 	*hour=julianSec/SECS_PER_HOUR;
 }
 
-uint16_t
 
 #endif /* TRAPAPOUL_UI_H_ */

@@ -25,10 +25,9 @@
 #define pinMesImot 0
 #define pinMesVbat 7
 #define pinMesVsol 6
-#define vrefVoltage 3760 //mV
-#define ratioVbat 512 // anaread*vref/ratioVbat=Vbat(mV)   512=1024*1/2
-#define ratioImot 14643 //anaread*vref/ratioImot=Imot(mA)
-//R=0.26Ohm gain=55 70=1000/0.26/55
+#define vrefVoltage 3.76
+#define ratioVbat ?? // *anaRead/1024=V
+#define ratioImot 70 //*V(mes) = mA /0.26/55
 
 
 

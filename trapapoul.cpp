@@ -41,7 +41,7 @@ extern volatile uint8_t machineState;
 uint16_t nbCycles;
 uint32_t chargeStartTime=0;
 
-uint32_t anaRead;
+uint16_t anaRead;
 
 double lever,meridien,coucher;
 uint8_t hh, mm, ss;
@@ -163,7 +163,7 @@ void setup()
 
 	//init charge
 	pinMode(pinChargeOff,OUTPUT);
-	digitalWrite(pinChargeOff,1);//turn charge ON when =1
+	digitalWrite(pinChargeOff,0);
 
 
 //setup des boutons
@@ -309,9 +309,6 @@ void userInterface()
 		delay(500);
 
 		while(1){
-
-
-			//time display
 			RTC.read(timeElements,CLOCK_ADDRESS);
 			lcd.setCursor(0,0);
 			if (timeElements.Hour<10)
@@ -323,28 +320,11 @@ void userInterface()
 			lcd.print(timeElements.Minute);
 			lcd.print(':');
 			lcd.print(timeElements.Second);
-
-			//battery voltage measurement
-			digitalWrite(pinChargeOff,0);
-			anaRead=0;
-			for(i8_1=0;i8_1<10;i8_1++){
-				anaRead+=analogRead(pinMesVbat);
-				delay(20);
-			}
-			anaRead*=vrefVoltage;
-			anaRead/=ratioVbat;
-			anaRead/=10;
-
-			//battery voltage display
-
-			lcd.setCursor(9,0);
-			lcd.print(anaRead);
-			/*lcd.write(BAT1_CHAR);
+			lcd.print(F(" BAT:XX%"));
+	/*		lcd.setCursor(9,0);
+			lcd.write(BAT1_CHAR);
 			lcd.write(BAT2_CHAR);
 			lcd.write(BAT3_CHAR);*/
-
-
-			//display dooring planning
 			lcd.setCursor(0,1);
 			lcd.print(F("OUVRIRA A HH:MM "));
 		//	lcd.print(F("FERMERA A HH:MM "));
