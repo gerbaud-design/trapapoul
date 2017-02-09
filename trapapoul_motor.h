@@ -258,38 +258,39 @@ void manualMoveMotor(){
 uint8_t manualMoveMachineState=0;	//1=frd 2=bkw
 //uint32_t millisMarker=0;
 	manualMoveMachineState=0;
+	clearButtons();
 	while(1){
 		if (manualMoveMachineState==0){
-			if(digitalRead(pinBPUP)==0){
+			if(buttonState[BPUP]==0){
 				manualMoveMachineState=1;
 				motorForward();
 			}
-			if(digitalRead(pinBPDW)==0){
+			if(buttonState[BPDW]==0){
 				manualMoveMachineState=2;
 				motorBackward();
 			}
 		}
 		if (manualMoveMachineState==1){
-			if(digitalRead(pinBPUP)==1){
+			if(buttonState[BPUP]==1){
 				manualMoveMachineState=0;
 				motorStop();
 			}
-			if(digitalRead(pinBPDW)==0){
+			if(buttonState[BPDW]==0){
 				manualMoveMachineState=0;
 				motorStop();
 			}
 		}
 		if (manualMoveMachineState==2){
-			if(digitalRead(pinBPUP)==0){
+			if(buttonState[BPUP]==0){
 				manualMoveMachineState=0;
 				motorStop();
 			}
-			if(digitalRead(pinBPDW)==1){
+			if(buttonState[BPDW]==1){
 				manualMoveMachineState=0;
 				motorStop();
 			}
 		}
-		if(digitalRead(pinBPOK)==0){
+		if(buttonPushed[BPOK]){
 			motorStop();
 			clearButtons();
 			return;

@@ -17,8 +17,13 @@
 #include "trapapoul_motor.h"
 #include "logSD.h"
 #include "ephemeride.h"
+#include "sleep.h"
 
 extern volatile int motorPosition;
+extern unsigned long topTimeout;
+extern volatile unsigned long lastPush[3];
+extern volatile bool buttonState[3];
+extern volatile bool buttonPushed[3];
 //extern tmElements_t timeElements;
 
 //iterateurs
@@ -37,19 +42,14 @@ uint8_t wakeUpSource=WAKEUPUNKNOWN;
 uint8_t cur_mm=30;
 uint8_t cur_hh=12;
 int16_t positionHaute = 0;
-extern volatile uint8_t machineState;
 uint16_t nbCycles;
 uint32_t chargeStartTime=0;
+volatile bool AlarmTriggered=0;
 
 uint16_t anaRead;
 
 double lever,meridien,coucher;
 uint8_t hh, mm, ss;
-
-
-void installationTrappe();
-void manualMoveMotor();
-void dooring();
 
 //adressage EEPROM
 uint8_t eeBlockCount;
@@ -64,22 +64,20 @@ uint16_t writeCount;
 	}while(eeBlockCount<50);*/
 
 
+void installationTrappe();
+void manualMoveMotor();
+void dooring();
 void userInterface();
-
-void serialSetRtc (uint8_t); //parameter is clock or alarm1 or alarm2
-
-// interrupt routine for pin2 alarm.
-//void interrupt_0 () {
-	//if (digitalRead(BPOK) == 0)
-
-
 
 //interrupt routine for pin change of port D
 ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
+	if(!digitalRead(pinAlarm))
+		AlarmTriggered=1;
 	bool newState[3];
 	newState[BPOK]=(!(digitalRead(pinBPOK)));
 	newState[BPDW]=(!(digitalRead(pinBPDW)));
 	newState[BPUP]=(!(digitalRead(pinBPUP)));
+
 	if (newState[BPOK]!=buttonState[BPOK]){
 		if (newState[BPOK]==1 && ((millis()-lastPush[BPOK])>DEBOUNCE)){
 			lastPush[BPOK]=millis();
@@ -94,7 +92,7 @@ ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
 			buttonPushed[BPDW]=1;
 			buttonState[BPDW]=1;
 		}
-		if(newState[BPDW]==0) buttonState[BPOK]=0;
+		if(newState[BPDW]==0) buttonState[BPDW]=0;
 	}
 	if (newState[BPUP]!=buttonState[BPUP]){
 		if (newState[BPUP]==1 && ((millis()-lastPush[BPUP])>DEBOUNCE)){
@@ -102,17 +100,26 @@ ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
 			buttonPushed[BPUP]=1;
 			buttonState[BPUP]=1;
 		}
-		if(newState[BPUP]==0) buttonState[BPOK]=0;
+		if(newState[BPUP]==0) buttonState[BPUP]=0;
 	}
 
 }
 
-
 // interrupt routine for pin2 alarm.
 void interrupt_0 () {
-	//handle rtc alarm or button push
+	//handle rtc alarm
+	sleep_disable();
+	detachInterrupt(0);
+	wakeUpSource=WAKEUPALARM;
 }
 
+// interrupt routine for pin3 bpok
+void interrupt_1 () {
+	sleep_disable();
+	detachInterrupt(1);
+	wakeUpSource=WAKEUPBUTTON;
+
+}
 
 //The setup function is called once at startup of the sketch
 void setup()
@@ -120,7 +127,7 @@ void setup()
 
 
 // Open serial communications and wait for port to open:
-	Serial.begin(9600);
+//	Serial.begin(9600);
 /*	while(Serial.available() > 0)
 		Serial.read();//flush serial input
 	Serial.println(F("\n"));
@@ -129,6 +136,9 @@ void setup()
 	while (Serial.available()!=0)
 		Serial.read();
 */
+
+//setup du sleep mode
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
 //setup du lcd
 	lcd.init();
@@ -145,7 +155,8 @@ void setup()
 	RTC.interruptSelect(INTB);
 	RTC.resetAlarms();
 	pinMode(pinAlarm, INPUT);
-	attachInterrupt(digitalPinToInterrupt(pinAlarm), interrupt_0 , FALLING);
+	AlarmTriggered=0;
+//	attachInterrupt(digitalPinToInterrupt(pinAlarm), interrupt_0 , FALLING);
 /*	Serial.print(printDate());
 	Serial.print(' ');
 	Serial.print(printTime());
@@ -176,13 +187,10 @@ void setup()
 
 //initialisation of analog inputs
 	analogReference(EXTERNAL);
-	analogRead(pinMesVbat);
-	analogRead(pinMesVbat);
-	analogRead(pinMesVbat);
-	analogRead(pinMesVbat);
 
-//desactive int1 on pin3 (or loop in int1 while pbok pushed)
-	detachInterrupt(digitalPinToInterrupt(pinBPOK));
+//desactive int1  et int0 (or loop in int1 while pbok pushed)
+	detachInterrupt(0);
+	detachInterrupt(1);
 
 //setup des interuptions boutons
 	*digitalPinToPCMSK(pinBPUP) |= bit (digitalPinToPCMSKbit(pinBPUP));  // enable pin
@@ -196,38 +204,32 @@ void setup()
 	lastPush[BPDW]=millis();
 	clearButtons();
 
-	Serial.println(F("end of setup"));
-
-
 }
 
 // The loop function is called in an endless loop
 void loop()
 {
-/*
-	switch(wakeUpSource){
-	case WAKEUPBUTTON:
-		userInterface();
-		break;
-	case WAKEUPALARM:
-		dooring();
-		break;
-	//case WAKEUPUNKNOWN:
-	default:
-		break;
-	}*/
 
 	clearButtons();
-	userInterface();
-	lcd.noBacklight();
-	lcd.setCursor(0,0);
-	lcdClearLine();
-	lcd.setCursor(0,1);
-	lcdClearLine();
-	delay(1000);
 	lcd.backlight();
-	delay(1000);
+	userInterface();
+	lcd.clear();
 	lcd.noBacklight();
+	delay(1000);
+	//set alarm
+	//shutdown everything
+	cli();
+	attachInterrupt(0,interrupt_0,LOW);
+	attachInterrupt(1,interrupt_1,LOW);
+	sleep_enable();
+	sleep_bod_disable();
+	sei();
+	sleep_cpu();
+	/* wake up here */
+	sleep_disable();
+	clearButtons();
+
+
 }
 
 
@@ -261,53 +263,10 @@ void loadPosition(void){
 }
 
 
-void serialSetRtc (uint8_t adress){
-	uint16_t year=0;
-	uint8_t month=0,day=0,hour=0,minute=0,second=0;
-	Serial.println(F("set rtc"));
-	Serial.println(F("year"));
-	while(Serial.available()==0);
-	if(Serial.available()>0)
-		year=Serial.parseInt();
-	Serial.println(F("month"));
-	while(Serial.available()==0);
-	if(Serial.available()>0)
-		month=Serial.parseInt();
-	Serial.println(F("day"));
-	while(Serial.available()==0);
-	if(Serial.available()>0)
-		day=Serial.parseInt();
-	Serial.println(F("hour"));
-	while(Serial.available()==0);
-	if(Serial.available()>0)
-		hour=Serial.parseInt();
-	Serial.println(F("minute"));
-	while(Serial.available()==0);
-	if(Serial.available()>0)
-		minute=Serial.parseInt();
-	Serial.println(F("second"));
-	while(Serial.available()==0);
-	if(Serial.available()>0)
-		second=Serial.parseInt();
-	timeElements.Year=CalendarYrToTm(year);
-	timeElements.Month=month;
-	timeElements.Day=day;
-	timeElements.Hour=hour;
-	timeElements.Minute=minute;
-	timeElements.Second=second;
-	Serial.println(F("Press"));
-	while(Serial.available()==0);
-	if(Serial.available()>0)
-		RTC.write(timeElements,adress);
-}
-
-
 void userInterface()
 {
-	lcd.backlight();
 	MENU:
-		delay(500);
-
+	 topTimeout=millis();
 		while(1){
 			RTC.read(timeElements,CLOCK_ADDRESS);
 			lcd.setCursor(0,0);
@@ -319,6 +278,8 @@ void userInterface()
 				lcd.print('0');
 			lcd.print(timeElements.Minute);
 			lcd.print(':');
+			if (timeElements.Second<10)
+				lcd.print('0');
 			lcd.print(timeElements.Second);
 			lcd.print(F(" BAT:XX%"));
 	/*		lcd.setCursor(9,0);
@@ -331,7 +292,8 @@ void userInterface()
 
 			if(buttonPushed[BPOK]==1)
 				goto MENU_OUVERTURE;
-			Serial.println("top");
+			if((millis()-topTimeout)>BUTTON_TIMEOUT)
+					goto MENU_TIMEOUT;
 		}
 
 	MENU_OUVERTURE:
@@ -615,7 +577,12 @@ void userInterface()
 			goto MENU_TIMEOUT;
 		case BPOK:
 			RTC.read(timeElements,CLOCK_ADDRESS);
+			lcd.setCursor(0,0);
+			lcd.print(F("HEURE:          "));
 			enterTime(&timeElements);
+			lcd.setCursor(0,0);
+			lcd.print(F("DATE:           "));
+			enterDate(&timeElements);
 			RTC.write(timeElements,CLOCK_ADDRESS);
 			lcd.setCursor(0,0);
 			lcd.print(F("DATE ET HEURE   "));
@@ -785,8 +752,8 @@ MENU_EXPERT_CHARGE:
 			goto MENU_TIMEOUT;
 		case BPOK:
 			updateTime();
-			//calculerEphemeride(timeElements.Day,timeElements.Month,timeElements.Year,\
-			//					45,-5,&lever,&meridien,&coucher);
+			//calculerEphemeride(timeElements.Day,timeElements.Month,
+			//timeElements.Year,45,-5,&lever,&meridien,&coucher);
 			calculerEphemeride(17,7,2016,-5,45,&lever,&meridien,&coucher);
 			lcd.setCursor(0,0);
 			lcd.print(lever);
@@ -882,7 +849,7 @@ MENU_EXPERT_CHARGE:
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			goto MENU;
+			return;
 		default:
 			goto MENU_ERROR;
 		}

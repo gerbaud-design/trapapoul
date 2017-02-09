@@ -14,37 +14,19 @@
 #include <TimerOne.h>
 #include "trapapoul_config.h"
 
-
-
-
-
 //lcd_I2C config
 LiquidCrystal_I2C lcd(LCD_ADDRESS,16,2);
-void uploadChar (uint8_t location, const uint8_t charmap[]);
-
 
 int latitudeNord=45;
 int longitudeOuest=-6;
-void enterGPS (int*, int*);
-void enterDepartement ();
 
 //RTC
 tmElements_t timeElements;
 extern DS1337RTC RTC;
-bool isTimeValid(tmElements_t*);
-bool isDateValid(tmElements_t*);
-//create string with date "jj/mm/yyyy"
-String printDate ();
-//create string with time "hh:mm:ss"
-String printTime ();
-void julianTranslate(uint8_t*hour,uint8_t*minute,uint8_t*second, double);
 
 //timer1config
 volatile bool blink=0;
 volatile uint8_t blinkCount=0;
-void lcdClearLine(){lcd.print(F("                "));}
-
-
 
 //boutons config
 #define BPUP 0
@@ -54,18 +36,27 @@ void lcdClearLine(){lcd.print(F("                "));}
 volatile unsigned long lastPush[3];
 volatile bool buttonState[3];
 volatile bool buttonPushed[3];
-void clearButtons();
-uint8_t waitButton();
 
+//used in isDateValid
+#define LEAP_YEAR(Y)     ( ((1970+Y)>0) && !((1970+Y)%4) && ( ((1970+Y)%100) || !((1970+Y)%400) ) )
+const uint8_t monthDays[]={31,28,31,30,31,30,31,31,30,31,30,31};
 
+unsigned long topTimeout;
 
-//menu variables
-volatile uint16_t menuPointer=0;
 void enterNumber(uint8_t *val,uint8_t min,uint8_t max,uint8_t col, uint8_t lin, uint8_t digit);
 void enterTime(tmElements_t*);
+void clearButtons();
+uint8_t waitButton();
+bool isTimeValid(tmElements_t*);
+bool isDateValid(tmElements_t*);
+String printDate ();
+String printTime ();
+void julianTranslate(uint8_t*hour,uint8_t*minute,uint8_t*second, double);
+void enterGPS (int*, int*);
+void enterDepartement ();
+void uploadChar (uint8_t location, const uint8_t charmap[]);
 
-
-
+void lcdClearLine(){lcd.print(F("                "));}
 
 void interrupt_blinker(void)
 {
@@ -90,9 +81,6 @@ void uploadChar (uint8_t location, const uint8_t charmap[]){
 	  }
 }
 
-
-#define LEAP_YEAR(Y)     ( ((1970+Y)>0) && !((1970+Y)%4) && ( ((1970+Y)%100) || !((1970+Y)%400) ) )
-const uint8_t monthDays[]={31,28,31,30,31,30,31,31,30,31,30,31};
 bool isDateValid(tmElements_t *te){
 	if (te->Month>12)
 		return 0;
@@ -109,34 +97,15 @@ bool isTimeValid(tmElements_t *te){
 	return 1;
 }
 
-
-
 void clearButtons(void){
     buttonPushed[BPUP]=0;
     buttonPushed[BPOK]=0;
     buttonPushed[BPDW]=0;
-    buttonState[BPUP]=0;
-    buttonState[BPOK]=0;
-    buttonState[BPDW]=0;/*
-    lastPush[BPUP]=millis();
-    lastPush[BPOK]=millis();
-    lastPush[BPDW]=millis();*/
 }
 
 uint8_t waitButton()
 {
-	unsigned long topTimeout=millis();
-	/*delay(500);//debouncing
-	while(1){//will have to handle timeout
-		if(!digitalRead(pinBPUP))
-			return BPUP;
-		if(!digitalRead(pinBPOK))
-			return BPOK;
-		if(!digitalRead(pinBPDW))
-			return BPDW;
-		if(millis()>timeout)
-			return TIMEOUT;
-	}*/
+	topTimeout=millis();
 	while(1){
 		if(buttonPushed[BPOK]==1){
 			buttonPushed[BPOK]=0;
@@ -156,8 +125,6 @@ uint8_t waitButton()
 
 }
 
-
-
 void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 		uint8_t col, uint8_t lin, uint8_t digit/*,bool print0*/){
 	//init du timer1 et de son interrupt de clignotage
@@ -165,15 +132,16 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 	Timer1.initialize(500000);
 	Timer1.attachInterrupt(interrupt_blinker);
 	Timer1.start();
+	blink=1;
 	clearButtons();
 
 	//print number in the right place
-	lcd.setCursor(col,lin);
-	if((*val<100) && (digit==3)/* && (print0==1)*/)
-		lcd.print('0');
-	if((*val<10) && (digit>=2)/* && (print0==1)*/)
-		lcd.print('0');
-	lcd.print(*val);
+//	lcd.setCursor(col,lin);
+//	if((*val<100) && (digit==3)/* && (print0==1)*/)
+//		lcd.print('0');
+//	if((*val<10) && (digit>=2)/* && (print0==1)*/)
+//		lcd.print('0');
+//	lcd.print(*val);
 	while(1){
 		blinkerTime = millis();
 
@@ -228,48 +196,7 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 
 void enterTime(tmElements_t *te){
 
-ENTER_DATE :
-	lcd.setCursor(0,0);
-	lcd.print(F("DATE:           "));
-	lcd.setCursor(0,1);
-	if (te->Day<10)
-		lcd.print('0');
-	lcd.print(te->Day);
-	lcd.print('/');
-	if (te->Month<10)
-		lcd.print('0');
-	lcd.print(te->Month);
-	lcd.print('/');
-	lcd.print((uint16_t(te->Year)+1970));
-	lcd.print(F("      "));
-
-	//update values
-	{
-		uint8_t tmpYear=(tmYearToY2k(te->Year));
-		enterNumber(&(te->Day),1,31,0,1,2);
-		enterNumber(&(te->Month),1,12,3,1,2);
-		enterNumber(&tmpYear,0,99,8,1,2);
-		te->Year=y2kYearToTm(tmpYear);
-	}
-
-	//check validity
-	if(!isDateValid(te)){	//check date validity
-
-		lcd.setCursor(0,0);
-		lcd.print(F("DATE NON VALIDE "));
-		delay(1000);
-		lcd.setCursor(0,0);
-		lcdClearLine();
-		delay(500);
-		lcd.setCursor(0,0);
-		lcd.print(F("DATE NON VALIDE "));
-		delay(1000);
-		goto ENTER_DATE;
-	}
-
 ENTER_TIME:
-	lcd.setCursor(0,0);
-	lcd.print(F("HEURE:          "));
 	lcd.setCursor(0,1);
 	if (te->Hour<10)
 		lcd.print('0');
@@ -305,6 +232,45 @@ ENTER_TIME:
 	}
 }
 
+void enterDate(tmElements_t *te){
+
+ENTER_DATE :
+	lcd.setCursor(0,1);
+	if (te->Day<10)
+		lcd.print('0');
+	lcd.print(te->Day);
+	lcd.print('/');
+	if (te->Month<10)
+		lcd.print('0');
+	lcd.print(te->Month);
+	lcd.print('/');
+	lcd.print((uint16_t(te->Year)+1970));
+	lcd.print(F("      "));
+
+	//update values
+	{
+		uint8_t tmpYear=(tmYearToY2k(te->Year));
+		enterNumber(&(te->Day),1,31,0,1,2);
+		enterNumber(&(te->Month),1,12,3,1,2);
+		enterNumber(&tmpYear,0,99,8,1,2);
+		te->Year=y2kYearToTm(tmpYear);
+	}
+
+	//check validity
+	if(!isDateValid(te)){	//check date validity
+
+		lcd.setCursor(0,0);
+		lcd.print(F("DATE NON VALIDE "));
+		delay(1000);
+		lcd.setCursor(0,0);
+		lcdClearLine();
+		delay(500);
+		lcd.setCursor(0,0);
+		lcd.print(F("DATE NON VALIDE "));
+		delay(1000);
+		goto ENTER_DATE;
+	}
+}
 
 void enterDepartement (){
 	uint8_t dpt=38;
@@ -316,7 +282,6 @@ void enterDepartement (){
 	latitudeNord=departement[((dpt-1)*2)];
 	longitudeOuest=departement[((dpt*2)-1)];
 }
-
 
 void enterGPS (int *latN, int *lonO){
 
@@ -435,14 +400,11 @@ LATLON_LABEL:
 	}
 }
 
-
 void updateTime (){
 RTC.read(timeElements,CLOCK_ADDRESS);
 }
 
-
-//create string with date (jj/mm/yy)
-String printDate (){
+String printDate (){//create string with date (jj/mm/yy)
 	String date="";
 	//date+=("date (jj/mm/yyyy) : ");
 	RTC.read(timeElements,CLOCK_ADDRESS);
@@ -460,8 +422,7 @@ String printDate (){
 	return date;
 }
 
-//create string with time (hh:mm:ss)
-String printTime (){
+String printTime (){//create string with time (hh:mm:ss)
 	String time="";
 
 	//time+=("time (hh:mm:ss) : ");
@@ -481,6 +442,7 @@ String printTime (){
 }
 
 void julianTranslate(uint8_t *hour,uint8_t *minute,uint8_t *second, double julian){
+	//fill in hour minute and second from a -0.5<julian<0.5
 	julian+=0.5;
 	uint32_t julianSec =julian*SECS_PER_DAY;
 	*second=(julianSec%SECS_PER_MIN);
