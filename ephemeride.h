@@ -107,7 +107,7 @@ void calculerEphemeride(int jour, int mois, int annee, double longitude_ouest, d
     case 11 : nbjours += 304; break;
     case 12 : nbjours += 334; break;
   }
-  if ((mois > 2) && (annee&3 == 0)) nbjours++;
+  if ((mois > 2)&&((annee&3) == 0)) nbjours++;
   d = nbjours;
 
   //calcul initial meridien & lever & coucher
