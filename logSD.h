@@ -13,7 +13,9 @@
 #include <SD.h>
 #include "ERRcodes.h"
 #include "trapapoul_config.h"
+#include "trapapoul_UI.h"
 
+gdiTime_t logTime;
 
 
 bool pushLog(String);
@@ -44,7 +46,11 @@ bool logSdInit(){
 	pushLog(INF_LOGNEW);
 	pushLog(printDate());
 	pushLog(";");
-	pushLog(printTime());
+	updateTime();
+	logTime.H=timeElements.Hour;
+	logTime.M=timeElements.Minute;
+	logTime.S=timeElements.Second;
+	pushLog(printTime(logTime,1));
 	pushLog("\n");
 	return result;
 }

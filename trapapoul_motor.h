@@ -186,7 +186,11 @@ void motorGoTo (int targetPosition)
 		Serial.println(IN_MOTGOTO);
 		pushLog(ERR_TIMEOUT);
 		pushLog(IN_MOTGOTO);
-		pushLog(printTime());
+		updateTime();
+		logTime.H=timeElements.Hour;
+		logTime.M=timeElements.Minute;
+		logTime.S=timeElements.Second;
+		pushLog(printTime(logTime,1));
 		pushLog("broken");
 		pushLog("\n");
 		Serial.println(F("broken"));

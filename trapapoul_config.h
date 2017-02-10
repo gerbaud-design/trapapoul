@@ -26,7 +26,7 @@
 #define pinMesVbat 7
 #define pinMesVsol 6
 #define vrefVoltage 3760 //mV
-#define ratioVbat 512 // anaread*vref/ratioVbat=Vbat(mV)   512=1024*1/2
+#define ratioVbat 323 // anaread*vref/ratioVbat=Vbat(mV)   512=1024*1/2 323 measured (resistance unknown!!)
 #define ratioImot 14643 //anaread*vref/ratioImot=Imot(mA)
 //R=0.26Ohm gain=55 70=1000/0.26/55
 
@@ -34,7 +34,7 @@
 
 //button timing const
 #define DEBOUNCE 400 //ms
-#define BUTTON_TIMEOUT 10000 //ms
+#define BUTTON_TIMEOUT 30000 //ms
 #define BLINK_HALF_PERIOD 500
 
 //EEPROM adresses

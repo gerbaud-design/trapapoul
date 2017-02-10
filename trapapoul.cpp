@@ -45,6 +45,7 @@ int16_t positionHaute = 0;
 uint16_t nbCycles;
 uint32_t chargeStartTime=0;
 volatile bool AlarmTriggered=0;
+gdiTime_t openTime,closeTime;
 
 uint32_t anaRead;
 
@@ -188,6 +189,7 @@ void setup()
 //initialisation of analog inputs
 	analogReference(EXTERNAL);
 
+
 //desactive int1  et int0 (or loop in int1 while pbok pushed)
 	detachInterrupt(0);
 	detachInterrupt(1);
@@ -286,20 +288,24 @@ void userInterface()
 			lcd.print(timeElements.Second);
 
 			//battery voltage measurement
+			digitalWrite(pinVppEn,1);
+			delay(100);
 			digitalWrite(pinChargeOff,0);
 			anaRead=0;
 			for(i8_1=0;i8_1<10;i8_1++){
 				anaRead+=analogRead(pinMesVbat);
 				delay(20);
 			}
+			digitalWrite(pinVppEn,0);
+			pinMode(pinVppEn,INPUT);
 			anaRead*=vrefVoltage;
 			anaRead/=ratioVbat;
 			anaRead/=10;
 
 			//battery voltage display
 
-			lcd.setCursor(9,0);
-			lcd.print(anaRead);
+			lcd.setCursor(12,0);
+			lcd.print((float(anaRead))/1000);
 			/*lcd.write(BAT1_CHAR);
 			lcd.write(BAT2_CHAR);
 			lcd.write(BAT3_CHAR);*/
@@ -383,7 +389,7 @@ void userInterface()
 			goto MENU_TIMEOUT;
 		case BPOK:
 			if (openMode == FIXE)
-				goto MENU_OUVERTURE_ENREGISTREE;
+				goto MENU_OUVERTURE_HEURE;
 			else{
 				openMode=FIXE;
 				goto MENU_OUVERTURE_FIXE;
@@ -392,6 +398,15 @@ void userInterface()
 			goto MENU_ERROR;
 		}
 
+	MENU_OUVERTURE_HEURE:
+		clearButtons();
+		lcd.setCursor(0,0);
+		lcd.print(F("HEURE OUVERTURE "));
+		lcd.setCursor(0,1);
+		lcd.print(printTime(openTime,0));
+		enterNumber(&openTime.H,0,23,0,1,2);
+		enterNumber(&openTime.M,0,59,3,1,2);
+		goto MENU_OUVERTURE;
 
 	MENU_OUVERTURE_MINIMUM:
 		clearButtons();

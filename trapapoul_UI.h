@@ -14,6 +14,16 @@
 #include <TimerOne.h>
 #include "trapapoul_config.h"
 
+
+
+typedef struct  {
+  uint8_t S;
+  uint8_t M;
+  uint8_t H;
+} 	gdiTime_t;
+
+
+
 //lcd_I2C config
 LiquidCrystal_I2C lcd(LCD_ADDRESS,16,2);
 
@@ -50,7 +60,7 @@ uint8_t waitButton();
 bool isTimeValid(tmElements_t*);
 bool isDateValid(tmElements_t*);
 String printDate ();
-String printTime ();
+String printTime (gdiTime_t,bool);
 void julianTranslate(uint8_t*hour,uint8_t*minute,uint8_t*second, double);
 void enterGPS (int*, int*);
 void enterDepartement ();
@@ -418,23 +428,25 @@ String printDate (){//create string with date (jj/mm/yy)
 	return date;
 }
 
-String printTime (){//create string with time (hh:mm:ss)
-	String time="";
+String printTime (gdiTime_t time,bool sec){//create string with time (hh:mm:ss)
+	String printed="";
 
 	//time+=("time (hh:mm:ss) : ");
 	RTC.read(timeElements,CLOCK_ADDRESS);
 	if(timeElements.Hour<10)
-		time+=("0");
-	time+=(timeElements.Hour);
-	time+=(":");
+		printed+=("0");
+	printed+=(timeElements.Hour);
+	printed+=(":");
 	if(timeElements.Minute<10)
-		time+=("0");
-	time+=(timeElements.Minute);
-	time+=(":");
-	if(timeElements.Second<10)
-		time+=("0");
-	time+=(timeElements.Second);
-	return time;
+		printed+=("0");
+	printed+=(timeElements.Minute);
+	if(sec){
+		printed+=(":");
+		if(timeElements.Second<10)
+			printed+=("0");
+		printed+=(timeElements.Second);
+	}
+	return printed;
 }
 
 void julianTranslate(uint8_t *hour,uint8_t *minute,uint8_t *second, double julian){
@@ -446,6 +458,5 @@ void julianTranslate(uint8_t *hour,uint8_t *minute,uint8_t *second, double julia
 	*hour=julianSec/SECS_PER_HOUR;
 }
 
-uint16_t
 
 #endif /* TRAPAPOUL_UI_H_ */
