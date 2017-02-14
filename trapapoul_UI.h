@@ -428,24 +428,24 @@ String printDate (){//create string with date (jj/mm/yy)
 	return date;
 }
 
-String printTime (gdiTime_t time,bool sec){//create string with time (hh:mm:ss)
+String printTime (gdiTime_t time){//create string with time (hh:mm:ss)
 	String printed="";
 
 	//time+=("time (hh:mm:ss) : ");
 	RTC.read(timeElements,CLOCK_ADDRESS);
-	if(timeElements.Hour<10)
+	if(time.H<10)
 		printed+=("0");
-	printed+=(timeElements.Hour);
+	printed+=(time.H);
 	printed+=(":");
-	if(timeElements.Minute<10)
+	if(time.M<10)
 		printed+=("0");
-	printed+=(timeElements.Minute);
-	if(sec){
+	printed+=(time.M);
+	/*if(sec){
 		printed+=(":");
 		if(timeElements.Second<10)
 			printed+=("0");
 		printed+=(timeElements.Second);
-	}
+	}*/
 	return printed;
 }
 

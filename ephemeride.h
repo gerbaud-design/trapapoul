@@ -23,7 +23,7 @@
 
 //* fonction principale :
 
-void calculerEphemeride(int jour, int mois, int annee, double longitude_ouest, double latitude_nord, double *lever, double *meridien, double *coucher);
+void calculerEphemeride(int jour, int mois, int annee, float longitude_ouest, float latitude_nord, float *lever, float *meridien, float *coucher);
 //Entrées :
 //   jour
 //   mois
@@ -46,27 +46,27 @@ void calculerEphemeride(int jour, int mois, int annee, double longitude_ouest, d
 
 //* fonction interne :
 
-void calculerCentreEtVariation(double longitude_ouest, double sinlat, double coslat, double d, double *centre, double *variation)
+void calculerCentreEtVariation(float longitude_ouest, float sinlat, float coslat, float d, float *centre, float *variation)
 {
   //constantes précalculées par le compilateur
-  const double M_2PI = 2.0 * M_PI;
-  const double degres = 180.0 / M_PI;
-  const double radians = M_PI / 180.0;
-  const double radians2 = M_PI / 90.0;
-  const double m0 = 357.5291;
-  const double m1 = 0.98560028;
-  const double l0 = 280.4665;
-  const double l1 = 0.98564736;
-  const double c0 = 0.01671;
-  const double c1 = degres * (2.0*c0 - c0*c0*c0/4.0);
-  const double c2 = degres * c0*c0 * 5.0 / 4.0;
-  const double c3 = degres * c0*c0*c0 * 13.0 / 12.0;
-  const double r1 = 0.207447644182976; // = tan(23.43929 / 180.0 * M_PI / 2.0)
-  const double r2 = r1*r1;
-  const double d0 = 0.397777138139599; // = sin(23.43929 / 180.0 * M_PI)
-  const double o0 = -0.0106463073113138; // = sin(-36.6 / 60.0 * M_PI / 180.0)
+  const float M_2PI = 2.0 * M_PI;
+  const float degres = 180.0 / M_PI;
+  const float radians = M_PI / 180.0;
+  const float radians2 = M_PI / 90.0;
+  const float m0 = 357.5291;
+  const float m1 = 0.98560028;
+  const float l0 = 280.4665;
+  const float l1 = 0.98564736;
+  const float c0 = 0.01671;
+  const float c1 = degres * (2.0*c0 - c0*c0*c0/4.0);
+  const float c2 = degres * c0*c0 * 5.0 / 4.0;
+  const float c3 = degres * c0*c0*c0 * 13.0 / 12.0;
+  const float r1 = 0.207447644182976; // = tan(23.43929 / 180.0 * M_PI / 2.0)
+  const float r2 = r1*r1;
+  const float d0 = 0.397777138139599; // = sin(23.43929 / 180.0 * M_PI)
+  const float o0 = -0.0106463073113138; // = sin(-36.6 / 60.0 * M_PI / 180.0)
 
-  double M,C,L,R,dec,omega,x;
+  float M,C,L,R,dec,omega,x;
 
   //deux ou trois petites formules de calcul
   M = radians * fmod(m0 + m1 * d, 360.0);
@@ -84,11 +84,11 @@ void calculerCentreEtVariation(double longitude_ouest, double sinlat, double cos
     *variation = 0.0;
 }
 
-void calculerEphemeride(int jour, int mois, int annee, double longitude_ouest, double latitude_nord, double *lever, double *meridien, double *coucher)
+void calculerEphemeride(int jour, int mois, int annee, float longitude_ouest, float latitude_nord, float *lever, float *meridien, float *coucher)
 {
   int nbjours;
-  const double radians = M_PI / 180.0;
-  double d, x, sinlat, coslat;
+  const float radians = M_PI / 180.0;
+  float d, x, sinlat, coslat;
 
   //calcul nb jours écoulés depuis le 01/01/2000
   if (annee > 2000) annee -= 2000;
@@ -128,15 +128,15 @@ void calculerEphemeride(int jour, int mois, int annee, double longitude_ouest, d
 }
 
 
-double calculerCoordonneeDecimale(int degre, int minute, int seconde)
+float calculerCoordonneeDecimale(int degre, int minute, int seconde)
 {
   if (degre > 0)
   {
-    return (double) degre + minute / 60.0 + seconde / 3600.0;
+    return (float) degre + minute / 60.0 + seconde / 3600.0;
   }
   else
   {
-    return (double) degre - minute / 60.0 - seconde / 3600.0;
+    return (float) degre - minute / 60.0 - seconde / 3600.0;
   }
 }
 

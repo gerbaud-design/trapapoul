@@ -49,8 +49,7 @@ bool logSdInit(){
 	updateTime();
 	logTime.H=timeElements.Hour;
 	logTime.M=timeElements.Minute;
-	logTime.S=timeElements.Second;
-	pushLog(printTime(logTime,1));
+	pushLog(printTime(logTime));
 	pushLog("\n");
 	return result;
 }
