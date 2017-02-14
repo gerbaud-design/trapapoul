@@ -44,12 +44,11 @@ void motorBackward();
 void motorStop();
 void resetPosition();
 
-#define quadratureOn {\
+#define QUADRATUREON \
 				PCIFR  |= bit (digitalPinToPCICRbit(pinQuadratureB));/*enable interrupt for the group*/\
-				PCICR  |= bit (digitalPinToPCICRbit(pinQuadratureB));/*clear outstanding interrupt*/\
-				}
+				PCICR  |= bit (digitalPinToPCICRbit(pinQuadratureB));/*clear outstanding interrupt*/
 
-#define quadratureOff PCIFR  &= ~(bit (digitalPinToPCICRbit(pinQuadratureB)))/*disable interrupt for the group*/
+#define QUADRATUREOFF PCIFR  &= ~(bit (digitalPinToPCICRbit(pinQuadratureB)))/*disable interrupt for the group*/
 
 //interrupt routine for pin change of port B
 ISR (PCINT1_vect){ // handle pin change interrupt for A0 to A7 here
@@ -97,33 +96,36 @@ ISR (PCINT1_vect){ // handle pin change interrupt for A0 to A7 here
 
 }
 
-void activateMotor ()
-{
+void activateVpp(){
 	pinMode(pinVppEn,OUTPUT);
 	digitalWrite(pinVppEn,1);
+}
+
+void deactivateVpp(){
+	digitalWrite(pinVppEn,0);
+	delay(10);
+	pinMode(pinVppEn,INPUT);
+}
+
+void activateMotor ()
+{
+	activateVpp();
 	delay(1000);//just in case, can be quicken after tests
-	quadratureOn;
+	PCIFR  |= bit (digitalPinToPCICRbit(pinQuadratureB));//enable interrupt for the group
+	PCICR  |= bit (digitalPinToPCICRbit(pinQuadratureB));//clear outstanding interrupt
 }
 
 void deactivateMotor()
 {
 	delay(1000);//just to be sure
-	quadratureOff;
-	pinMode(pinVppEn,INPUT);
+	PCIFR  &= ~(bit (digitalPinToPCICRbit(pinQuadratureB)));//disable interrupt for the group
+	deactivateVpp();
 }
 
 void motorGoTo (int targetPosition)
 {
 	bool motorDirection;
 
-	Serial.print("P:");
-	Serial.print(motorPosition);
-	Serial.print("  ");
-	Serial.print(quadratureA);
-	Serial.println(quadratureB);
-	delay(100);
-	Serial.end();
-	delay(100);
 	machineState=INRUN;
 	motorDirection = (targetPosition>motorPosition);
 	motorLastMoved=millis();
@@ -138,19 +140,9 @@ void motorGoTo (int targetPosition)
 	}
 	while (1){
 		if(machineState==LOST){
-		//	Serial.print("P:");
-		//	Serial.print(motorPosition);
-		//	Serial.print("  ");
-		//	Serial.print(quadratureA);
-		//	Serial.println(quadratureB);
-			digitalWrite(pinMotorForward,LOW);
-			digitalWrite(pinMotorBackward,LOW);
-			//Serial.print(ERR_POSLOSS);
-			//Serial.print(IN_MOTGOTO);
-			//pushLog(ERR_POSLOSS);
-			//pushLog(IN_MOTGOTO);
+			motorStop();
 			if ((millis()-motorStopped)>POST_RUN_TIME)
-					break;
+			break;
 		}
 		noInterrupts();
 		if(motorPosition==targetPosition){
@@ -179,11 +171,8 @@ void motorGoTo (int targetPosition)
 	digitalWrite(pinMotorForward,LOW);
 	digitalWrite(pinMotorBackward,LOW);
 
-	Serial.begin(9600);
 	delay(100);
 	if(machineState==TIMEOUT){
-		Serial.println(ERR_TIMEOUT);
-		Serial.println(IN_MOTGOTO);
 		pushLog(ERR_TIMEOUT);
 		pushLog(IN_MOTGOTO);
 		updateTime();
@@ -192,30 +181,18 @@ void motorGoTo (int targetPosition)
 		pushLog(printTime(logTime));
 		pushLog("broken");
 		pushLog("\n");
-		Serial.println(F("broken"));
 	}
 	if(machineState==LOST){
-		Serial.print(ERR_POSLOSS);
-		Serial.print(IN_MOTGOTO);
 		pushLog(ERR_POSLOSS);
 		pushLog(IN_MOTGOTO);
 	}
-	Serial.print("S:");
-	Serial.println(machineState);
-	Serial.print(" P:");
-	Serial.print(motorPosition);
-	Serial.print("  ");
-	Serial.print(quadratureA);
-	Serial.println(quadratureB);
 }
-
 
 void motorTurn (int16_t motorDistance)
 {
 	int16_t target=motorDistance+motorPosition;
 	motorGoTo(target);
 }
-
 
 void motorInit (){
 
@@ -234,28 +211,26 @@ void motorInit (){
 
 }
 
-
-
 void motorForward(){
 	digitalWrite(pinMotorBackward,LOW);
 	delay(100);
 	digitalWrite(pinMotorForward,HIGH);
 }
+
 void motorBackward(){
 	digitalWrite(pinMotorForward,LOW);
 	delay(100);
 	digitalWrite(pinMotorBackward,HIGH);
 }
+
 void motorStop(){
 	digitalWrite(pinMotorForward,LOW);
 	digitalWrite(pinMotorBackward,LOW);
 }
+
 void resetPosition(){
 	motorPosition=0;
 }
-
-
-
 
 void manualMoveMotor(){
 uint8_t manualMoveMachineState=0;	//1=frd 2=bkw
@@ -300,6 +275,5 @@ uint8_t manualMoveMachineState=0;	//1=frd 2=bkw
 		}
 	}
 }
-
 
 #endif /* TRAPAPOUL_MOTOR_H_ */

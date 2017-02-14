@@ -140,17 +140,6 @@ void setup()
 {
 
 
-// Open serial communications and wait for port to open:
-//	Serial.begin(9600);
-/*	while(Serial.available() > 0)
-		Serial.read();//flush serial input
-	Serial.println(F("\n"));
-	Serial.println(F("Press"));
-	while (Serial.available()==0);
-	while (Serial.available()!=0)
-		Serial.read();
-*/
-
 //setup du sleep mode
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
@@ -171,17 +160,6 @@ void setup()
 	pinMode(pinAlarm, INPUT);
 	AlarmTriggered=0;
 //	attachInterrupt(digitalPinToInterrupt(pinAlarm), interrupt_0 , FALLING);
-/*	Serial.print(printDate());
-	Serial.print(' ');
-	Serial.print(printTime());
-	Serial.println(F("changer heure? (y/n)"));
-	while (Serial.available()==0);
-			if(Serial.available() > 0){
-				if (Serial.read()=='y')
-					serialSetRtc(CLOCK_ADDRESS);
-			}
-
-*/
 
 	//initialize motor
 	motorInit();
@@ -189,7 +167,6 @@ void setup()
 	//init charge
 	pinMode(pinChargeOff,OUTPUT);
 	digitalWrite(pinChargeOff,1);//turn charge ON when =1
-
 
 //setup des boutons
 	pinMode(pinBPUP, INPUT);
@@ -248,12 +225,9 @@ void loop()
 				doorState=DOOROPENED;
 			}
 			if(doorState==DOORCLOSED){
-				/*activateMotor();
+				activateMotor();
 				motorGoTo(positionHaute);//open door
-				deactivateMotor();*/
-				lcd.backlight();
-				lcd.setCursor(0,0);
-				lcd.print(F("FAKE OPENING"));
+				deactivateMotor();
 			}
 			//set alarm to closeTime
 		}
@@ -262,12 +236,9 @@ void loop()
 				doorState=DOORCLOSED;
 			}
 			if(doorState==DOOROPENED){
-				/*activateMotor();
+				activateMotor();
 				motorGoTo(0);//close door
-				deactivateMotor();*/
-				lcd.backlight();
-				lcd.setCursor(0,0);
-				lcd.print(F("FAKE CLOSING"));
+				deactivateMotor();
 			}
 			//set alarm to openTime
 		}

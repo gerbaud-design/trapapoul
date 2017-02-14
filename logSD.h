@@ -26,18 +26,16 @@ bool logSdInit(){
 //initialisation de la carte SD
 	pinMode(pinSDSS,OUTPUT);
 	if (!SD.begin(pinSDSS)) {
-		Serial.println(ERR_SDINIT);
+		//should print error message here
 		// don't do anything more:
 		while(1);
 	}
-	Serial.println(INF_SDINIT);
 	File LogFile = SD.open(logFileName, FILE_WRITE);
 	// if the file is available, write to it:
 	if (LogFile) {
 		LogFile.close();
 		result=1;
 	}else{
-		Serial.println(ERR_SDOPEN);
 		result=0;
 	}
 
