@@ -80,7 +80,6 @@ void installationTrappe();
 void manualMoveMotor();
 void updateOpenTime();
 void updateCloseTime();
-void dooring();
 void userInterface();
 
 //interrupt routine for pin change of port D
@@ -686,7 +685,7 @@ void userInterface()
 			lcd.setCursor(0,0);
 			lcd.print(F("DATE ET HEURE   "));
 			lcd.setCursor(0,1);
-			lcd.print(F("ENREGISTRES     "));
+			lcd.print(F("ENREGISTREES    "));
 			updateCloseTime();
 			updateOpenTime();
 			//delay(2000);
