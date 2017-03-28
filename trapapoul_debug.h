@@ -58,28 +58,5 @@ void serialSetRtc (uint8_t adress){
 }
 
 
-/*	lcd.backlight();
-	while(1){
-
-		lcd.setCursor(0,0);
-		if (digitalRead(pinBPUP)==0)
-			lcd.print("UP");
-		else
-			lcd.print("NU");
-
-		lcd.setCursor(3,0);
-		if (digitalRead(pinBPDW)==0)
-			lcd.print("DW");
-		else
-			lcd.print("ND");
-
-		lcd.setCursor(6,0);
-		if (digitalRead(pinBPOK)==0)
-			lcd.print("OK");
-		else
-			lcd.print("NO");
-		delay(500);*/
-
-
 
 #endif /* TRAPAPOUL_DEBUG_H_ */
