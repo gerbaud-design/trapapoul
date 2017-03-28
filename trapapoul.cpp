@@ -205,7 +205,7 @@ void loop()
 		lcd.backlight();
 		lcd.setCursor(0,0);
 		lcd.print(F("UNKNOWN WAKE UP"));
-		delay(10000);
+		delay(2000);
 	case WAKEUPBUTTON:
 		clearButtons();
 		lcd.backlight();
