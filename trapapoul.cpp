@@ -6,7 +6,7 @@
  */
 
 #include <Arduino.h>
-#include <Rtc_Pcf8563.h>
+//#include <Rtc_Pcf8563.h>
 #include <LiquidCrystal_I2C.h>
 #include <Time.h>
 #include <EEPROM.h>
@@ -15,7 +15,7 @@
 #include "trapapoul_UI.h"
 #include "trapapoul_config.h"
 #include "trapapoul_motor.h"
-#include "logSD.h"
+//#include "logSD.h"
 #include "ephemeride.h"
 #include "sleep.h"
 
@@ -63,7 +63,7 @@ uint8_t closeDelay=DEFAULT_CLOSE_DELAY;
 
 uint16_t anaRead;
 
-Rtc_Pcf8563 RTC;
+//Rtc_Pcf8563 RTC;
 
 float lever,meridien,coucher;
 uint8_t hh, mm, ss;
@@ -169,8 +169,8 @@ void setup()
 
 //Init of RTC
 	//RTC.set(SECS_YR_2000,CLOCK_ADDRESS);
-	RTC.clearAlarm();
-	RTC.clearTimer();
+//	RTC.clearAlarm();
+//	RTC.clearTimer();
 	pinMode(pinAlarm, INPUT);
 	AlarmTriggered=0;
 	attachInterrupt(digitalPinToInterrupt(pinAlarm), interrupt_0 , FALLING);
@@ -703,7 +703,7 @@ void userInterface()
 			lcd.setCursor(0,0);
 			lcd.print(F("DATE:           "));
 			enterDate(&timeElements);
-			RTC.setDateTime(timeElements.Day, timeElements.Wday,timeElements.Month, 0, (timeElements.Year-30),\
+//			RTC.setDateTime(timeElements.Day, timeElements.Wday,timeElements.Month, 0, (timeElements.Year-30),\
 					timeElements.Hour, timeElements.Minute, timeElements.Second);
 			lcd.setCursor(0,0);
 			lcd.print(F("DATE ET HEURE   "));
