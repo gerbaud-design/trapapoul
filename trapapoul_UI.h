@@ -10,7 +10,7 @@
 
 #include <LiquidCrystal_I2C.h>
 #include <Time.h>
-//#include <Rtc_Pcf8563.h>
+#include <Rtc_Pcf8563.h>
 #include <TimerOne.h>
 #include "trapapoul_config.h"
 
@@ -32,7 +32,7 @@ int longitudeOuest=-6;
 
 //RTC
 tmElements_t timeElements;
-//extern Rtc_Pcf8563 RTC;
+extern Rtc_Pcf8563 RTC;
 
 //timer1config
 volatile bool blink=0;
@@ -405,14 +405,14 @@ LATLON_LABEL:
 }
 
 void updateTime (){
-/*RTC.getDateTime();
+RTC.getDateTime();
 timeElements.Day=RTC.getDay();
 timeElements.Month=RTC.getMonth();
 timeElements.Year=RTC.getYear()+30;
 timeElements.Minute=RTC.getMinute();
 timeElements.Hour=RTC.getHour();
 timeElements.Second=RTC.getSecond();
-*/
+
 }
 
 String printDate (){//create string with date (jj/mm/yy)
