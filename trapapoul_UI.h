@@ -10,7 +10,7 @@
 
 #include <LiquidCrystal_I2C.h>
 #include <Time.h>
-#include <DS1337RTC.h>
+#include <Rtc_Pcf8563.h>
 #include <TimerOne.h>
 #include "trapapoul_config.h"
 
@@ -32,11 +32,10 @@ int longitudeOuest=-6;
 
 //RTC
 tmElements_t timeElements;
-extern DS1337RTC RTC;
+extern Rtc_Pcf8563 RTC;
 
 //timer1config
 volatile bool blink=0;
-volatile uint8_t blinkCount=0;
 
 //boutons config
 #define BPUP 0
@@ -72,7 +71,6 @@ void interrupt_blinker(void)
 {
 	if (blink==0) {
 		blink=1;
-		blinkCount++;  // increase when LED turns on
 	} else {
 		blink=0;
 	}
@@ -223,7 +221,7 @@ ENTER_TIME:
 	enterNumber(&(te->Second),0,59,6,1,2);
 
 	//check validity
-	if(!isDateValid(te)){	//check date validity
+	if(!isTimeValid(te)){	//check date validity
 
 		lcd.setCursor(0,0);
 		lcd.print(F("HEURE NON VALIDE"));
@@ -407,13 +405,20 @@ LATLON_LABEL:
 }
 
 void updateTime (){
-RTC.read(timeElements,CLOCK_ADDRESS);
+RTC.getDateTime();
+timeElements.Day=RTC.getDay();
+timeElements.Month=RTC.getMonth();
+timeElements.Year=RTC.getYear()+30;
+timeElements.Minute=RTC.getMinute();
+timeElements.Hour=RTC.getHour();
+timeElements.Second=RTC.getSecond();
+
 }
 
 String printDate (){//create string with date (jj/mm/yy)
 	String date="";
 	//date+=("date (jj/mm/yyyy) : ");
-	RTC.read(timeElements,CLOCK_ADDRESS);
+	updateTime();
 	if(timeElements.Day<10)
 		date+=("0");
 	date+=(timeElements.Day);
@@ -432,7 +437,7 @@ String printTime (gdiTime_t time){//create string with time (hh:mm:ss)
 	String printed="";
 
 	//time+=("time (hh:mm:ss) : ");
-	RTC.read(timeElements,CLOCK_ADDRESS);
+	updateTime();
 	if(time.H<10)
 		printed+=("0");
 	printed+=(time.H);

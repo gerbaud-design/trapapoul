@@ -6,7 +6,7 @@
  */
 
 #include <Arduino.h>
-#include <DS1337RTC.h>
+#include <Rtc_Pcf8563.h>
 #include <LiquidCrystal_I2C.h>
 #include <Time.h>
 #include <EEPROM.h>
@@ -27,6 +27,8 @@ extern volatile unsigned long lastPush[3];
 extern volatile bool buttonState[3];
 extern volatile bool buttonPushed[3];
 //extern tmElements_t timeElements;
+
+extern uint8_t resetSource;
 
 //iterateurs
 uint8_t i8_1;
@@ -49,6 +51,7 @@ uint8_t wakeUpSource=WAKEUPUNKNOWN;
 #define DOORFORCEDOPENED 5
 #define DOORFORCEDCLOSED 6
 uint8_t doorState=DOORUNKNOWN;
+uint8_t configured=0;
 uint8_t cur_mm=30;
 uint8_t cur_hh=12;
 int16_t positionHaute = 0;
@@ -59,6 +62,8 @@ gdiTime_t openTime,closeTime;
 uint8_t closeDelay=DEFAULT_CLOSE_DELAY;
 
 uint16_t anaRead;
+
+Rtc_Pcf8563 RTC;
 
 float lever,meridien,coucher;
 uint8_t hh, mm, ss;
@@ -84,6 +89,7 @@ void userInterface();
 
 //interrupt routine for pin change of port D
 ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
+	wakeUpSource=WAKEUPBUTTON;
 	if(!digitalRead(pinAlarm))
 		AlarmTriggered=1;
 	bool newState[3];
@@ -118,6 +124,9 @@ ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
 
 }
 
+inline void clearInterrupts() {	EIFR=0x03;\
+								PCIFR=0x07;}
+
 // interrupt routine for pin2 alarm.
 void interrupt_0 () {
 	//handle rtc alarm
@@ -140,10 +149,18 @@ void setup()
 
 
 //setup du sleep mode
+	WDTCSR=0x00;//disable watchdog just in case
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
 //setup du lcd
-	lcd.init();
+	lcd.init();		lcd.backlight();
+	lcd.setCursor(0,0);
+	lcd.print(F("  SYSTEM RESET  "));
+	lcd.setCursor(0,1);
+	lcd.print(F("value:"));
+	lcd.print(resetSource,HEX);
+	delay(2000);
+	if(resetSource==0) delay (30000);
 	lcd.noBacklight();
 	lcd.clear();
 	uploadChar(CHECK_CHAR,checkChar);
@@ -152,13 +169,11 @@ void setup()
 
 //Init of RTC
 	//RTC.set(SECS_YR_2000,CLOCK_ADDRESS);
-	RTC.disableAlarm(ALARM1_ADDRESS);
-	RTC.disableAlarm(ALARM2_ADDRESS);
-	RTC.interruptSelect(INTB);
-	RTC.resetAlarms();
+	RTC.clearAlarm();
+	RTC.clearTimer();
 	pinMode(pinAlarm, INPUT);
 	AlarmTriggered=0;
-//	attachInterrupt(digitalPinToInterrupt(pinAlarm), interrupt_0 , FALLING);
+	attachInterrupt(digitalPinToInterrupt(pinAlarm), interrupt_0 , FALLING);
 
 	//initialize motor
 	motorInit();
@@ -171,9 +186,9 @@ void setup()
 	pinMode(pinBPUP, INPUT);
 	pinMode(pinBPDW, INPUT);
 	pinMode(pinBPOK, INPUT);
-	digitalWrite(pinBPUP,1);
-	digitalWrite(pinBPDW,1);
-	digitalWrite(pinBPOK,1);
+	//digitalWrite(pinBPUP,1);
+	//digitalWrite(pinBPDW,1);
+	//digitalWrite(pinBPOK,1);
 
 //initialisation of analog inputs
 	analogReference(EXTERNAL);
@@ -208,45 +223,51 @@ void loop()
 		delay(2000);
 	case WAKEUPBUTTON:
 		clearButtons();
+		lcd.clear();
 		lcd.backlight();
 		userInterface();
 		lcd.clear();
 		lcd.noBacklight();
 	case WAKEUPALARM:
-		updateCloseTime();
-		updateOpenTime();
-		updateTime();
-		if((((timeElements.Hour>openTime.H)||\
-				((timeElements.Hour==openTime.H)&&(timeElements.Minute>=openTime.M)))\
-				&&((timeElements.Hour<closeTime.H)||\
-				((timeElements.Hour=closeTime.H)&&(timeElements.Minute<closeTime.M))))==1){
-			if(doorState==DOOREARLYOPENED){
-				doorState=DOOROPENED;
+		if(configured!=0){
+			updateCloseTime();
+			updateOpenTime();
+			updateTime();
+		/*	if((((timeElements.Hour>openTime.H)||\
+					((timeElements.Hour==openTime.H)&&(timeElements.Minute>=openTime.M)))\
+					&&((timeElements.Hour<closeTime.H)||\
+					((timeElements.Hour=closeTime.H)&&(timeElements.Minute<closeTime.M))))==1){
+				if(doorState==DOOREARLYOPENED){
+					doorState=DOOROPENED;
+				}
+				if(doorState==DOORCLOSED){
+					activateMotor();
+					motorGoTo(positionHaute);//open door
+					deactivateMotor();
+					doorState=DOOROPENED;
+				}
+				//set alarm to closeTime
 			}
-			if(doorState==DOORCLOSED){
-				activateMotor();
-				motorGoTo(positionHaute);//open door
-				deactivateMotor();
-			}
-			//set alarm to closeTime
-		}
-		else{
-			if(doorState==DOOREARLYCLOSED){
-				doorState=DOORCLOSED;
-			}
-			if(doorState==DOOROPENED){
-				activateMotor();
-				motorGoTo(0);//close door
-				deactivateMotor();
-			}
-			//set alarm to openTime
+			else{
+				if(doorState==DOOREARLYCLOSED){
+					doorState=DOORCLOSED;
+				}
+				if(doorState==DOOROPENED){
+					activateMotor();
+					motorGoTo(0);//close door
+					deactivateMotor();
+					doorState=DOORCLOSED;
+				}
+				//set alarm to openTime
+			}*/
 		}
 	}
 
 	//shutdown everything
 	cli();
-	attachInterrupt(0,interrupt_0,LOW);
-	attachInterrupt(1,interrupt_1,LOW);
+	clearInterrupts();
+	attachInterrupt(0,interrupt_0,FALLING);
+	attachInterrupt(1,interrupt_1,FALLING);
 	sleep_enable();
 	sleep_bod_disable();
 	sei();
@@ -297,7 +318,7 @@ void userInterface()
 
 
 			//time display
-			RTC.read(timeElements,CLOCK_ADDRESS);
+			updateTime();
 			lcd.setCursor(0,0);
 			if (timeElements.Hour<10)
 				lcd.print('0');
@@ -314,12 +335,13 @@ void userInterface()
 			//battery voltage measurement
 			digitalWrite(pinVppEn,1);
 			delay(100);
-			digitalWrite(pinChargeOff,0);
+			//digitalWrite(pinChargeOff,0);
 			anaRead=0;
 			for(i8_1=0;i8_1<64;i8_1++){
 				anaRead+=analogRead(pinMesVbat);
 				delay(5);
 			}
+			//digitalWrite(pinChargeOff,1);
 			digitalWrite(pinVppEn,0);
 			pinMode(pinVppEn,INPUT);
 			anaRead /=ratioVbat;
@@ -674,14 +696,15 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			RTC.read(timeElements,CLOCK_ADDRESS);
+			updateTime();
 			lcd.setCursor(0,0);
 			lcd.print(F("HEURE:          "));
 			enterTime(&timeElements);
 			lcd.setCursor(0,0);
 			lcd.print(F("DATE:           "));
 			enterDate(&timeElements);
-			RTC.write(timeElements,CLOCK_ADDRESS);
+			RTC.setDateTime(timeElements.Day, timeElements.Wday,timeElements.Month, 0, (timeElements.Year-30),\
+					timeElements.Hour, timeElements.Minute, timeElements.Second);
 			lcd.setCursor(0,0);
 			lcd.print(F("DATE ET HEURE   "));
 			lcd.setCursor(0,1);

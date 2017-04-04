@@ -50,6 +50,7 @@ void resetPosition();
 
 #define QUADRATUREOFF PCIFR  &= ~(bit (digitalPinToPCICRbit(pinQuadratureB)))/*disable interrupt for the group*/
 
+
 //interrupt routine for pin change of port B
 ISR (PCINT1_vect){ // handle pin change interrupt for A0 to A7 here
 	bool newQuadratureA;
