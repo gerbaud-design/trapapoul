@@ -26,9 +26,12 @@ int atexit(void (* /*func*/ )()) { return 0; }
 // May be redefined by variant files.
 void initVariant() __attribute__((weak));
 void initVariant() { }
+uint8_t resetSource;
 
 int main(void)
 {
+	resetSource = MCUSR;   // save reset source
+	MCUSR = 0x00;  // cleared for next reset detection
 	init();
 
 	initVariant();
