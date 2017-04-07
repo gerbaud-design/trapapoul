@@ -9,30 +9,18 @@
 #define TRAPAPOUL_UI_H_
 
 #include <LiquidCrystal_I2C.h>
-#include <Time.h>
-#include <Rtc_Pcf8563.h>
+#include "GDI_time.h"
 #include <TimerOne.h>
 #include "trapapoul_config.h"
-
-
-
-typedef struct  {
-  uint8_t S;
-  uint8_t M;
-  uint8_t H;
-} 	gdiTime_t;
-
 
 
 //lcd_I2C config
 LiquidCrystal_I2C lcd(LCD_ADDRESS,16,2);
 
-int latitudeNord=45;
-int longitudeOuest=-6;
+int8_t latitudeNord=45;
+int16_t longitudeOuest=-6;
 
 //RTC
-tmElements_t timeElements;
-extern Rtc_Pcf8563 RTC;
 
 //timer1config
 volatile bool blink=0;
@@ -53,13 +41,13 @@ const uint8_t monthDays[]={31,28,31,30,31,30,31,31,30,31,30,31};
 unsigned long topTimeout;
 
 void enterNumber(uint8_t *val,uint8_t min,uint8_t max,uint8_t col, uint8_t lin, uint8_t digit);
-void enterTime(tmElements_t*);
+void enterTime(gdiTime_t*);
 void clearButtons();
 uint8_t waitButton();
-bool isTimeValid(tmElements_t*);
-bool isDateValid(tmElements_t*);
-String printDate ();
-String printTime (gdiTime_t,bool);
+bool isTimeValid(gdiTime_t*);
+bool isDateValid(gdiDate_t*);
+void printDateLCD ();
+void printTimeLCD (gdiTime_t,bool);
 void julianTranslate(uint8_t*hour,uint8_t*minute,uint8_t*second, double);
 void enterGPS (int*, int*);
 void enterDepartement ();
@@ -85,18 +73,18 @@ void uploadChar (uint8_t location, const uint8_t charmap[]){
 	  }
 }
 
-bool isDateValid(tmElements_t *te){
-	if (te->Month>12)
+bool isDateValid(gdiDate_t *date){
+	if (date->M>12)
 		return 0;
-	if ((te->Month==2)&&(!LEAP_YEAR(te->Year))&&(te->Day==29))
+	if ((date->M==2)&&(!LEAP_YEAR(date->Y))&&(date->D==29))
 		return 1;
-	if (te->Day>monthDays[(te->Month)-1])
+	if (date->D>daysInMonths[(date->M)-1])
 		return 0;
 	return 1;
 }
 
-bool isTimeValid(tmElements_t *te){
-	if (te->Second>59 || te->Minute>59 ||te->Hour>23)
+bool isTimeValid(gdiTime_t *time){
+	if (time->S>59 || time->M>59 ||time->H>23)
 		return 0;
 	return 1;
 }
@@ -152,42 +140,42 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 		if (blink==1){
 			lcd.setCursor(col,lin);
 			if((*val<100) && (digit==3)/* && (print0==1)*/)
-				lcd.print('0');
+				lcd.print(F("0"));
 			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
-				lcd.print('0');
+				lcd.print(F("0"));
 			lcd.print(*val);
 		}else{
 			lcd.setCursor(col,lin);
-			lcd.print(' ');
+			lcd.print(F(" "));
 			if (digit>=2)
-				lcd.print(' ');
+				lcd.print(F(" "));
 			if (digit==3)
-				lcd.print(' ');
+				lcd.print(F(" "));
 		}
 		if((buttonState[BPUP]==1)&&(*val<max)){
 			*val+=1;
 			lcd.setCursor(col,lin);
 			if((*val<100) && (digit==3)/* && (print0==1)*/)
-				lcd.print('0');
+				lcd.print(F("0"));
 			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
-				lcd.print('0');
+				lcd.print(F("0"));
 			lcd.print(*val);
 		}
 		if((buttonState[BPDW]==1)&&(*val>min)){
 			*val-=1;
 			lcd.setCursor(col,lin);
 			if((*val<100) && (digit==3)/* && (print0==1)*/)
-				lcd.print('0');
+				lcd.print(F("0"));
 			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
-				lcd.print('0');
+				lcd.print(F("0"));
 			lcd.print(*val);
 		}
 		if(buttonPushed[BPOK]==1){
 			lcd.setCursor(col,lin);
 			if((*val<100) && (digit==3)/* && (print0==1)*/)
-				lcd.print('0');
+				lcd.print(F("0"));
 			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
-				lcd.print('0');
+				lcd.print(F("0"));
 			lcd.print(*val);
 			Timer1.stop();
 			Timer1.detachInterrupt();
@@ -198,30 +186,30 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 
 }
 
-void enterTime(tmElements_t *te){
+void enterTime(gdiTime_t *time){
 
 ENTER_TIME:
 	lcd.setCursor(0,1);
-	if (te->Hour<10)
-		lcd.print('0');
-	lcd.print(te->Hour);
-	lcd.print(':');
-	if (te->Minute<10)
-		lcd.print('0');
-	lcd.print(te->Minute);
-	lcd.print(':');
-	if (te->Second<10)
-		lcd.print('0');
-	lcd.print(te->Second);
+	if (time->H<10)
+		lcd.print(F("0"));
+	lcd.print(time->H);
+	lcd.print(F(":"));
+	if (time->M<10)
+		lcd.print(F("0"));
+	lcd.print(time->M);
+	lcd.print(F(":"));
+	if (time->S<10)
+		lcd.print(F("0"));
+	lcd.print(time->S);
 	lcd.print(F("        "));
 
 	//update values
-	enterNumber(&(te->Hour),0,23,0,1,2);
-	enterNumber(&(te->Minute),0,59,3,1,2);
-	enterNumber(&(te->Second),0,59,6,1,2);
+	enterNumber(&(time->H),0,23,0,1,2);
+	enterNumber(&(time->M),0,59,3,1,2);
+	enterNumber(&(time->S),0,59,6,1,2);
 
 	//check validity
-	if(!isTimeValid(te)){	//check date validity
+	if(!isTimeValid(time)){	//check date validity
 
 		lcd.setCursor(0,0);
 		lcd.print(F("HEURE NON VALIDE"));
@@ -236,32 +224,29 @@ ENTER_TIME:
 	}
 }
 
-void enterDate(tmElements_t *te){
+void enterDate(gdiDate_t *date){
 
 ENTER_DATE :
 	lcd.setCursor(0,1);
-	if (te->Day<10)
-		lcd.print('0');
-	lcd.print(te->Day);
-	lcd.print('/');
-	if (te->Month<10)
-		lcd.print('0');
-	lcd.print(te->Month);
-	lcd.print('/');
-	lcd.print((uint16_t(te->Year)+1970));
-	lcd.print(F("      "));
+	if (date->D<10)
+		lcd.print(F("0"));
+	lcd.print(date->D);
+	lcd.print(F("/"));
+	if (date->M<10)
+		lcd.print(F("0"));
+	lcd.print(date->M);
+	lcd.print(F("/"));
+	lcd.print(date->Y);
 
 	//update values
 	{
-		uint8_t tmpYear=(tmYearToY2k(te->Year));
-		enterNumber(&(te->Day),1,31,0,1,2);
-		enterNumber(&(te->Month),1,12,3,1,2);
-		enterNumber(&tmpYear,0,99,8,1,2);
-		te->Year=y2kYearToTm(tmpYear);
+		enterNumber(&(date->D),1,31,0,1,2);
+		enterNumber(&(date->M),1,12,3,1,2);
+		enterNumber(&(date->Y),0,99,8,1,2);
 	}
 
 	//check validity
-	if(!isDateValid(te)){	//check date validity
+	if(!isDateValid(date)){	//check date validity
 
 		lcd.setCursor(0,0);
 		lcd.print(F("DATE NON VALIDE "));
@@ -287,7 +272,7 @@ void enterDepartement (){
 	longitudeOuest=departement[((dpt*2)-1)];
 }
 
-void enterGPS (int *latN, int *lonO){
+void enterGPS (int8_t *latN, int16_t *lonO){
 
 	bool latNS=1; //used also as lonEO
 	uint8_t newlat; //used also as newlon
@@ -327,9 +312,9 @@ LATLON_LABEL:
 			lcd.write(CHECK_CHAR);
 		}else{
 			lcd.setCursor(15,0);
-			lcd.print(' ');
+			lcd.print(F(" "));
 			lcd.setCursor(15,1);
-			lcd.print(' ');
+			lcd.print(F(" "));
 		}
 		if(buttonPushed[BPUP]==1){
 			clearButtons();
@@ -337,7 +322,7 @@ LATLON_LABEL:
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
 			lcd.setCursor(15,1);
-			lcd.print(' ');
+			lcd.print(F(" "));
 		}
 		if(buttonPushed[BPDW]==1){
 			clearButtons();
@@ -345,7 +330,7 @@ LATLON_LABEL:
 			lcd.setCursor(15,1);
 			lcd.write(CHECK_CHAR);
 			lcd.setCursor(15,0);
-			lcd.print(' ');
+			lcd.print(F(" "));
 		}
 		if(buttonPushed[BPOK]==1){
 			clearButtons();
@@ -404,63 +389,46 @@ LATLON_LABEL:
 	}
 }
 
-void updateTime (){
-RTC.getDateTime();
-timeElements.Day=RTC.getDay();
-timeElements.Month=RTC.getMonth();
-timeElements.Year=RTC.getYear()+30;
-timeElements.Minute=RTC.getMinute();
-timeElements.Hour=RTC.getHour();
-timeElements.Second=RTC.getSecond();
+
+void printDateLCD (){//print date on LCD (jj/mm/yy)
+	RTC.getDateTime();
+	if(RTC.getDay()<10)
+		lcd.print('0');
+	lcd.print(RTC.getDay());
+	lcd.print('/');
+	if(RTC.getMonth()<10)
+		lcd.print('0');
+	lcd.print(RTC.getMonth());
+	lcd.print('/');
+	if((RTC.getYear())<10)
+		lcd.print('0');
+	lcd.print(RTC.getYear());
 
 }
 
-String printDate (){//create string with date (jj/mm/yy)
-	String date="";
-	//date+=("date (jj/mm/yyyy) : ");
-	updateTime();
-	if(timeElements.Day<10)
-		date+=("0");
-	date+=(timeElements.Day);
-	date+=("/");
-	if(timeElements.Month<10)
-		date+=("0");
-	date+=(timeElements.Month);
-	date+=("/");
-	if((tmYearToCalendar(timeElements.Year))<10)
-		date+=("0");
-	date+=(tmYearToCalendar(timeElements.Year));
-	return date;
-}
-
-String printTime (gdiTime_t time){//create string with time (hh:mm:ss)
-	String printed="";
-
-	//time+=("time (hh:mm:ss) : ");
-	updateTime();
+void printTimeLCD (gdiTime_t time,bool printSec){//create string with time (hh:mm:ss)
 	if(time.H<10)
-		printed+=("0");
-	printed+=(time.H);
-	printed+=(":");
+		lcd.print('0');
+	lcd.print(time.H);
+	lcd.print(':');
 	if(time.M<10)
-		printed+=("0");
-	printed+=(time.M);
-	/*if(sec){
-		printed+=(":");
-		if(timeElements.Second<10)
-			printed+=("0");
-		printed+=(timeElements.Second);
-	}*/
-	return printed;
+		lcd.print('0');
+	lcd.print(time.M);
+	if(printSec){
+		lcd.print(':');
+		if(time.S<10)
+			lcd.print('0');
+		lcd.print(time.S);
+	}
 }
 
 void julianTranslate(uint8_t *hour,uint8_t *minute,uint8_t *second, double julian){
 	//fill in hour minute and second from a -0.5<julian<0.5
 	julian+=0.5;
-	uint32_t julianSec =julian*SECS_PER_DAY;
+/*	uint32_t julianSec =julian*SECS_PER_DAY;
 	*second=(julianSec%SECS_PER_MIN);
 	*minute=(julianSec%SECS_PER_HOUR)/SECS_PER_MIN;
-	*hour=julianSec/SECS_PER_HOUR;
+	*hour=julianSec/SECS_PER_HOUR;*/
 }
 
 

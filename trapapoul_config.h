@@ -47,14 +47,13 @@
 #define EEPROM_COUNT 600 //int[50]
 
 //motor
-const uint8_t motorOverturn=10;
 #define POST_RUN_TIME 1000
 #define MOTOR_TIME_OUT 10000
 #define NB_ITERATION 1100
 
 //log config
 
-const String logFileName = "moulog.txt";
+//const String logFileName = "moulog.txt";
 
 //LCD
 #define LCD_ADDRESS 0x27//38//20

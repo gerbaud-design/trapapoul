@@ -10,13 +10,12 @@
 
 
 #include <LiquidCrystal_I2C.h>
-#include <Time.h>
-#include <DS1337RTC.h>
+//#include <Time.h>
 #include <TimerOne.h>
 #include "trapapoul_config.h"
 
 
-
+/*
 void serialSetRtc (uint8_t adress){
 	uint16_t year=0;
 	uint8_t month=0,day=0,hour=0,minute=0,second=0;
@@ -56,7 +55,7 @@ void serialSetRtc (uint8_t adress){
 	if(Serial.available()>0)
 		RTC.write(timeElements,adress);
 }
-
+*/
 
 
 #endif /* TRAPAPOUL_DEBUG_H_ */

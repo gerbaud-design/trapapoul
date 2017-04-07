@@ -256,26 +256,26 @@ inline bool Rtc_Pcf8563::isLeapYear(byte century, int year) const
         return true;
 }
 
+const int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 inline byte Rtc_Pcf8563::daysInMonth(byte century,
                                      byte year,
                                      byte month) const
 {
-    const int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     byte dim = days[month];
     if (month == 2 && isLeapYear(century, year))
         dim += 1;
     return dim;
 }
 
+const int daysum[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
 inline byte Rtc_Pcf8563::daysInYear(byte century,
                                     byte year,
                                     byte month,
                                     byte day) const
 {
-    const int days[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-    byte total = days[month - 1] + day;
+    byte total = daysum[month - 1] + day;
     if ((month > 2) and isLeapYear(century, year))
         total += 1;
     return total;

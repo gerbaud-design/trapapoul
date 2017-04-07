@@ -12,7 +12,6 @@
 #include <Arduino.h>
 #include "ERRcodes.h"
 #include "trapapoul_config.h"
-#include "logSD.h"
 
 
 //parametres de moteur
@@ -174,18 +173,8 @@ void motorGoTo (int targetPosition)
 
 	delay(100);
 	if(machineState==TIMEOUT){
-		pushLog(ERR_TIMEOUT);
-		pushLog(IN_MOTGOTO);
-		updateTime();
-		logTime.H=timeElements.Hour;
-		logTime.M=timeElements.Minute;
-		pushLog(printTime(logTime));
-		pushLog("broken");
-		pushLog("\n");
 	}
 	if(machineState==LOST){
-		pushLog(ERR_POSLOSS);
-		pushLog(IN_MOTGOTO);
 	}
 }
 

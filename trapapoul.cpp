@@ -8,17 +8,15 @@
 #include <Arduino.h>
 #include <Rtc_Pcf8563.h>
 #include <LiquidCrystal_I2C.h>
-#include <Time.h>
+//#include <Time.h>
 #include <EEPROM.h>
 #include "ERRcodes.h"
 #include "departementGPS.h"
 #include "trapapoul_UI.h"
 #include "trapapoul_config.h"
 #include "trapapoul_motor.h"
-#include "logSD.h"
 #include "ephemeride.h"
 #include "sleep.h"
-
 
 
 extern volatile int motorPosition;
@@ -26,7 +24,6 @@ extern unsigned long topTimeout;
 extern volatile unsigned long lastPush[3];
 extern volatile bool buttonState[3];
 extern volatile bool buttonPushed[3];
-//extern tmElements_t timeElements;
 
 extern uint8_t resetSource;
 
@@ -51,23 +48,18 @@ uint8_t wakeUpSource=WAKEUPUNKNOWN;
 #define DOORFORCEDOPENED 5
 #define DOORFORCEDCLOSED 6
 uint8_t doorState=DOORUNKNOWN;
+uint16_t anaRead;
+
 uint8_t configured=0;
-uint8_t cur_mm=30;
-uint8_t cur_hh=12;
 int16_t positionHaute = 0;
 uint16_t nbCycles;
-uint32_t chargeStartTime=0;
-volatile bool AlarmTriggered=0;
 gdiTime_t openTime,closeTime;
 uint8_t closeDelay=DEFAULT_CLOSE_DELAY;
 
-uint16_t anaRead;
-
-Rtc_Pcf8563 RTC;
 
 float lever,meridien,coucher;
-uint8_t hh, mm, ss;
-
+volatile bool AlarmTriggered=0;
+float q=4.7,qs=1.2,qsd=1.7,qsdf=1.89;
 //adressage EEPROM
 uint8_t eeBlockCount;
 uint16_t writeCount;
@@ -157,7 +149,7 @@ void setup()
 	lcd.setCursor(0,0);
 	lcd.print(F("  SYSTEM RESET  "));
 	lcd.setCursor(0,1);
-	lcd.print(F("value:"));
+//	lcd.print(F("value:"));
 	lcd.print(resetSource,HEX);
 	delay(2000);
 	if(resetSource==0) delay (30000);
@@ -215,6 +207,10 @@ void setup()
 // The loop function is called in an endless loop
 void loop()
 {
+
+	q=4.5,qs=1.1,qsd=1.9,qsdf=1.59;
+	if(q>qs && qsd<qsdf){q=1;}
+
 	switch(wakeUpSource){
 	case WAKEUPUNKNOWN:
 		lcd.backlight();
@@ -232,19 +228,23 @@ void loop()
 		if(configured!=0){
 			updateCloseTime();
 			updateOpenTime();
-			updateTime();
-		/*	if((((timeElements.Hour>openTime.H)||\
-					((timeElements.Hour==openTime.H)&&(timeElements.Minute>=openTime.M)))\
-					&&((timeElements.Hour<closeTime.H)||\
-					((timeElements.Hour=closeTime.H)&&(timeElements.Minute<closeTime.M))))==1){
+			updateDateTime();
+			if((((RTC.getHour()>openTime.H)||\
+					((RTC.getHour()==openTime.H)&&(RTC.getMinute()>=openTime.M)))\
+					&&((RTC.getHour()<closeTime.H)||\
+					((RTC.getHour()==closeTime.H)&&(RTC.getMinute()<closeTime.M))))==1){
 				if(doorState==DOOREARLYOPENED){
 					doorState=DOOROPENED;
 				}
 				if(doorState==DOORCLOSED){
 					activateMotor();
-					motorGoTo(positionHaute);//open door
-					deactivateMotor();
-					doorState=DOOROPENED;
+					if(RTC.getVoltLow()){
+						motorGoTo(positionHaute);//open door
+						deactivateMotor();
+						doorState=DOOROPENED;
+					}else{
+						doorState=DOORFORCEDCLOSED;
+					}
 				}
 				//set alarm to closeTime
 			}
@@ -259,7 +259,7 @@ void loop()
 					doorState=DOORCLOSED;
 				}
 				//set alarm to openTime
-			}*/
+			}
 		}
 	}
 
@@ -318,19 +318,9 @@ void userInterface()
 
 
 			//time display
-			updateTime();
+			updateDateTime();
 			lcd.setCursor(0,0);
-			if (timeElements.Hour<10)
-				lcd.print('0');
-			lcd.print(timeElements.Hour);
-			lcd.print('H');
-			if (timeElements.Minute<10)
-				lcd.print('0');
-			lcd.print(timeElements.Minute);
-			lcd.print(':');
-			if (timeElements.Second<10)
-				lcd.print('0');
-			lcd.print(timeElements.Second);
+			printTimeLCD(nowTime,1);
 
 			//battery voltage measurement
 			digitalWrite(pinVppEn,1);
@@ -362,13 +352,13 @@ void userInterface()
 			case DOOREARLYOPENED:
 				lcd.print(F("FERMERA A       "));
 				lcd.setCursor(10,1);
-				lcd.print(printTime(closeTime));
+				printTimeLCD(closeTime,0);
 				break;
 			case DOORCLOSED:
 			case DOOREARLYCLOSED:
 				lcd.print(F("OUVRIRA A       "));
 				lcd.setCursor(10,1);
-				lcd.print(printTime(openTime));
+				printTimeLCD(openTime,0);
 				break;
 			case DOORUNKNOWN:
 				lcd.print(F("PARAMETREZ MOI  "));
@@ -468,7 +458,7 @@ void userInterface()
 		lcd.setCursor(0,0);
 		lcd.print(F("HEURE OUVERTURE "));
 		lcd.setCursor(0,1);
-		lcd.print(printTime(openTime));
+		printTimeLCD(openTime,0);
 		enterNumber(&openTime.H,0,23,0,1,2);
 		enterNumber(&openTime.M,0,59,3,1,2);
 		goto MENU_OUVERTURE_ENREGISTREE;
@@ -619,7 +609,7 @@ void userInterface()
 			lcd.setCursor(0,0);
 			lcd.print(F("HEURE FERMETURE "));
 			lcd.setCursor(0,1);
-			lcd.print(printTime(closeTime));
+			printTimeLCD(closeTime,0);
 			enterNumber(&closeTime.H,0,23,0,1,2);
 			enterNumber(&closeTime.M,0,59,3,1,2);
 			goto MENU_FERMETURE;
@@ -696,22 +686,29 @@ void userInterface()
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			updateTime();
+			updateDateTime();
+
 			lcd.setCursor(0,0);
 			lcd.print(F("HEURE:          "));
-			enterTime(&timeElements);
+			enterTime(&nowTime);
+			RTC.setTime(nowTime.H,nowTime.M,nowTime.S);
 			lcd.setCursor(0,0);
-			lcd.print(F("DATE:           "));
-			enterDate(&timeElements);
-			RTC.setDateTime(timeElements.Day, timeElements.Wday,timeElements.Month, 0, (timeElements.Year-30),\
-					timeElements.Hour, timeElements.Minute, timeElements.Second);
-			lcd.setCursor(0,0);
-			lcd.print(F("DATE ET HEURE   "));
+			lcd.print(F("HEURE           "));
 			lcd.setCursor(0,1);
 			lcd.print(F("ENREGISTREES    "));
+			delay(2000);
+			lcd.setCursor(0,0);
+			lcd.print(F("DATE:           "));
+			enterDate(&nowDate);
+			RTC.setDate(nowDate.D,0,nowDate.M,0,nowDate.Y);
+			lcd.setCursor(0,0);
+			lcd.print(F("DATE            "));
+			lcd.setCursor(0,1);
+			lcd.print(F("ENREGISTREES    "));
+			RTC.clearVoltLow();
 			updateCloseTime();
 			updateOpenTime();
-			//delay(2000);
+			delay(2000);
 			goto MENU;
 		default:
 			goto MENU_ERROR;
@@ -771,7 +768,7 @@ MENU_EXPERT_CHARGE:
 			goto MENU_TIMEOUT;
 		case BPOK:
 			clearButtons();
-			pinMode(pinVppEn,OUTPUT);
+			/*pinMode(pinVppEn,OUTPUT);
 			digitalWrite(pinVppEn,1);
 			lcd.setCursor(0,0);
 			lcd.print(F("CHARGE READY    "));
@@ -780,7 +777,7 @@ MENU_EXPERT_CHARGE:
 			while(waitButton()!=BPOK);
 			lcd.setCursor(0,0);
 			lcd.print(F("CHARGE ON       "));
-			chargeStartTime=millis();
+			//chargeStartTime=millis();
 			digitalWrite(pinChargeOff,1);
 			while((millis()-chargeStartTime)<3600000){
 				float batVoltage;
@@ -795,7 +792,7 @@ MENU_EXPERT_CHARGE:
 				lcd.print('V');
 				if (batVoltage>7.2) break;
 				delay(1000);
-			}
+			}*/
 			digitalWrite(pinChargeOff,0);
 			digitalWrite(pinVppEn,0);
 			pinMode(pinVppEn,INPUT);
@@ -874,10 +871,9 @@ MENU_EXPERT_CHARGE:
 		case TIMEOUT:
 			goto MENU_TIMEOUT;
 		case BPOK:
-			updateTime();
-			//calculerEphemeride(timeElements.Day,timeElements.Month,
-			//timeElements.Year,45,-5,&lever,&meridien,&coucher);
-			calculerEphemeride(timeElements.Day,timeElements.Month,timeElements.Year,-5,45,&lever,&meridien,&coucher);
+			updateDateTime();
+		//	calculerEphemeride(timeElements.Day,timeElements.Month,timeElements.Year,45,-5,&lever,&meridien,&coucher);
+			calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),-5,45,&lever,&meridien,&coucher);
 			lcd.setCursor(0,0);
 			lcd.print(lever);
 			waitButton();
@@ -885,16 +881,9 @@ MENU_EXPERT_CHARGE:
 			lcd.print(coucher);
 			waitButton();
 			lcd.clear();
-			julianTranslate(&hh,&mm,&ss,lever);
+			julianTranslate(&nowTime.H,&nowTime.M,&nowTime.S,lever);
 			lcd.setCursor(0,1);
-			lcd.print(hh);
-			lcd.print(":");
-			lcd.print(mm);
-			julianTranslate(&hh,&mm,&ss,coucher);
-			lcd.setCursor(9,1);
-			lcd.print(hh);
-			lcd.print(":");
-			lcd.print(mm);
+			printTimeLCD(nowTime,1);
 			waitButton();
 			goto MENU_EXPERT_EPHEMERIDES;
 		default:
@@ -932,7 +921,7 @@ MENU_EXPERT_CHARGE:
 					anaRead /=ratioImot;
 					lcd.setCursor(10,0);
 					lcd.print(anaRead);
-					lcd.print("mA");
+					lcd.print('"mA");
 
 					anaRead=0;
 					for(i8_1=0;i8_1<64;i8_1++){
@@ -1200,25 +1189,23 @@ void installationTrappe(){
 }
 
 void updateOpenTime(){
-	updateTime();
-	calculerEphemeride(timeElements.Day,timeElements.Month,timeElements.Year,-5,45,&lever,&meridien,&coucher);
+	updateDateTime();
+	calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),-5,45,&lever,&meridien,&coucher);
 	if (openMode==SOLEIL){
-		julianTranslate(&openTime.H,&openTime.M,&ss,lever);
+		julianTranslate(&openTime.H,&openTime.M,&nowTime.S,lever);//nowTime used only as trash result to limit variable number
 	}
 }
 
 void updateCloseTime(){
-	updateTime();
-	calculerEphemeride(timeElements.Day,timeElements.Month,timeElements.Year,-5,45,&lever,&meridien,&coucher);
+	updateDateTime();
+	calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),-5,45,&lever,&meridien,&coucher);
 	if (closeMode==SOLEIL){
-		julianTranslate(&hh,&mm,&ss,coucher);
-		mm+=closeDelay;
-		if(mm>59){
-			hh+=1;
-			mm-=60;
+		julianTranslate(&closeTime.H,&closeTime.M,&nowTime.S,coucher);//nowTime used only to limit variable number
+		closeTime.M+=closeDelay;
+		while(closeTime.M>59){
+			closeTime.H+=1;
+			closeTime.M-=60;
 		}
-		closeTime.H=hh;
-		closeTime.M=mm;
 	}
 }
 
