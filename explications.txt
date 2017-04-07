@@ -1,0 +1,19 @@
+
+Mon appareil est composé de:
+- un micro atmega328 avec 2048 octets de RAM et suffisement d'EEPROM
+- trois boutons poussoirs
+- un module écran LCD connecté par I2C 2 lignes de 16 caractères
+- une Real Time Clock connectée par I2C 
+- un driver moteur commandé par 2 signaux: avant et arière (avant+arrière = incendie carte élec)
+- un ampli de mesure du courant moteur
+- un encodeur à quadrature de phase (enfin quadrature un peu déformée) qui sort deux signaux A et B
+- une alimentation de puissance éteignable (économie d'énergie) qui alimente la référence de tension(mesure analogiques), le moteur, l'encodeur
+
+Mon code est composé de:
+- des librairies écrites par la communauté dans le dossier librairies
+- des librairies qu'on pourrait dire de couches d'abstractions écrites par les créateurs d'arduino dans le dossier librairies/core
+- un header dans lequel j'ai mis une version retravaillée d'un code que j'ai trouvé quelquepart sur internet (et testé avant modif)
+- de trapapoul.cpp et quelques headers avec le code que j'ai écrit dedans.
+ce que j'ai écris est assez mal commenté, probablement ératique en termes de style, et globalement fonctionne.
+Tout n'est pas encore completement implémenté et il y a peut etre des vestiges de trucs qui ne sont plus la...
+
