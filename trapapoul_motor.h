@@ -14,11 +14,18 @@
 #include "trapapoul_config.h"
 
 
-//parametres de moteur
-#define QUAD0 1
-#define QUAD1 3
-#define QUAD2 2
-#define QUAD3 0
+enum motorState_t {
+	ms_prerun,
+	ms_inrun,
+	ms_postrun,
+	ms_overshoot,
+	ms_timeout = 50,
+	ms_lost = 7,
+	ms_broken = 8,
+	ms_exit = 9
+} machineState;
+
+/*
 #define PRERUN 0
 #define INRUN 1
 #define POSTRUN 2
@@ -26,13 +33,13 @@
 #define TIMEOUT 50
 #define LOST 7
 #define BROKEN 8
-#define EXIT 9
-
+#define EXIT 9*/
+//volatile uint8_t machineState;
 
 volatile bool quadratureA,quadratureB;
+
 volatile int motorPosition=0;
 volatile unsigned long motorLastMoved;
-volatile uint8_t machineState;
 volatile uint32_t motorStopped=0;
 
 void motorInit ();
@@ -59,7 +66,7 @@ ISR (PCINT1_vect){ // handle pin change interrupt for A0 to A7 here
 	newQuadratureB=(digitalRead(pinQuadratureB));
 	if(newQuadratureA != quadratureA){
 		if(newQuadratureB!=quadratureB){
-			machineState=LOST;
+			machineState=ms_lost;
 			motorStopped=millis();
 			quadratureA=newQuadratureA;
 			quadratureB=newQuadratureB;
@@ -99,6 +106,12 @@ ISR (PCINT1_vect){ // handle pin change interrupt for A0 to A7 here
 void activateVpp(){
 	pinMode(pinVppEn,OUTPUT);
 	digitalWrite(pinVppEn,1);
+	delay(100);
+	lcd.init();
+	lcd.noBacklight();
+	lcd.clear();
+	uploadChar(CHECK_CHAR,checkChar);
+	uploadChar(DEG_CHAR,degChar);
 }
 
 void deactivateVpp(){
@@ -119,14 +132,14 @@ void deactivateMotor()
 {
 	delay(1000);//just to be sure
 	PCIFR  &= ~(bit (digitalPinToPCICRbit(pinQuadratureB)));//disable interrupt for the group
-	deactivateVpp();
+	//deactivateVpp();
 }
 
 void motorGoTo (int targetPosition)
 {
 	bool motorDirection;
 
-	machineState=INRUN;
+	machineState=ms_inrun;
 	motorDirection = (targetPosition>motorPosition);
 	motorLastMoved=millis();
 	if(motorDirection){//start motor
@@ -139,28 +152,28 @@ void motorGoTo (int targetPosition)
 		digitalWrite(pinMotorBackward,HIGH);
 	}
 	while (1){
-		if(machineState==LOST){
+		if(machineState==ms_lost){
 			motorStop();
 			if ((millis()-motorStopped)>POST_RUN_TIME)
 			break;
 		}
 		noInterrupts();
 		if(motorPosition==targetPosition){
-			machineState=POSTRUN;
+			machineState=ms_postrun;
 			interrupts();
 			break;
 		}
 		if ((millis()-motorLastMoved)>(MOTOR_TIME_OUT)){
 			digitalWrite(pinMotorForward,LOW);
 			digitalWrite(pinMotorBackward,LOW);
-			machineState=TIMEOUT;
+			machineState=ms_timeout;
 			interrupts();
 			break;
 		}
 		if(motorDirection != (targetPosition>motorPosition)){
 			digitalWrite(pinMotorForward,LOW);
 			digitalWrite(pinMotorBackward,LOW);
-			machineState=OVERSHOOT;
+			machineState=ms_overshoot;
 			interrupts();
 			break;
 		}
@@ -172,9 +185,9 @@ void motorGoTo (int targetPosition)
 	digitalWrite(pinMotorBackward,LOW);
 
 	delay(100);
-	if(machineState==TIMEOUT){
+	if(machineState==ms_timeout){
 	}
-	if(machineState==LOST){
+	if(machineState==ms_lost){
 	}
 }
 

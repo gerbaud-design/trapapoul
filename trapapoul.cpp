@@ -33,18 +33,22 @@ extern uint8_t resetSource;
 #define MINIMUM 3
 uint8_t openMode=SOLEIL;
 uint8_t closeMode=SOLEIL;
-#define WAKEUPBUTTON 1
-#define WAKEUPALARM 2
-#define WAKEUPUNKNOWN 3
-uint8_t wakeUpSource=WAKEUPUNKNOWN;
-#define DOORUNKNOWN 0
-#define DOOROPENED 1
-#define DOORCLOSED 2
-#define DOOREARLYOPENED 3
-#define DOOREARLYCLOSED 4
-#define DOORFORCEDOPENED 5
-#define DOORFORCEDCLOSED 6
-uint8_t doorState=DOORUNKNOWN;
+
+enum wakeUpSource_t{
+	wu_button,
+	wu_alarm,
+	wu_unknown
+}wakeUpSource=wu_unknown;
+
+enum doorState_t {
+	ds_unknown,
+	ds_opened,
+	ds_closed,
+	ds_earlyOpened,
+	ds_earlyClosed,
+	ds_forceOpened,
+	ds_forceClosed
+}doorState=ds_unknown;
 uint16_t anaRead;
 
 uint8_t configured=0;
@@ -77,7 +81,7 @@ void userInterface();
 
 //interrupt routine for pin change of port D
 ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
-	wakeUpSource=WAKEUPBUTTON;
+	wakeUpSource=wu_button;
 	if(!digitalRead(pinAlarm))
 		AlarmTriggered=1;
 	bool newState[3];
@@ -120,14 +124,14 @@ void interrupt_0 () {
 	//handle rtc alarm
 	sleep_disable();
 	detachInterrupt(0);
-	wakeUpSource=WAKEUPALARM;
+	wakeUpSource=wu_alarm;
 }
 
 // interrupt routine for pin3 bpok
 void interrupt_1 () {
 	sleep_disable();
 	detachInterrupt(1);
-	wakeUpSource=WAKEUPBUTTON;
+	wakeUpSource=wu_button;
 
 }
 
@@ -141,7 +145,8 @@ void setup()
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
 //setup du lcd
-	lcd.init();		lcd.backlight();
+	lcd.init();
+	lcd.backlight();
 	lcd.setCursor(0,0);
 	lcd.print(F("  SYSTEM RESET  "));
 	lcd.setCursor(0,1);
@@ -209,20 +214,23 @@ void setup()
 void loop()
 {
 
+	activateVpp();
 	switch(wakeUpSource){
-	case WAKEUPUNKNOWN:
+	case wu_unknown:
 		lcd.backlight();
 		lcd.setCursor(0,0);
 		lcd.print(F("UNKNOWN WAKE UP"));
 		delay(2000);
-	case WAKEUPBUTTON:
+		//nobreak
+	case wu_button:
 		clearButtons();
 		lcd.clear();
 		lcd.backlight();
 		userInterface();
 		lcd.clear();
 		lcd.noBacklight();
-	case WAKEUPALARM:
+		//nobreak
+	case wu_alarm:
 		if(configured!=0){
 			updateCloseTime();
 			updateOpenTime();
@@ -231,30 +239,30 @@ void loop()
 					((RTC.getHour()==openTime.H)&&(RTC.getMinute()>=openTime.M)))\
 					&&((RTC.getHour()<closeTime.H)||\
 					((RTC.getHour()==closeTime.H)&&(RTC.getMinute()<closeTime.M))))==1){
-				if(doorState==DOOREARLYOPENED){
-					doorState=DOOROPENED;
+				if(doorState==ds_earlyOpened){
+					doorState=ds_opened;
 				}
-				if(doorState==DOORCLOSED){
+				if(doorState==ds_closed){
 					activateMotor();
 					if(RTC.getVoltLow()){
 						motorGoTo(positionHaute);//open door
 						deactivateMotor();
-						doorState=DOOROPENED;
+						doorState=ds_opened;
 					}else{
-						doorState=DOORFORCEDCLOSED;
+						doorState=ds_forceClosed;
 					}
 				}
 				//set alarm to closeTime
 			}
 			else{
-				if(doorState==DOOREARLYCLOSED){
-					doorState=DOORCLOSED;
+				if(doorState==ds_earlyClosed){
+					doorState=ds_closed;
 				}
-				if(doorState==DOOROPENED){
+				if(doorState==ds_opened){
 					activateMotor();
 					motorGoTo(0);//close door
 					deactivateMotor();
-					doorState=DOORCLOSED;
+					doorState=ds_closed;
 				}
 				//set alarm to openTime
 			}
@@ -262,6 +270,7 @@ void loop()
 	}
 
 	//shutdown everything
+	deactivateVpp();
 	DISABLE_ADC;
 	DISABLE_ACOMP;
 	WDTCSR=0x00;//disable watchdog just in case
@@ -326,17 +335,11 @@ void userInterface()
 			printTimeLCD(nowTime,1);
 			if(!resetSource) lcd.print('X');
 			//battery voltage measurement
-			digitalWrite(pinVppEn,1);
-			delay(100);
-			//digitalWrite(pinChargeOff,0);
 			anaRead=0;
 			for(uint8_t i=0;i<64;++i){
 				anaRead+=analogRead(pinMesVbat);
 				delay(5);
 			}
-			//digitalWrite(pinChargeOff,1);
-			digitalWrite(pinVppEn,0);
-			pinMode(pinVppEn,INPUT);
 			anaRead /=ratioVbat;
 
 			//battery voltage display
@@ -351,25 +354,25 @@ void userInterface()
 			//display dooring planning
 			lcd.setCursor(0,1);
 			switch(doorState){
-			case DOOROPENED:
-			case DOOREARLYOPENED:
+			case ds_opened:
+			case ds_earlyOpened:
 				lcd.print(F("FERMERA A       "));
 				lcd.setCursor(10,1);
 				printTimeLCD(closeTime,0);
 				break;
-			case DOORCLOSED:
-			case DOOREARLYCLOSED:
+			case ds_closed:
+			case ds_earlyClosed:
 				lcd.print(F("OUVRIRA A       "));
 				lcd.setCursor(10,1);
 				printTimeLCD(openTime,0);
 				break;
-			case DOORUNKNOWN:
+			case ds_unknown:
 				lcd.print(F("PARAMETREZ MOI  "));
 				break;
-			case DOORFORCEDOPENED:
+			case ds_forceOpened:
 				lcd.print(F("OUVERT INFINI   "));
 				break;
-			case DOORFORCEDCLOSED:
+			case ds_forceClosed:
 				lcd.print(F("FERME INFINI    "));
 				break;
 			}
@@ -797,8 +800,6 @@ MENU_EXPERT_CHARGE:
 				delay(1000);
 			}*/
 			digitalWrite(pinChargeOff,0);
-			digitalWrite(pinVppEn,0);
-			pinMode(pinVppEn,INPUT);
 			clearButtons();
 			waitButton();
 
@@ -1062,7 +1063,7 @@ void installationTrappe(){
 			lcd.setCursor(0,1);
 			lcd.print(F("ENREGISTREE     "));
 			delay(2000);
-			doorState=DOOROPENED;
+			doorState=ds_opened;
 			updateCloseTime();
 
 			goto MENU_GPS;
