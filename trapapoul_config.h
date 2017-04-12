@@ -35,7 +35,7 @@
 
 //button timing const
 #define DEBOUNCE 400 //ms
-#define BUTTON_TIMEOUT 300000 //ms
+#define BUTTON_TIMEOUT 10000 //ms
 #define BLINK_HALF_PERIOD 500
 #define DEFAULT_CLOSE_DELAY 30 //min
 

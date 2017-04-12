@@ -36,7 +36,6 @@ volatile bool buttonPushed[3];
 
 //used in isDateValid
 #define LEAP_YEAR(Y)     ( ((1970+Y)>0) && !((1970+Y)%4) && ( ((1970+Y)%100) || !((1970+Y)%400) ) )
-const uint8_t monthDays[]={31,28,31,30,31,30,31,31,30,31,30,31};
 
 unsigned long topTimeout;
 
@@ -127,13 +126,6 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 	blink=1;
 	clearButtons();
 
-	//print number in the right place
-//	lcd.setCursor(col,lin);
-//	if((*val<100) && (digit==3)/* && (print0==1)*/)
-//		lcd.print('0');
-//	if((*val<10) && (digit>=2)/* && (print0==1)*/)
-//		lcd.print('0');
-//	lcd.print(*val);
 	while(1){
 		blinkerTime = millis();
 
@@ -183,6 +175,7 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 		}
 		while ((millis()-blinkerTime)<BLINK_HALF_PERIOD);
 	}
+	Timer1.stop();
 
 }
 
@@ -422,13 +415,16 @@ void printTimeLCD (gdiTime_t time,bool printSec){//create string with time (hh:m
 	}
 }
 
+#define SECS_PER_MIN 60
+#define SECS_PER_HOUR 3600
+#define SECS_PER_DAY 86400
 void julianTranslate(uint8_t *hour,uint8_t *minute,uint8_t *second, double julian){
 	//fill in hour minute and second from a -0.5<julian<0.5
 	julian+=0.5;
-/*	uint32_t julianSec =julian*SECS_PER_DAY;
+	uint32_t julianSec =julian*SECS_PER_DAY;
 	*second=(julianSec%SECS_PER_MIN);
 	*minute=(julianSec%SECS_PER_HOUR)/SECS_PER_MIN;
-	*hour=julianSec/SECS_PER_HOUR;*/
+	*hour=julianSec/SECS_PER_HOUR;
 }
 
 

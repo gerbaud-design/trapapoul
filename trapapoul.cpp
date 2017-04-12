@@ -7,7 +7,6 @@
 
 #include <Arduino.h>
 #include <Rtc_Pcf8563.h>
-#include <LiquidCrystal_I2C.h>
 //#include <Time.h>
 #include <EEPROM.h>
 #include "ERRcodes.h"
@@ -27,8 +26,6 @@ extern volatile bool buttonPushed[3];
 
 extern uint8_t resetSource;
 
-//iterateurs
-uint8_t i8_1;
 
 //config variables
 #define SOLEIL 1
@@ -59,7 +56,6 @@ uint8_t closeDelay=DEFAULT_CLOSE_DELAY;
 
 float lever,meridien,coucher;
 volatile bool AlarmTriggered=0;
-float q=4.7,qs=1.2,qsd=1.7,qsdf=1.89;
 //adressage EEPROM
 uint8_t eeBlockCount;
 uint16_t writeCount;
@@ -152,7 +148,6 @@ void setup()
 //	lcd.print(F("value:"));
 	lcd.print(resetSource,HEX);
 	delay(2000);
-	if(resetSource==0) delay (30000);
 	lcd.noBacklight();
 	lcd.clear();
 	uploadChar(CHECK_CHAR,checkChar);
@@ -163,6 +158,7 @@ void setup()
 	//RTC.set(SECS_YR_2000,CLOCK_ADDRESS);
 	RTC.clearAlarm();
 	RTC.clearTimer();
+	RTC.clearSquareWave();
 	pinMode(pinAlarm, INPUT);
 	AlarmTriggered=0;
 	attachInterrupt(digitalPinToInterrupt(pinAlarm), interrupt_0 , FALLING);
@@ -204,12 +200,14 @@ void setup()
 
 }
 
+
+#define DISABLE_ADC ADCSRA &= ~(1 << ADEN)
+#define ENABLE_ADC ADCSRA |= (1 << ADEN)
+#define DISABLE_ACOMP ACSR &= ~(1 << ACD)
+
 // The loop function is called in an endless loop
 void loop()
 {
-
-	q=4.5,qs=1.1,qsd=1.9,qsdf=1.59;
-	if(q>qs && qsd<qsdf){q=1;}
 
 	switch(wakeUpSource){
 	case WAKEUPUNKNOWN:
@@ -264,6 +262,10 @@ void loop()
 	}
 
 	//shutdown everything
+	DISABLE_ADC;
+	DISABLE_ACOMP;
+	WDTCSR=0x00;//disable watchdog just in case
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 	cli();
 	clearInterrupts();
 	attachInterrupt(0,interrupt_0,FALLING);
@@ -275,6 +277,7 @@ void loop()
 	/* wake up here */
 	sleep_disable();
 	clearButtons();
+	ENABLE_ADC;
 
 
 }
@@ -321,13 +324,13 @@ void userInterface()
 			updateDateTime();
 			lcd.setCursor(0,0);
 			printTimeLCD(nowTime,1);
-
+			if(!resetSource) lcd.print('X');
 			//battery voltage measurement
 			digitalWrite(pinVppEn,1);
 			delay(100);
 			//digitalWrite(pinChargeOff,0);
 			anaRead=0;
-			for(i8_1=0;i8_1<64;i8_1++){
+			for(uint8_t i=0;i<64;++i){
 				anaRead+=analogRead(pinMesVbat);
 				delay(5);
 			}
