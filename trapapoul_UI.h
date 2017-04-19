@@ -35,9 +35,6 @@ volatile unsigned long lastPush[3];
 volatile bool buttonState[3];
 volatile bool buttonPushed[3];
 
-//used in isDateValid
-#define LEAP_YEAR(Y)     ( ((1970+Y)>0) && !((1970+Y)%4) && ( ((1970+Y)%100) || !((1970+Y)%400) ) )
-
 unsigned long topTimeout;
 
 void enterNumber(uint8_t *val,uint8_t min,uint8_t max,uint8_t col, uint8_t lin, uint8_t digit);
@@ -75,13 +72,13 @@ void uploadChar (uint8_t location, const uint8_t charmap[]){
 }
 
 bool isDateValid(gdiDate_t *date){
-	if (date->M>12){
+	if ((date->M)>12){
 		return 0;
 	}
-	if ((date->M==2)&&(!LEAP_YEAR(date->Y))&&(date->D==29)){
+	if (RTC.isLeapYear(0,date->Y)&&(date->M==2)&&(date->D==29)){
 		return 1;
 	}
-	if (date->D>daysInMonths[(date->M)-1]){
+	if ((date->D)>daysInMonths[(date->M)-1]){
 		return 0;
 	}
 	return 1;
@@ -193,6 +190,7 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 		}
 		if(buttonPushed[BPOK]==1 || (millis()-topTimeout)>BUTTON_TIMEOUT){
 			buttonPushed[BPOK]=0;
+			printNumberFixedDigits(*val,digit);
 			break;
 		}
 	}
