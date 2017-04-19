@@ -38,7 +38,7 @@ size_t Print::write(const uint8_t *buffer, size_t size)
   }
   return n;
 }
-
+/*
 size_t Print::print(const __FlashStringHelper *ifsh)
 {
   PGM_P p = reinterpret_cast<PGM_P>(ifsh);
@@ -49,12 +49,12 @@ size_t Print::print(const __FlashStringHelper *ifsh)
     n += write(c);
   }
   return n;
-}
-
+}*/
+/*
 size_t Print::print(const String &s)
 {
   return write(s.c_str(), s.length());
-}
+}*/
 
 size_t Print::print(const char str[])
 {
@@ -107,14 +107,14 @@ size_t Print::print(double n, int digits)
 {
   return printFloat(n, digits);
 }
-
+/*
 size_t Print::println(const __FlashStringHelper *ifsh)
 {
   size_t n = print(ifsh);
   n += println();
   return n;
 }
-
+*/
 size_t Print::print(const Printable& x)
 {
   return x.printTo(*this);
@@ -124,13 +124,13 @@ size_t Print::println(void)
 {
   return write("\r\n");
 }
-
+/*
 size_t Print::println(const String &s)
 {
   size_t n = print(s);
   n += println();
   return n;
-}
+}*/
 
 size_t Print::println(const char c[])
 {
@@ -254,7 +254,7 @@ size_t Print::printFloat(double number, uint8_t digits)
   {
     remainder *= 10.0;
     int toPrint = int(remainder);
-    n += print(toPrint);
+    n += print(toPrint,DEC);
     remainder -= toPrint; 
   } 
   

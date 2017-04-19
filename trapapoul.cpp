@@ -26,7 +26,6 @@ extern volatile bool buttonPushed[3];
 
 extern uint8_t resetSource;
 
-
 //config variables
 #define SOLEIL 1
 #define FIXE 2
@@ -156,11 +155,9 @@ void setup()
 	activateVpp();
 	lcd.init();
 	lcd.backlight();
-	lcd.setCursor(0,0);
-	lcd.print(F("  SYSTEM RESET  "));
+	lcdPrintLine(SYSTEMRESET,0);
 	lcd.setCursor(0,1);
-//	lcd.print(F("value:"));
-	lcd.print(resetSource,HEX);
+	lcd.write(resetSource%10+'0');
 	delay(2000);
 	lcd.noBacklight();
 	lcd.clear();
@@ -227,8 +224,7 @@ void loop()
 	switch(wakeUpSource){
 	case wu_unknown:
 		lcd.backlight();
-		lcd.setCursor(0,0);
-		lcd.print(F("UNKNOWN WAKE UP"));
+		lcdPrintLine(UNKNOWN_WAKE_UP,0);
 		delay(2000);
 		//nobreak
 	case wu_button:
@@ -341,8 +337,8 @@ void userInterface()
 			//time display
 			updateDateTime();
 			lcd.setCursor(0,0);
-			printTimeLCD(nowTime,1);
-			if(!resetSource) lcd.print('X');
+			lcdPrintTime(&nowTime,1);
+			if(!resetSource) lcd.write('X');
 			//battery voltage measurement
 			anaRead=0;
 			for(uint8_t i=0;i<64;++i){
@@ -354,35 +350,33 @@ void userInterface()
 			//battery voltage display
 
 			lcd.setCursor(12,0);
-			lcd.print((float(anaRead))/100);
-			/*lcd.write(BAT1_CHAR);
-			lcd.write(BAT2_CHAR);
-			lcd.write(BAT3_CHAR);*/
-
+			lcd.write((anaRead/100)+'0');
+			lcd.write(',');
+			lcd.write(((anaRead%100)/10)+'0');
+			lcd.write((anaRead%10)+'0');
 
 			//display dooring planning
-			lcd.setCursor(0,1);
 			switch(doorState){
 			case ds_opened:
 			case ds_earlyOpened:
-				lcd.print(F("FERMERA A       "));
+				lcdPrintLine(FERMERA_A,1);
 				lcd.setCursor(10,1);
-				printTimeLCD(closeTime,0);
+				lcdPrintTime(&closeTime,0);
 				break;
 			case ds_closed:
 			case ds_earlyClosed:
-				lcd.print(F("OUVRIRA A       "));
+				lcdPrintLine(OUVRIRA_A,1);
 				lcd.setCursor(10,1);
-				printTimeLCD(openTime,0);
+				lcdPrintTime(&openTime,0);
 				break;
 			case ds_unknown:
-				lcd.print(F("PARAMETREZ MOI  "));
+				lcdPrintLine(PARAMETREZ_MOI,1);
 				break;
 			case ds_forceOpened:
-				lcd.print(F("OUVERT INFINI   "));
+				lcdPrintLine(OUVERT_INFINI,1);
 				break;
 			case ds_forceClosed:
-				lcd.print(F("FERME INFINI    "));
+				lcdPrintLine(FERME_INFINI,1);
 				break;
 			}
 
@@ -394,10 +388,9 @@ void userInterface()
 
 	MENU_OUVERTURE:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("REGLAGE DU MODE "));
-		lcd.setCursor(0,1);
-		lcd.print(F("D'OUVERTURE     "));
+		lcdPrintLine(REGLAGE_DU_MODE,0);
+		lcdPrintLine(OUVERTURE,1);
+		lcdPrintScreen(menuText[menuPointer]);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_OUVERTURE;
@@ -413,10 +406,8 @@ void userInterface()
 
 	MENU_OUVERTURE_SOLEIL:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("OUVERTURE       "));
-		lcd.setCursor(0,1);
-		lcd.print(F("LEVE DU SOLEIL  "));
+		lcdPrintLine(OUVERTURE,0);
+		lcdPrintLine(menuModetureText[0],1);
 		if (openMode==SOLEIL){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -442,10 +433,8 @@ void userInterface()
 
 	MENU_OUVERTURE_FIXE:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("OUVERTURE       "));
-		lcd.setCursor(0,1);
-		lcd.print(F("HEURE FIXE      "));
+		lcdPrintLine(OUVERTURE,0);
+		lcdPrintLine(menuModetureText[1],1);
 		if (openMode==FIXE){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -471,19 +460,17 @@ void userInterface()
 	MENU_OUVERTURE_HEURE:
 		clearButtons();
 		lcd.setCursor(0,0);
-		lcd.print(F("HEURE OUVERTURE "));
+		lcdPrintLine(HEURE_OUVERTURE,0);
 		lcd.setCursor(0,1);
-		printTimeLCD(openTime,0);
+		lcdPrintTime(&openTime,0);
 		enterNumber(&openTime.H,0,23,0,1,2);
 		enterNumber(&openTime.M,0,59,3,1,2);
 		goto MENU_OUVERTURE_ENREGISTREE;
 
 	MENU_OUVERTURE_MINIMUM:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("OUVERTURE       "));
-		lcd.setCursor(0,1);
-		lcd.print(F("HEURE MINIMUM   "));
+		lcdPrintLine(OUVERTURE,0);
+		lcdPrintLine(menuModetureText[2],1);
 		if (openMode==MINIMUM){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -509,10 +496,8 @@ void userInterface()
 
 	MENU_OUVERTURE_RETOUR:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("RETOUR          "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(RETOUR,0);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_OUVERTURE_MINIMUM;
@@ -529,19 +514,16 @@ void userInterface()
 	MENU_OUVERTURE_ENREGISTREE:
 		clearButtons();
 		lcd.setCursor(0,0);
-		lcd.print(F("OUVERTURE       "));
+		lcdPrintLine(OUVERTURE,0);
 		lcd.setCursor(0,1);
-		lcd.print(F("ENREGISTREE     "));
+		lcdPrintLine(ENREGISTREE,1);
 		updateOpenTime();
 		//delay(2000);
 		goto MENU;
 
 	MENU_FERMETURE:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("REGLAGE DU MODE "));
-		lcd.setCursor(0,1);
-		lcd.print(F("DE FERMETURE    "));
+		lcdPrintScreen(menuText[menu_fermeture]);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_OUVERTURE;
@@ -557,10 +539,8 @@ void userInterface()
 
 	MENU_FERMETURE_SOLEIL:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("FERMETURE       "));
-		lcd.setCursor(0,1);
-		lcd.print(F("COUCHE DU SOLEIL"));
+		lcdPrintLine(FERMETURE,0);
+		lcdPrintLine(menuModetureText[1],1);
 		if (closeMode==SOLEIL){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -585,18 +565,15 @@ void userInterface()
 
 	MENU_FERMETURE_DELAY:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("DELAI FERMETURE "));
+		lcdPrintLine(DELAI_FERMETURE,0);
 		lcd.setCursor(0,1);
 		enterNumber(&closeDelay,0,60,0,1,2);
 		goto MENU_FERMETURE_ENREGISTREE;
 
 	MENU_FERMETURE_FIXE:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("FERMETURE       "));
-		lcd.setCursor(0,1);
-		lcd.print(F("HEURE FIXE      "));
+		lcdPrintLine(FERMETURE,0);
+		lcdPrintLine(menuModetureText[1],1);
 		if (closeMode==FIXE){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -622,19 +599,17 @@ void userInterface()
 		MENU_FERMETURE_HEURE:
 			clearButtons();
 			lcd.setCursor(0,0);
-			lcd.print(F("HEURE FERMETURE "));
+			lcdPrintLine(HEURE_FERMETURE,0);
 			lcd.setCursor(0,1);
-			printTimeLCD(closeTime,0);
+			lcdPrintTime(&closeTime,0);
 			enterNumber(&closeTime.H,0,23,0,1,2);
 			enterNumber(&closeTime.M,0,59,3,1,2);
 			goto MENU_FERMETURE;
 
 	MENU_FERMETURE_MINIMUM:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("FERMETURE       "));
-		lcd.setCursor(0,1);
-		lcd.print(F("HEURE MINIMUM   "));
+		lcdPrintLine(FERMETURE,0);
+		lcdPrintLine(menuModetureText[2],1);
 		if (closeMode==MINIMUM){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -660,9 +635,8 @@ void userInterface()
 	MENU_FERMETURE_RETOUR:
 		clearButtons();
 		lcd.setCursor(0,0);
-		lcd.print(F("RETOUR          "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(RETOUR,0);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_FERMETURE_MINIMUM;
@@ -678,10 +652,8 @@ void userInterface()
 
 	MENU_FERMETURE_ENREGISTREE:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("FERMETURE       "));
-		lcd.setCursor(0,1);
-		lcd.print(F("ENREGISTREE     "));
+		lcdPrintLine(FERMETURE,0);
+		lcdPrintLine(ENREGISTREE,1);
 		updateCloseTime();
 		//delay(2000);
 		goto MENU;
@@ -689,10 +661,8 @@ void userInterface()
 
 	MENU_DATE_HEURE:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("REGLAGE DATE    "));
-		lcd.setCursor(0,1);
-		lcd.print(F("ET HEURE        "));
+		lcdPrintLine(REGLAGE_DATE,0);
+		lcdPrintLine(ET_HEURE,1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_FERMETURE;
@@ -702,25 +672,18 @@ void userInterface()
 			goto MENU_TIMEOUT;
 		case BPOK:
 			updateDateTime();
-
-			lcd.setCursor(0,0);
-			lcd.print(F("HEURE:          "));
+			lcdPrintLine(HEURE,0);
 			enterTime(&nowTime);
 			RTC.setTime(nowTime.H,nowTime.M,nowTime.S);
-			lcd.setCursor(0,0);
-			lcd.print(F("HEURE           "));
-			lcd.setCursor(0,1);
-			lcd.print(F("ENREGISTREES    "));
+			lcdPrintLine(HEURE,0);
+			lcdPrintLine(ENREGISTREE,1);
 			delay(2000);
 			lcd.clear();
-			lcd.setCursor(0,0);
-			lcd.print(F("DATE:           "));
+			lcdPrintLine(DATE,0);
 			enterDate(&nowDate);
 			RTC.setDate(nowDate.D,0,nowDate.M,0,nowDate.Y);
-			lcd.setCursor(0,0);
-			lcd.print(F("DATE            "));
-			lcd.setCursor(0,1);
-			lcd.print(F("ENREGISTREES    "));
+			lcdPrintLine(DATE,0);
+			lcdPrintLine(ENREGISTREE,1);
 			RTC.clearVoltLow();
 			updateCloseTime();
 			updateOpenTime();
@@ -732,10 +695,8 @@ void userInterface()
 
 	MENU_INSTALLATION:
 	clearButtons();
-	lcd.setCursor(0,0);
-	lcd.print(F("INSTALLATION    "));
-	lcd.setCursor(0,1);
-	lcd.print(F("DE LA TRAPPE    "));
+	lcdPrintLine(INSTALLATION,0);
+	lcdPrintLine(DE_LA_TRAPPE,1);
 	switch(waitButton()){
 	case BPUP:
 		goto MENU_DATE_HEURE;
@@ -752,10 +713,8 @@ void userInterface()
 
 	MENU_EXPERT:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("REGLAGE AVANCES "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintScreen(menuText[menu_expert]);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_INSTALLATION;
@@ -772,9 +731,8 @@ void userInterface()
 MENU_EXPERT_CHARGE:
 		clearButtons();
 		lcd.setCursor(0,0);
-		lcd.print(F("CHARGE          "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(CHARGE,0);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_EXPERT_CHARGE;
@@ -820,10 +778,8 @@ MENU_EXPERT_CHARGE:
 
 	MENU_EXPERT_CYCLAGE:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("CYCLAGE         "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(CYCLAGE,0);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_EXPERT_CHARGE;
@@ -873,10 +829,8 @@ MENU_EXPERT_CHARGE:
 		}
 	MENU_EXPERT_EPHEMERIDES:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("EPHEMERIDES     "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(EPHEMERIDES,0);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_EXPERT_CYCLAGE;
@@ -889,15 +843,15 @@ MENU_EXPERT_CHARGE:
 		//	calculerEphemeride(timeElements.Day,timeElements.Month,timeElements.Year,45,-5,&lever,&meridien,&coucher);
 			calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),-5,45,&lever,&meridien,&coucher);
 			lcd.setCursor(0,0);
-			lcd.print(lever);
+			//lcd.print(lever);
 			waitButton();
 			lcd.setCursor(0,1);
-			lcd.print(coucher);
+			//lcd.print(coucher);
 			waitButton();
 			lcd.clear();
 			julianTranslate(&nowTime.H,&nowTime.M,&nowTime.S,lever);
 			lcd.setCursor(0,1);
-			printTimeLCD(nowTime,1);
+			lcdPrintTime(&nowTime,1);
 			waitButton();
 			goto MENU_EXPERT_EPHEMERIDES;
 		default:
@@ -906,10 +860,8 @@ MENU_EXPERT_CHARGE:
 
 		MENU_EXPERT_DEBUG:
 			clearButtons();
-			lcd.setCursor(0,0);
-			lcd.print(F("DEBUG           "));
-			lcd.setCursor(0,1);
-			lcdClearLine();
+			lcdPrintLine(DEBUG,0);
+			lcdClearLine(1);
 			switch(waitButton()){
 			case BPUP:
 				goto MENU_EXPERT_EPHEMERIDES;
@@ -974,10 +926,8 @@ MENU_EXPERT_CHARGE:
 
 	MENU_EXPERT_RETOUR:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("RETOUR          "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(RETOUR,0);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_EXPERT_EPHEMERIDES;
@@ -993,10 +943,8 @@ MENU_EXPERT_CHARGE:
 
 	MENU_QUITTER:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("QUITTER         "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(RETOUR,0);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_EXPERT;
@@ -1012,10 +960,8 @@ MENU_EXPERT_CHARGE:
 
 	MENU_ERROR:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("ERREUR MENU     "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(ERREUR_MENU,0);
+		lcdClearLine(1);
 		delay(5000);
 		goto MENU;
 
@@ -1033,10 +979,8 @@ void installationTrappe(){
 
 	MENU_HAUTEUR:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("REGLAGE HAUTEUR "));
-		lcd.setCursor(0,1);
-		lcd.print(F("DE LA TRAPPE    "));
+		lcdPrintLine(INSTALLATION,0);
+		lcdPrintLine(DE_LA_TRAPPE,1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_HAUTEUR;
@@ -1048,30 +992,22 @@ void installationTrappe(){
 			clearButtons();
 			activateMotor();
 
-			lcd.setCursor(0,0);
-			lcd.print(F("REGLAGE DE LA   "));
-			lcd.setCursor(0,1);
-			lcd.print(F("POSITION FERMEE "));
+			lcdPrintLine(REGLAGE,0);
+			lcdPrintLine(POSITION_FERMEE,1);
 			manualMoveMotor();
 			resetPosition();
-			lcd.setCursor(0,0);
-			lcd.print(F("POSITION FERMEE "));
-			lcd.setCursor(0,1);
-			lcd.print(F("ENREGISTREE     "));
+			lcdPrintLine(POSITION_FERMEE,0);
+			lcdPrintLine(ENREGISTREE,1);
 			delay(2000);
 			clearButtons();
-			lcd.setCursor(0,0);
-			lcd.print(F("REGLAGE DE LA   "));
-			lcd.setCursor(0,1);
-			lcd.print(F("POSITION OUVERTE"));
+			lcdPrintLine(REGLAGE,0);
+			lcdPrintLine(POSITION_OUVERTE,1);
 			manualMoveMotor();
 			positionHaute=motorPosition;
 			EEPROM.put(EEPROM_POSOPEN,positionHaute);
 			deactivateMotor();
-			lcd.setCursor(0,0);
-			lcd.print(F("POSITION OUVERTE"));
-			lcd.setCursor(0,1);
-			lcd.print(F("ENREGISTREE     "));
+			lcdPrintLine(POSITION_OUVERTE,0);
+			lcdPrintLine(ENREGISTREE,1);
 			delay(2000);
 			doorState=ds_opened;
 			updateCloseTime();
@@ -1083,10 +1019,8 @@ void installationTrappe(){
 
 	MENU_GPS:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("MODIFIER LA     "));
-		lcd.setCursor(0,1);
-		lcd.print(F("POSITION GPS    "));
+		lcdPrintLine(REGLAGE,0);
+		lcdPrintLine(POSITION_GPS,1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_HAUTEUR;
@@ -1102,10 +1036,8 @@ void installationTrappe(){
 
 	MENU_GPS_DPT:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("POSITION GPS    "));
-		lcd.setCursor(0,1);
-		lcd.print(F("PAR DEPARTEMENT "));
+		lcdPrintLine(POSITION_GPS,0);
+		lcdPrintLine(PAR_DEPARTEMENT,1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_GPS_DPT;
@@ -1122,10 +1054,8 @@ void installationTrappe(){
 
 	MENU_GPS_GPS:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("POSITION GPS    "));
-		lcd.setCursor(0,1);
-		lcd.print(F("MANUELLE        "));
+		lcdPrintLine(POSITION_GPS,0);
+		lcdPrintLine(MANUELLE,1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_GPS_DPT;
@@ -1146,10 +1076,8 @@ void installationTrappe(){
 
 	MENU_GPS_RETOUR:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("RETOUR          "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(RETOUR,0);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_GPS_GPS;
@@ -1165,20 +1093,16 @@ void installationTrappe(){
 
 	MENU_GPS_ENREGISTRER:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("POSITION GPS    "));
-		lcd.setCursor(0,1);
-		lcd.print(F("ENREGISTREE     "));
+		lcdPrintLine(POSITION_GPS,0);
+		lcdPrintLine(ENREGISTREE,1);
 		delay(2000);
 		goto MENU_QUITTER;
 
 
 	MENU_QUITTER:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("RETOUR          "));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(RETOUR,0);
+		lcdClearLine(1);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_GPS;
@@ -1194,10 +1118,8 @@ void installationTrappe(){
 
 	MENU_ERROR:
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcd.print(F("ERREUR MENU INST"));
-		lcd.setCursor(0,1);
-		lcdClearLine();
+		lcdPrintLine(ERREUR_MENU,0);
+		lcdClearLine(1);
 		delay(5000);
 		return;
 }

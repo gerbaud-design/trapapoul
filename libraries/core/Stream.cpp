@@ -227,7 +227,7 @@ size_t Stream::readBytesUntil(char terminator, char *buffer, size_t length)
   return index; // return number of characters, not including null terminator
 }
 
-String Stream::readString()
+/*String Stream::readString()
 {
   String ret;
   int c = timedRead();
@@ -237,9 +237,9 @@ String Stream::readString()
     c = timedRead();
   }
   return ret;
-}
+}*/
 
-String Stream::readStringUntil(char terminator)
+/*String Stream::readStringUntil(char terminator)
 {
   String ret;
   int c = timedRead();
@@ -249,7 +249,7 @@ String Stream::readStringUntil(char terminator)
     c = timedRead();
   }
   return ret;
-}
+}*/
 
 int Stream::findMulti( struct Stream::MultiTarget *targets, int tCount) {
   // any zero length target string automatically matches and would make

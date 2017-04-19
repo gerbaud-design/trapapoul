@@ -26,6 +26,7 @@ extern "C" {
   #include "utility/twi.h"
 }
 
+#include "Arduino.h"
 #include "Wire.h"
 
 // Initialize Class Variables //////////////////////////////////////////////////

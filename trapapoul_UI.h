@@ -12,6 +12,7 @@
 #include "GDI_time.h"
 #include <TimerOne.h>
 #include "trapapoul_config.h"
+#include "trapapoul_text.h"
 
 
 //lcd_I2C config
@@ -52,7 +53,12 @@ void enterGPS (int*, int*);
 void enterDepartement ();
 void uploadChar (uint8_t location, const uint8_t charmap[]);
 
-void lcdClearLine(){lcd.print(F("                "));}
+void lcdClearLine(bool line){
+	lcd.setCursor(0,line);
+	for (uint8_t i=0;i<16;++i){
+		lcd.write(' ');
+	}
+}
 
 void interrupt_blinker(void)
 {
@@ -116,77 +122,14 @@ uint8_t waitButton()
 	return TIMEOUT;
 }
 
-void enterNumberold(uint8_t *val,uint8_t min,uint8_t max,
-		uint8_t col, uint8_t lin, uint8_t digit/*,bool print0*/){
-	//init du timer1 et de son interrupt de clignotage
-	unsigned long blinkerTime;
-	Timer1.initialize(500000);
-	Timer1.attachInterrupt(interrupt_blinker);
-	Timer1.start();
-	blink=1;
-	clearButtons();
-
-	while(1){
-		blinkerTime = millis();
-
-		if (blink==1){
-			lcd.setCursor(col,lin);
-			if((*val<100) && (digit==3)/* && (print0==1)*/)
-				lcd.print(F("0"));
-			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
-				lcd.print(F("0"));
-			lcd.print(*val);
-		}else{
-			lcd.setCursor(col,lin);
-			lcd.print(F(" "));
-			if (digit>=2)
-				lcd.print(F(" "));
-			if (digit==3)
-				lcd.print(F(" "));
-		}
-		if((buttonState[BPUP]==1)&&(*val<max)){
-			*val+=1;
-			lcd.setCursor(col,lin);
-			if((*val<100) && (digit==3)/* && (print0==1)*/)
-				lcd.print(F("0"));
-			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
-				lcd.print(F("0"));
-			lcd.print(*val);
-		}
-		if((buttonState[BPDW]==1)&&(*val>min)){
-			*val-=1;
-			lcd.setCursor(col,lin);
-			if((*val<100) && (digit==3)/* && (print0==1)*/)
-				lcd.print(F("0"));
-			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
-				lcd.print(F("0"));
-			lcd.print(*val);
-		}
-		if(buttonPushed[BPOK]==1){
-			lcd.setCursor(col,lin);
-			if((*val<100) && (digit==3)/* && (print0==1)*/)
-				lcd.print(F("0"));
-			if ((*val<10) && (digit>=2)/* && (print0==1)*/)
-				lcd.print(F("0"));
-			lcd.print(*val);
-			Timer1.stop();
-			Timer1.detachInterrupt();
-			return;
-		}
-		while ((millis()-blinkerTime)<BLINK_HALF_PERIOD);
-	}
-	Timer1.stop();
-
-}
-
 void printNumberFixedDigits(uint8_t val, uint8_t digit){
-	if((val<100) && (digit==3)/* && (print0==1)*/){
-		lcd.print(F("0"));
+	if (digit==3){
+		lcd.write((val/100)+'0');
 	}
-	if ((val<10) && (digit>=2)/* && (print0==1)*/){
-		lcd.print(F("0"));
+	if (digit>=2){
+		lcd.write(((val%100)/10)+'0');
 	}
-	lcd.print(val);
+	lcd.write((val%10)+'0');
 }
 
 void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
@@ -207,7 +150,7 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 			printNumberFixedDigits(*val,digit);
 		}else{
 			for(uint8_t i=0;i<digit;++i){
-				lcd.print(F(" "));
+				lcd.write(' ');
 			}
 		}
 		lcd.setCursor(col,lin);
@@ -257,24 +200,50 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 	Timer1.detachInterrupt();
 }
 
+void lcdPrintLine(const uint8_t text[16],bool line){
+	lcd.setCursor(0,line);
+	for(uint8_t i=0;i<16;++i){
+		lcd.write((pgm_read_byte(&text[i])));
+	}
+}
 
+void lcdPrintScreen(const uint8_t ptr[2][16]){
+	lcdPrintLine(ptr[0],0);
+	lcdPrintLine(ptr[1],1);
+}
 
+void lcdPrintDate (gdiDate_t *date){//print date on LCD (jj/mm/yy)
+	lcd.write((date->D/10)+'0');
+	lcd.write((date->D%10)+'0');
+	lcd.write('/');
+	lcd.write((date->M/10)+'0');
+	lcd.write((date->M%10)+'0');
+	lcd.write('/');
+	lcd.write('2');
+	lcd.write('0');
+	lcd.write((date->Y/10)+'0');
+	lcd.write((date->Y%10)+'0');
+
+}
+
+void lcdPrintTime (gdiTime_t *time,bool printSec){//create string with time (hh:mm:ss)
+	lcd.write((time->H/10)+'0');
+	lcd.write((time->H%10)+'0');
+	lcd.write(':');
+	lcd.write((time->M/10)+'0');
+	lcd.write((time->M%10)+'0');
+	if(printSec){
+		lcd.write(':');
+		lcd.write((time->S/10)+'0');
+		lcd.write((time->S%10)+'0');
+	}
+}
 
 void enterTime(gdiTime_t *time){
 
+	lcdClearLine(1);
 	lcd.setCursor(0,1);
-	if (time->H<10)
-		lcd.print(F("0"));
-	lcd.print(time->H);
-	lcd.print(F(":"));
-	if (time->M<10)
-		lcd.print(F("0"));
-	lcd.print(time->M);
-	lcd.print(F(":"));
-	if (time->S<10)
-		lcd.print(F("0"));
-	lcd.print(time->S);
-	lcd.print(F("        "));
+	lcdPrintTime(time,1);
 	enterNumber(&(time->H),0,23,0,1,2);
 	enterNumber(&(time->M),0,59,3,1,2);
 	enterNumber(&(time->S),0,59,6,1,2);
@@ -284,31 +253,20 @@ void enterTime(gdiTime_t *time){
 	if(isTimeValid(time)){	//check date validity
 		//update values
 	}else{
-		lcd.setCursor(0,0);
-		lcd.print(F("HEURE NON VALIDE"));
+		lcdPrintLine(HEURE_NON_VALIDE,0);
 		delay(1000);
-		lcd.setCursor(0,0);
-		lcdClearLine();
+		lcdClearLine(0);
 		delay(500);
-		lcd.setCursor(0,0);
-		lcd.print(F("HEURE NON VALIDE"));
+		lcdPrintLine(HEURE_NON_VALIDE,0);
 		delay(1000);
 	}
 }
 
 void enterDate(gdiDate_t *date){
 
+	lcdClearLine(1);
 	lcd.setCursor(0,1);
-	if (date->D<10)
-		lcd.print(F("0"));
-	lcd.print(date->D);
-	lcd.print(F("/"));
-	if (date->M<10)
-		lcd.print(F("0"));
-	lcd.print(date->M);
-	lcd.print(F("/20"));
-	lcd.print(date->Y);
-	lcd.print(' ');
+	lcdPrintDate(date);
 	enterNumber(&(date->D),1,31,0,1,2);
 	enterNumber(&(date->M),1,12,3,1,2);
 	enterNumber(&(date->Y),0,99,8,1,2);
@@ -316,31 +274,20 @@ void enterDate(gdiDate_t *date){
 
 
 	//check validity
-	if(isDateValid(date)){	//check date validity
-		//update values
-
-		lcd.setCursor(0,0);
-		lcd.print(F("DATE VALIDE     "));
+	if(!isDateValid(date)){
+		lcdPrintLine(DATE_NON_VALIDE,0);
 		delay(1000);
-	}else{
-		lcd.setCursor(0,0);
-		lcd.print(F("DATE NON VALIDE "));
-		delay(1000);
-		lcd.setCursor(0,0);
-		lcdClearLine();
+		lcdClearLine(0);
 		delay(500);
-		lcd.setCursor(0,0);
-		lcd.print(F("DATE NON VALIDE "));
+		lcdPrintLine(DATE_NON_VALIDE,0);
 		delay(1000);
 	}
 }
 
 void enterDepartement (){
 	uint8_t dpt=38;
-	lcd.setCursor(0,0);
-	lcd.print(F("ENTREZ VOTRE    "));
-	lcd.setCursor(0,1);
-	lcd.print(F("DEPARTEMENT: 38 "));
+	lcdPrintLine(ENTREZ_VOTRE,0);
+	lcdPrintLine(DEPARTEMENT,1);
 	enterNumber(&dpt,1,95,13,1,2);
 	latitudeNord=departement[((dpt-1)*2)];
 	longitudeOuest=departement[((dpt*2)-1)];
@@ -353,10 +300,8 @@ void enterGPS (int8_t *latN, int16_t *lonO){
 	bool lonPointer=0;
 
 
-	lcd.setCursor(0,0);
-	lcd.print(F("LATITUDE NORD   "));
-	lcd.setCursor(0,1);
-	lcd.print(F("LATITUDE SUD    "));
+	lcdPrintLine(LATITUDE_NORD,0);
+	lcdPrintLine(LATITUDE_SUD,1);
 
 LATLON_LABEL:
 	//init du timer1 et de son interrupt de clignotage
@@ -364,10 +309,8 @@ LATLON_LABEL:
 	Timer1.attachInterrupt(interrupt_blinker);
 	Timer1.start();
 	if (lonPointer==1){
-		lcd.setCursor(0,0);
-		lcd.print(F("LONGITUDE OUEST "));
-		lcd.setCursor(0,1);
-		lcd.print(F("LONGITUDE EST   "));
+		lcdPrintLine(LONGITUDE_OUEST,0);
+		lcdPrintLine(LONGITUDE_EST,1);
 		latNS=0;
 	}
 	lcd.setCursor(15,0);
@@ -386,9 +329,9 @@ LATLON_LABEL:
 			lcd.write(CHECK_CHAR);
 		}else{
 			lcd.setCursor(15,0);
-			lcd.print(F(" "));
+			lcd.write(' ');
 			lcd.setCursor(15,1);
-			lcd.print(F(" "));
+			lcd.write(' ');
 		}
 		if(buttonPushed[BPUP]==1){
 			clearButtons();
@@ -396,7 +339,7 @@ LATLON_LABEL:
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
 			lcd.setCursor(15,1);
-			lcd.print(F(" "));
+			lcd.write(' ');
 		}
 		if(buttonPushed[BPDW]==1){
 			clearButtons();
@@ -404,7 +347,7 @@ LATLON_LABEL:
 			lcd.setCursor(15,1);
 			lcd.write(CHECK_CHAR);
 			lcd.setCursor(15,0);
-			lcd.print(F(" "));
+			lcd.write(' ');
 		}
 		if(buttonPushed[BPOK]==1){
 			clearButtons();
@@ -414,38 +357,36 @@ LATLON_LABEL:
 		}
 	}
 
-	lcd.setCursor(0,0);
 	if (latNS==1 && lonPointer==0){
-		lcd.print(F("LATITUDE NORD   "));
+		lcdPrintLine(LATITUDE_NORD,0);
 		if ((*latN>=0 ))
 			newlat=*latN;
 		else
 			newlat=0;
 	}
 	if(latNS==0 && lonPointer==0){
-		lcd.print(F("LATITUDE SUD    "));
+		lcdPrintLine(LATITUDE_SUD,0);
 		if (*latN<=0)
 			newlat=(*latN)*(-1);
 		else
 			newlat=0;
 	}
 	if (latNS==1 && lonPointer==1){
-		lcd.print(F("LONGITUDE OUEST "));
+		lcdPrintLine(LONGITUDE_OUEST,0);
 		if ((*lonO>=0 ))
 			newlat=*lonO;
 		else
 			newlat=0;
 	}
 	if(latNS==0 && lonPointer==1){
-		lcd.print(F("LONGITUDE EST   "));
+		lcdPrintLine(LONGITUDE_EST,0);
 		if (*lonO<=0)
 			newlat=(*lonO)*(-1);
 		else
 			newlat=0;
 	}
 
-	lcd.setCursor(0,1);
-	lcdClearLine();
+	lcdClearLine(1);
 	lcd.setCursor(3,1);
 	lcd.write(DEG_CHAR);
 	enterNumber(&newlat,0,180,0,1,3);
@@ -464,37 +405,6 @@ LATLON_LABEL:
 }
 
 
-void printDateLCD (){//print date on LCD (jj/mm/yy)
-	RTC.getDateTime();
-	if(RTC.getDay()<10)
-		lcd.print('0');
-	lcd.print(RTC.getDay());
-	lcd.print('/');
-	if(RTC.getMonth()<10)
-		lcd.print('0');
-	lcd.print(RTC.getMonth());
-	lcd.print('/');
-	if((RTC.getYear())<10)
-		lcd.print('0');
-	lcd.print(RTC.getYear());
-
-}
-
-void printTimeLCD (gdiTime_t time,bool printSec){//create string with time (hh:mm:ss)
-	if(time.H<10)
-		lcd.print('0');
-	lcd.print(time.H);
-	lcd.print(':');
-	if(time.M<10)
-		lcd.print('0');
-	lcd.print(time.M);
-	if(printSec){
-		lcd.print(':');
-		if(time.S<10)
-			lcd.print('0');
-		lcd.print(time.S);
-	}
-}
 
 #define SECS_PER_MIN 60
 #define SECS_PER_HOUR 3600
@@ -507,6 +417,11 @@ void julianTranslate(uint8_t *hour,uint8_t *minute,uint8_t *second, double julia
 	*minute=(julianSec%SECS_PER_HOUR)/SECS_PER_MIN;
 	*hour=julianSec/SECS_PER_HOUR;
 }
+
+
+
+
+
 
 
 #endif /* TRAPAPOUL_UI_H_ */
