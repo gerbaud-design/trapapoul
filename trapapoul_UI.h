@@ -56,11 +56,7 @@ void lcdClearLine(){lcd.print(F("                "));}
 
 void interrupt_blinker(void)
 {
-	if (blink==0) {
-		blink=1;
-	} else {
-		blink=0;
-	}
+	blink=!blink;
 }
 
 void uploadChar (uint8_t location, const uint8_t charmap[]){
@@ -73,18 +69,22 @@ void uploadChar (uint8_t location, const uint8_t charmap[]){
 }
 
 bool isDateValid(gdiDate_t *date){
-	if (date->M>12)
+	if (date->M>12){
 		return 0;
-	if ((date->M==2)&&(!LEAP_YEAR(date->Y))&&(date->D==29))
+	}
+	if ((date->M==2)&&(!LEAP_YEAR(date->Y))&&(date->D==29)){
 		return 1;
-	if (date->D>daysInMonths[(date->M)-1])
+	}
+	if (date->D>daysInMonths[(date->M)-1]){
 		return 0;
+	}
 	return 1;
 }
 
 bool isTimeValid(gdiTime_t *time){
-	if (time->S>59 || time->M>59 ||time->H>23)
+	if (time->S>59 || time->M>59 ||time->H>23){
 		return 0;
+	}
 	return 1;
 }
 
@@ -97,7 +97,7 @@ void clearButtons(void){
 uint8_t waitButton()
 {
 	topTimeout=millis();
-	while(1){
+	while((millis()-topTimeout) < BUTTON_TIMEOUT){
 		if(buttonPushed[BPOK]==1){
 			buttonPushed[BPOK]=0;
 			return BPOK;
@@ -110,13 +110,13 @@ uint8_t waitButton()
 			buttonPushed[BPUP]=0;
 			return BPUP;
 		}
-		if((millis()-topTimeout) > BUTTON_TIMEOUT)
-			return TIMEOUT;
+		//if((millis()-topTimeout) > BUTTON_TIMEOUT)
+		//	return TIMEOUT;
 	}
-
+	return TIMEOUT;
 }
 
-void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
+void enterNumberold(uint8_t *val,uint8_t min,uint8_t max,
 		uint8_t col, uint8_t lin, uint8_t digit/*,bool print0*/){
 	//init du timer1 et de son interrupt de clignotage
 	unsigned long blinkerTime;
@@ -179,9 +179,89 @@ void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
 
 }
 
+void printNumberFixedDigits(uint8_t val, uint8_t digit){
+	if((val<100) && (digit==3)/* && (print0==1)*/){
+		lcd.print(F("0"));
+	}
+	if ((val<10) && (digit>=2)/* && (print0==1)*/){
+		lcd.print(F("0"));
+	}
+	lcd.print(val);
+}
+
+void enterNumber(uint8_t *val,uint8_t min,uint8_t max,
+		uint8_t col, uint8_t lin, uint8_t digit/*,bool print0*/){
+	//init du timer1 et de son interrupt de clignotage
+	if(*val<min ||*val>max){
+		*val=min;
+	}
+	Timer1.initialize(500000);
+	Timer1.attachInterrupt(interrupt_blinker);
+	Timer1.start();
+	blink=1;
+	clearButtons();
+	topTimeout=millis();
+	while(1){
+		lcd.setCursor(col,lin);
+		if (blink){
+			printNumberFixedDigits(*val,digit);
+		}else{
+			for(uint8_t i=0;i<digit;++i){
+				lcd.print(F(" "));
+			}
+		}
+		lcd.setCursor(col,lin);
+
+		if((buttonPushed[BPUP]==1)&&(*val<max)){
+			*val+=1;
+			Timer1.restart();
+			lcd.setCursor(col,lin);
+			blink=1;
+			printNumberFixedDigits(*val,digit);
+			while(buttonState[BPUP] && blink);
+			while(buttonState[BPUP] && (*val<max)){
+				*val+=1;
+				lcd.setCursor(col,lin);
+				printNumberFixedDigits(*val,digit);
+				delay(FAST_BUTTON);
+			}
+			Timer1.restart();
+			topTimeout=millis();
+			blink=0;
+			buttonPushed[BPUP]=0;
+		}
+		if((buttonPushed[BPDW]==1)&&(*val>min)){
+			*val-=1;
+			Timer1.restart();
+			lcd.setCursor(col,lin);
+			blink=1;
+			printNumberFixedDigits(*val,digit);
+			while(buttonState[BPDW] && blink);
+			while(buttonState[BPDW] && *val>min){
+				*val-=1;
+				lcd.setCursor(col,lin);
+				printNumberFixedDigits(*val,digit);
+				delay(FAST_BUTTON);
+			}
+			Timer1.restart();
+			topTimeout=millis();
+			blink=0;
+			buttonPushed[BPDW]=0;
+		}
+		if(buttonPushed[BPOK]==1 || (millis()-topTimeout)>BUTTON_TIMEOUT){
+			buttonPushed[BPOK]=0;
+			break;
+		}
+	}
+	Timer1.stop();
+	Timer1.detachInterrupt();
+}
+
+
+
+
 void enterTime(gdiTime_t *time){
 
-ENTER_TIME:
 	lcd.setCursor(0,1);
 	if (time->H<10)
 		lcd.print(F("0"));
@@ -195,15 +275,15 @@ ENTER_TIME:
 		lcd.print(F("0"));
 	lcd.print(time->S);
 	lcd.print(F("        "));
-
-	//update values
 	enterNumber(&(time->H),0,23,0,1,2);
 	enterNumber(&(time->M),0,59,3,1,2);
 	enterNumber(&(time->S),0,59,6,1,2);
 
-	//check validity
-	if(!isTimeValid(time)){	//check date validity
 
+	//check validity
+	if(isTimeValid(time)){	//check date validity
+		//update values
+	}else{
 		lcd.setCursor(0,0);
 		lcd.print(F("HEURE NON VALIDE"));
 		delay(1000);
@@ -213,13 +293,11 @@ ENTER_TIME:
 		lcd.setCursor(0,0);
 		lcd.print(F("HEURE NON VALIDE"));
 		delay(1000);
-		goto ENTER_TIME;
 	}
 }
 
 void enterDate(gdiDate_t *date){
 
-ENTER_DATE :
 	lcd.setCursor(0,1);
 	if (date->D<10)
 		lcd.print(F("0"));
@@ -228,19 +306,23 @@ ENTER_DATE :
 	if (date->M<10)
 		lcd.print(F("0"));
 	lcd.print(date->M);
-	lcd.print(F("/"));
+	lcd.print(F("/20"));
 	lcd.print(date->Y);
+	lcd.print(' ');
+	enterNumber(&(date->D),1,31,0,1,2);
+	enterNumber(&(date->M),1,12,3,1,2);
+	enterNumber(&(date->Y),0,99,8,1,2);
 
-	//update values
-	{
-		enterNumber(&(date->D),1,31,0,1,2);
-		enterNumber(&(date->M),1,12,3,1,2);
-		enterNumber(&(date->Y),0,99,8,1,2);
-	}
+
 
 	//check validity
-	if(!isDateValid(date)){	//check date validity
+	if(isDateValid(date)){	//check date validity
+		//update values
 
+		lcd.setCursor(0,0);
+		lcd.print(F("DATE VALIDE     "));
+		delay(1000);
+	}else{
 		lcd.setCursor(0,0);
 		lcd.print(F("DATE NON VALIDE "));
 		delay(1000);
@@ -250,7 +332,6 @@ ENTER_DATE :
 		lcd.setCursor(0,0);
 		lcd.print(F("DATE NON VALIDE "));
 		delay(1000);
-		goto ENTER_DATE;
 	}
 }
 

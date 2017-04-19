@@ -34,9 +34,10 @@
 
 
 //button timing const
-#define DEBOUNCE 400 //ms
+#define DEBOUNCE 100 //ms
+#define FAST_BUTTON 200 //ms
 #define BUTTON_TIMEOUT 10000 //ms
-#define BLINK_HALF_PERIOD 500
+#define BLINK_HALF_PERIOD 500 //ms
 #define DEFAULT_CLOSE_DELAY 30 //min
 
 //EEPROM adresses

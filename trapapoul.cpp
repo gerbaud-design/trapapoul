@@ -91,27 +91,33 @@ ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
 
 	if (newState[BPOK]!=buttonState[BPOK]){
 		if (newState[BPOK]==1 && ((millis()-lastPush[BPOK])>DEBOUNCE)){
-			lastPush[BPOK]=millis();
 			buttonPushed[BPOK]=1;
 			buttonState[BPOK]=1;
 		}
-		if(newState[BPOK]==0) buttonState[BPOK]=0;
+		if(newState[BPOK]==0){
+			buttonState[BPOK]=0;
+			lastPush[BPOK]=millis();
+		}
 	}
 	if (newState[BPDW]!=buttonState[BPDW]){
 		if (newState[BPDW]==1 && ((millis()-lastPush[BPDW])>DEBOUNCE)){
-			lastPush[BPDW]=millis();
 			buttonPushed[BPDW]=1;
 			buttonState[BPDW]=1;
 		}
-		if(newState[BPDW]==0) buttonState[BPDW]=0;
+		if(newState[BPDW]==0){
+			buttonState[BPDW]=0;
+			lastPush[BPDW]=millis();
+		}
 	}
 	if (newState[BPUP]!=buttonState[BPUP]){
 		if (newState[BPUP]==1 && ((millis()-lastPush[BPUP])>DEBOUNCE)){
-			lastPush[BPUP]=millis();
 			buttonPushed[BPUP]=1;
 			buttonState[BPUP]=1;
 		}
-		if(newState[BPUP]==0) buttonState[BPUP]=0;
+		if(newState[BPUP]==0){
+			buttonState[BPUP]=0;
+			lastPush[BPUP]=millis();
+		}
 	}
 
 }
@@ -145,6 +151,9 @@ void setup()
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
 //setup du lcd
+	deactivateVpp();
+	delay(1000);
+	activateVpp();
 	lcd.init();
 	lcd.backlight();
 	lcd.setCursor(0,0);
@@ -703,6 +712,7 @@ void userInterface()
 			lcd.setCursor(0,1);
 			lcd.print(F("ENREGISTREES    "));
 			delay(2000);
+			lcd.clear();
 			lcd.setCursor(0,0);
 			lcd.print(F("DATE:           "));
 			enterDate(&nowDate);

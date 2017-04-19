@@ -146,6 +146,9 @@ class TimerOne
     void detachInterrupt() __attribute__((always_inline)) {
 	TIMSK1 = 0;
     }
+    void resetInterrupt() __attribute__((always_inline)) {
+    	TIFR1 = 0xFF;
+    }
     static void (*isrCallback)();
     static void isrDefaultUnused();
 
