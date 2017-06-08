@@ -42,5 +42,17 @@ void updateDateTime(){
 }
 
 
+#define SECS_PER_MIN 60
+#define SECS_PER_HOUR 3600
+#define SECS_PER_DAY 86400
+void julianTranslate(uint8_t *hour,uint8_t *minute,uint8_t *second, double julian){
+	//fill in hour minute and second from a -0.5<julian<0.5
+	julian+=0.5;
+	julian*=SECS_PER_DAY;
+	uint32_t julianSec =julian;
+	*second=(julianSec%SECS_PER_MIN);
+	*minute=(julianSec%SECS_PER_HOUR)/SECS_PER_MIN;
+	*hour=julianSec/SECS_PER_HOUR;
+}
 
 #endif /* GDI_TIME_H_ */

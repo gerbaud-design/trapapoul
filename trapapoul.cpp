@@ -16,22 +16,27 @@
 #include "trapapoul_motor.h"
 #include "ephemeride.h"
 #include "sleep.h"
-
+#include "trapapoul_expert.h"
 
 extern volatile int motorPosition;
-extern unsigned long topTimeout;
+extern volatile unsigned long topTimeout;
 extern volatile unsigned long lastPush[3];
 extern volatile bool buttonState[3];
 extern volatile bool buttonPushed[3];
 
+extern volatile int8_t latitudeNord;
+extern volatile int16_t longitudeOuest;
+
 extern uint8_t resetSource;
 
 //config variables
-#define SOLEIL 1
-#define FIXE 2
-#define MINIMUM 3
+#define SOLEIL 0
+#define FIXE 1
+#define MINIMUM 2
 uint8_t openMode=SOLEIL;
 uint8_t closeMode=SOLEIL;
+gdiTime_t openTime,closeTime;
+uint8_t closeDelay=DEFAULT_CLOSE_DELAY;
 
 enum wakeUpSource_t{
 	wu_button,
@@ -53,8 +58,6 @@ uint16_t anaRead;
 uint8_t configured=0;
 int16_t positionHaute = 0;
 uint16_t nbCycles;
-gdiTime_t openTime,closeTime;
-uint8_t closeDelay=DEFAULT_CLOSE_DELAY;
 
 
 float lever,meridien,coucher;
@@ -72,11 +75,12 @@ uint16_t writeCount;
 	}while(eeBlockCount<50);*/
 
 
-void installationTrappe();
-void manualMoveMotor();
+uint8_t installationTrappe();
+uint8_t manualMoveMotor();
 void updateOpenTime();
 void updateCloseTime();
-void userInterface();
+uint8_t userInterface();
+uint8_t menu();
 
 //interrupt routine for pin change of port D
 ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
@@ -89,6 +93,7 @@ ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
 	newState[BPUP]=(!(digitalRead(pinBPUP)));
 
 	if (newState[BPOK]!=buttonState[BPOK]){
+		topTimeout=millis();
 		if (newState[BPOK]==1 && ((millis()-lastPush[BPOK])>DEBOUNCE)){
 			buttonPushed[BPOK]=1;
 			buttonState[BPOK]=1;
@@ -99,6 +104,7 @@ ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
 		}
 	}
 	if (newState[BPDW]!=buttonState[BPDW]){
+		topTimeout=millis();
 		if (newState[BPDW]==1 && ((millis()-lastPush[BPDW])>DEBOUNCE)){
 			buttonPushed[BPDW]=1;
 			buttonState[BPDW]=1;
@@ -109,6 +115,7 @@ ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
 		}
 	}
 	if (newState[BPUP]!=buttonState[BPUP]){
+		topTimeout=millis();
 		if (newState[BPUP]==1 && ((millis()-lastPush[BPUP])>DEBOUNCE)){
 			buttonPushed[BPUP]=1;
 			buttonState[BPUP]=1;
@@ -144,26 +151,23 @@ void interrupt_1 () {
 void setup()
 {
 
-
 //setup du sleep mode
 	WDTCSR=0x00;//disable watchdog just in case
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
+//initialisation of analog inputs
+	analogReference(EXTERNAL);
+
 //setup du lcd
-	deactivateVpp();
-	delay(1000);
 	activateVpp();
-	lcd.init();
-	lcd.backlight();
+	LCDON;
 	lcdPrintLine(SYSTEMRESET,0);
 	lcd.setCursor(0,1);
 	lcd.write(resetSource%10+'0');
 	delay(2000);
-	lcd.noBacklight();
 	lcd.clear();
-	uploadChar(CHECK_CHAR,checkChar);
-	uploadChar(DEG_CHAR,degChar);
-	lcd.setCursor(0,0);
+	LCDOFF;
+	deactivateVpp();
 
 //Init of RTC
 	//RTC.set(SECS_YR_2000,CLOCK_ADDRESS);
@@ -189,9 +193,6 @@ void setup()
 	//digitalWrite(pinBPDW,1);
 	//digitalWrite(pinBPOK,1);
 
-//initialisation of analog inputs
-	analogReference(EXTERNAL);
-
 
 //desactive int1  et int0 (or loop in int1 while pbok pushed)
 	detachInterrupt(0);
@@ -208,6 +209,7 @@ void setup()
 	lastPush[BPUP]=millis();
 	lastPush[BPDW]=millis();
 	clearButtons();
+	configured=0;
 
 }
 
@@ -223,20 +225,25 @@ void loop()
 	activateVpp();
 	switch(wakeUpSource){
 	case wu_unknown:
-		lcd.backlight();
+		LCDON;
 		lcdPrintLine(UNKNOWN_WAKE_UP,0);
 		delay(2000);
+		LCDOFF;
 		//nobreak
 	case wu_button:
 		clearButtons();
 		lcd.clear();
-		lcd.backlight();
-		userInterface();
+		LCDON;
+		if(configured<3){
+			installationTrappe();
+		}else{
+			userInterface();
+		}
+		LCDOFF;
 		lcd.clear();
-		lcd.noBacklight();
 		//nobreak
 	case wu_alarm:
-		if(configured!=0){
+		if(configured>3){
 			updateCloseTime();
 			updateOpenTime();
 			updateDateTime();
@@ -327,9 +334,8 @@ void loadPosition(void){
 }
 
 
-void userInterface()
+uint8_t userInterface()
 {
-	MENU:
 	 topTimeout=millis();
 		while(1){
 
@@ -381,16 +387,25 @@ void userInterface()
 			}
 
 			if(buttonPushed[BPOK]==1)
-				goto MENU_OUVERTURE;
+				switch(menu()){
+				case ERROR:
+					clearButtons();
+					lcdPrintLine(ERREUR_MENU,0);
+					lcdClearLine(1);
+					delay(5000);
+				case TIMEOUT:
+					return TIMEOUT;
+				default:
+					clearButtons();
+					lcdClearLine(1);
+				}
 			if((millis()-topTimeout)>BUTTON_TIMEOUT)
-					goto MENU_TIMEOUT;
+					return TIMEOUT;
 		}
-
+/*
 	MENU_OUVERTURE:
 		clearButtons();
-		lcdPrintLine(REGLAGE_DU_MODE,0);
-		lcdPrintLine(OUVERTURE,1);
-		lcdPrintScreen(menuText[menuPointer]);
+		lcdPrintScreen(menuText[0]);
 		switch(waitButton()){
 		case BPUP:
 			goto MENU_OUVERTURE;
@@ -407,7 +422,7 @@ void userInterface()
 	MENU_OUVERTURE_SOLEIL:
 		clearButtons();
 		lcdPrintLine(OUVERTURE,0);
-		lcdPrintLine(menuModetureText[0],1);
+		lcdPrintLine(menuScheduleText[0],1);
 		if (openMode==SOLEIL){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -434,7 +449,7 @@ void userInterface()
 	MENU_OUVERTURE_FIXE:
 		clearButtons();
 		lcdPrintLine(OUVERTURE,0);
-		lcdPrintLine(menuModetureText[1],1);
+		lcdPrintLine(menuScheduleText[1],1);
 		if (openMode==FIXE){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -470,7 +485,7 @@ void userInterface()
 	MENU_OUVERTURE_MINIMUM:
 		clearButtons();
 		lcdPrintLine(OUVERTURE,0);
-		lcdPrintLine(menuModetureText[2],1);
+		lcdPrintLine(menuScheduleText[2],1);
 		if (openMode==MINIMUM){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -540,7 +555,7 @@ void userInterface()
 	MENU_FERMETURE_SOLEIL:
 		clearButtons();
 		lcdPrintLine(FERMETURE,0);
-		lcdPrintLine(menuModetureText[1],1);
+		lcdPrintLine(menuScheduleText[1],1);
 		if (closeMode==SOLEIL){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -573,7 +588,7 @@ void userInterface()
 	MENU_FERMETURE_FIXE:
 		clearButtons();
 		lcdPrintLine(FERMETURE,0);
-		lcdPrintLine(menuModetureText[1],1);
+		lcdPrintLine(menuScheduleText[1],1);
 		if (closeMode==FIXE){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -609,7 +624,7 @@ void userInterface()
 	MENU_FERMETURE_MINIMUM:
 		clearButtons();
 		lcdPrintLine(FERMETURE,0);
-		lcdPrintLine(menuModetureText[2],1);
+		lcdPrintLine(menuScheduleText[2],1);
 		if (closeMode==MINIMUM){
 			lcd.setCursor(15,0);
 			lcd.write(CHECK_CHAR);
@@ -673,7 +688,7 @@ void userInterface()
 		case BPOK:
 			updateDateTime();
 			lcdPrintLine(HEURE,0);
-			enterTime(&nowTime);
+			enterTime(&nowTime,1);
 			RTC.setTime(nowTime.H,nowTime.M,nowTime.S);
 			lcdPrintLine(HEURE,0);
 			lcdPrintLine(ENREGISTREE,1);
@@ -727,406 +742,245 @@ void userInterface()
 		default:
 			goto MENU_ERROR;
 		}
+*/
 
-MENU_EXPERT_CHARGE:
+
+
+}
+uint8_t SheduleSetting(bool opening){//(opening=0)=>closing
+	uint8_t menuSchedulePointer=menu_schedule_soleil;
+	while(1){
 		clearButtons();
-		lcd.setCursor(0,0);
-		lcdPrintLine(CHARGE,0);
-		lcdClearLine(1);
+		lcdPrintLine(menuScheduleText[menuSchedulePointer],0);
+		if ((opening && openMode==menuSchedulePointer)||(!opening && closeMode==menuSchedulePointer)){
+			lcd.setCursor(15,0);
+			lcd.write(CHECK_CHAR);
+		}
 		switch(waitButton()){
 		case BPUP:
-			goto MENU_EXPERT_CHARGE;
+			if (menuSchedulePointer>0){
+				--menuSchedulePointer;
+			}
+			continue;
 		case BPDW:
-			goto MENU_EXPERT_CYCLAGE;
+			if (menuSchedulePointer<menu_quitter){
+				++menuSchedulePointer;
+			}
+			continue;
 		case TIMEOUT:
-			goto MENU_TIMEOUT;
+			return TIMEOUT;
 		case BPOK:
-			clearButtons();
-			/*pinMode(pinVppEn,OUTPUT);
-			digitalWrite(pinVppEn,1);
-			lcd.setCursor(0,0);
-			lcd.print(F("CHARGE READY    "));
-			lcd.setCursor(0,1);
-			lcdClearLine();
-			while(waitButton()!=BPOK);
-			lcd.setCursor(0,0);
-			lcd.print(F("CHARGE ON       "));
-			//chargeStartTime=millis();
-			digitalWrite(pinChargeOff,1);
-			while((millis()-chargeStartTime)<3600000){
-				float batVoltage;
-				anaRead=0;
-				for (i8_1=0;i8_1<16;i8_1++){
-					anaRead += analogRead(pinMesVbat);
-					delay(10);
+			if (menuSchedulePointer==menu_schedule_soleil){
+				if(opening){
+					updateOpenTime();
+				}else{
+					lcdPrintLine(DELAI,1);
+					enterNumber(&closeDelay,0,240,8,1,3);
+					updateCloseTime();
 				}
-				batVoltage=anaRead*vrefVoltage*3.13/10240;
-				lcd.setCursor(0,1);
-				lcd.print(batVoltage);
-				lcd.print('V');
-				if (batVoltage>7.2) break;
-				delay(1000);
-			}*/
-			digitalWrite(pinChargeOff,0);
-			clearButtons();
-			waitButton();
 
-			goto MENU;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_EXPERT_CYCLAGE:
-		clearButtons();
-		lcdPrintLine(CYCLAGE,0);
-		lcdClearLine(1);
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_EXPERT_CHARGE;
-		case BPDW:
-			goto MENU_EXPERT_EPHEMERIDES;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:/*
-			activateMotor();
-			lcd.setCursor(0,0);
-			lcd.print(F("CYCLAGE EN COURS"));
-			lcd.setCursor(0,1);
-			lcd.print(F("ITERATION       "));
-			nbCycles=0;
-			while(1){
-				motorGoTo(positionHaute);
-				delay(10000);
-				if(machineState==TIMEOUT)
-					break;
-				motorGoTo(0);
-				if(machineState==TIMEOUT)
-					break;
-				nbCycles++;
-				lcd.setCursor(10,1);
-				lcd.print(nbCycles);
-				pushLog(printTime());
-				pushLog(" Iteration ");
-				pushLog(String(nbCycles));
-				pushLog("\n");
-				if(nbCycles==NB_ITERATION)
-					break;
-
-				delay(10000);
 			}
-			if(machineState==TIMEOUT){
-				pushLog(printTime());
-				pushLog(" Broken ");
-				pushLog("\n");
-				lcd.setCursor(0,1);
-				lcd.print(F("BROKEN AT       "));
+			if (menuSchedulePointer==menu_schedule_fixe){
+				gdiTime_t *toSet;
+				if(opening){
+					toSet=&openTime;
+				}else{
+					toSet=&closeTime;
+				}
+				lcdPrintLine(HEURE,1);
+				lcd.setCursor(6,1);
+				lcd.write(':');
+				enterTime(toSet,0);
 			}
-			manualMoveMotor();
-			deactivateMotor();*/
-			goto MENU_EXPERT;
+			updateOpenTime();
+			//update openclose
+			return 0;
 		default:
-			goto MENU_ERROR;
+			return ERROR;
 		}
-	MENU_EXPERT_EPHEMERIDES:
-		clearButtons();
-		lcdPrintLine(EPHEMERIDES,0);
-		lcdClearLine(1);
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_EXPERT_CYCLAGE;
-		case BPDW:
-			goto MENU_EXPERT_DEBUG;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:
-			updateDateTime();
-		//	calculerEphemeride(timeElements.Day,timeElements.Month,timeElements.Year,45,-5,&lever,&meridien,&coucher);
-			calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),-5,45,&lever,&meridien,&coucher);
-			lcd.setCursor(0,0);
-			//lcd.print(lever);
-			waitButton();
-			lcd.setCursor(0,1);
-			//lcd.print(coucher);
-			waitButton();
-			lcd.clear();
-			julianTranslate(&nowTime.H,&nowTime.M,&nowTime.S,lever);
-			lcd.setCursor(0,1);
-			lcdPrintTime(&nowTime,1);
-			waitButton();
-			goto MENU_EXPERT_EPHEMERIDES;
-		default:
-			goto MENU_ERROR;
-		}
-
-		MENU_EXPERT_DEBUG:
-			clearButtons();
-			lcdPrintLine(DEBUG,0);
-			lcdClearLine(1);
-			switch(waitButton()){
-			case BPUP:
-				goto MENU_EXPERT_EPHEMERIDES;
-			case BPDW:
-				goto MENU_EXPERT_RETOUR;
-			case TIMEOUT:
-				goto MENU_TIMEOUT;
-			case BPOK:
-	/*			activateMotor();
-				motorForward();
-				clearButtons();
-				lcd.setCursor(0,0);
-				lcd.print(F("MOTOR ON        "));
-				lcd.setCursor(0,1);
-				lcdClearLine();
-				while(1){
-					anaRead=0;
-					for(i8_1=0;i8_1<64;i8_1++){
-						anaRead+=analogRead(pinMesImot);
-						delay(2);
-					}
-
-					anaRead /=ratioImot;
-					lcd.setCursor(10,0);
-					lcd.print(anaRead);
-					lcd.print('"mA");
-
-					anaRead=0;
-					for(i8_1=0;i8_1<64;i8_1++){
-						anaRead+=analogRead(pinMesVbat);
-						delay(2);
-					}
-					anaRead /=ratioVbat;
-					lcd.setCursor(10,1);
-					lcd.print(anaRead);
-					lcd.setCursor(11,1);
-					lcd.print(anaRead);
-					lcd.print('V');
-					lcd.setCursor(11,1);
-					lcd.print(',');
-
-					if (buttonPushed[BPUP]){
-						motorStop();
-						motorForward();
-						clearButtons();
-					}
-					if (buttonPushed[BPDW]){
-						motorStop();
-						motorBackward();
-						clearButtons();
-					}
-					if (buttonPushed[BPOK]){
-						motorStop();
-						clearButtons();
-						break;
-					}
-				}*/
-				goto MENU_EXPERT;
-			default:
-				goto MENU_ERROR;
-			}
-
-	MENU_EXPERT_RETOUR:
-		clearButtons();
-		lcdPrintLine(RETOUR,0);
-		lcdClearLine(1);
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_EXPERT_EPHEMERIDES;
-		case BPDW:
-			goto MENU_EXPERT_RETOUR;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:
-			goto MENU_EXPERT;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_QUITTER:
-		clearButtons();
-		lcdPrintLine(RETOUR,0);
-		lcdClearLine(1);
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_EXPERT;
-		case BPDW:
-			goto MENU_QUITTER;
-		case TIMEOUT:
-			goto MENU_TIMEOUT;
-		case BPOK:
-			return;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_ERROR:
-		clearButtons();
-		lcdPrintLine(ERREUR_MENU,0);
-		lcdClearLine(1);
-		delay(5000);
-		goto MENU;
-
-	MENU_TIMEOUT:
-		lcd.noBacklight();
-		return;
-
+	}
 }
 
 
-void installationTrappe(){
-//réglage hauteur
-	//réglage date-heure
-	//réglage gps
 
-	MENU_HAUTEUR:
-		clearButtons();
-		lcdPrintLine(INSTALLATION,0);
-		lcdPrintLine(DE_LA_TRAPPE,1);
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_HAUTEUR;
-		case BPDW:
-			goto MENU_GPS;
-		case TIMEOUT:
-			goto MENU_HAUTEUR;
-		case BPOK:
-			clearButtons();
-			activateMotor();
 
-			lcdPrintLine(REGLAGE,0);
-			lcdPrintLine(POSITION_FERMEE,1);
-			manualMoveMotor();
-			resetPosition();
-			lcdPrintLine(POSITION_FERMEE,0);
-			lcdPrintLine(ENREGISTREE,1);
-			delay(2000);
-			clearButtons();
-			lcdPrintLine(REGLAGE,0);
-			lcdPrintLine(POSITION_OUVERTE,1);
-			manualMoveMotor();
-			positionHaute=motorPosition;
-			EEPROM.put(EEPROM_POSOPEN,positionHaute);
-			deactivateMotor();
-			lcdPrintLine(POSITION_OUVERTE,0);
-			lcdPrintLine(ENREGISTREE,1);
-			delay(2000);
-			doorState=ds_opened;
-			updateCloseTime();
+uint8_t menuOuverture(){
+	return SheduleSetting(1);
 
-			goto MENU_GPS;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_GPS:
-		clearButtons();
-		lcdPrintLine(REGLAGE,0);
-		lcdPrintLine(POSITION_GPS,1);
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_HAUTEUR;
-		case BPDW:
-			goto MENU_QUITTER;
-		case TIMEOUT:
-			goto MENU_GPS;
-		case BPOK:
-			goto MENU_GPS_DPT;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_GPS_DPT:
-		clearButtons();
-		lcdPrintLine(POSITION_GPS,0);
-		lcdPrintLine(PAR_DEPARTEMENT,1);
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_GPS_DPT;
-		case BPDW:
-			goto MENU_GPS_GPS;
-		case TIMEOUT:
-			goto MENU_GPS_DPT;
-		case BPOK:
-			enterDepartement();
-			goto MENU_GPS_ENREGISTRER;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_GPS_GPS:
-		clearButtons();
-		lcdPrintLine(POSITION_GPS,0);
-		lcdPrintLine(MANUELLE,1);
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_GPS_DPT;
-		case BPDW:
-			goto MENU_GPS_RETOUR;
-		case TIMEOUT:
-			goto MENU_GPS_GPS;
-		case BPOK:
-			EEPROM.get(EEPROM_LAT,latitudeNord);
-			EEPROM.get(EEPROM_LON,longitudeOuest);
-			enterGPS(&latitudeNord,&longitudeOuest);
-			EEPROM.put(EEPROM_LAT,latitudeNord);
-			EEPROM.put(EEPROM_LON,longitudeOuest);
-			goto MENU_GPS_ENREGISTRER;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_GPS_RETOUR:
-		clearButtons();
-		lcdPrintLine(RETOUR,0);
-		lcdClearLine(1);
-		switch(waitButton()){
-		case BPUP:
-			goto MENU_GPS_GPS;
-		case BPDW:
-			goto MENU_GPS_RETOUR;
-		case TIMEOUT:
-			goto MENU_GPS_RETOUR;
-		case BPOK:
-			goto MENU_GPS;
-		default:
-			goto MENU_ERROR;
-		}
-
-	MENU_GPS_ENREGISTRER:
-		clearButtons();
-		lcdPrintLine(POSITION_GPS,0);
+}
+uint8_t menuFermeture(){
+	return SheduleSetting(1);
+}
+uint8_t reglageDateHeure(){
+	updateDateTime();
+	lcdPrintLine(HEURE,0);
+	if(enterTime(&nowTime,1)==0){
+		RTC.setTime(nowTime.H,nowTime.M,nowTime.S);
+		lcdPrintLine(HEURE,0);
 		lcdPrintLine(ENREGISTREE,1);
 		delay(2000);
-		goto MENU_QUITTER;
+		lcd.clear();
+	}else{
+		return ERROR;
+	}
+	lcdPrintLine(DATE,0);
+	if(enterDate(&nowDate)==0){
+		RTC.setDate(nowDate.D,1,nowDate.M,0,nowDate.Y);
+		lcdPrintLine(DATE,0);
+		lcdPrintLine(ENREGISTREE,1);
+	}else{
+		return ERROR;
+	}
+	RTC.clearVoltLow();
+	updateCloseTime();
+	updateOpenTime();
+	return 0;
+}
 
-
-	MENU_QUITTER:
+uint8_t (*menuExpertFunctionPointers[menu_expert_quitter])()={expertCharge,expertCyclage,expertEphemerides,expertDebug};
+uint8_t menuExpert(){
+	uint8_t menuExpertPointer=0;
+	while(1){
 		clearButtons();
-		lcdPrintLine(RETOUR,0);
-		lcdClearLine(1);
+		lcdPrintScreen(menuText[menuExpertPointer]);
 		switch(waitButton()){
 		case BPUP:
-			goto MENU_GPS;
+			if (menuExpertPointer>0){
+				--menuExpertPointer;
+			}
+			continue;
 		case BPDW:
-			goto MENU_QUITTER;
+			if (menuExpertPointer<menu_expert_quitter){
+				++menuExpertPointer;
+			}
+			continue;
 		case TIMEOUT:
-			goto MENU_QUITTER;
+			return TIMEOUT;
 		case BPOK:
-			return;
+			if(menuExpertPointer==menu_expert_quitter){
+				return 0;
+			}
+			switch ((*menuExpertFunctionPointers[menuExpertPointer])()){
+			case TIMEOUT:
+				return TIMEOUT;
+				break;
+			case ERROR:
+				return ERROR;
+				break;
+			default:
+				break;
+			}
+			continue;
 		default:
-			goto MENU_ERROR;
+			return ERROR;
 		}
+	}
+}
 
-	MENU_ERROR:
+uint8_t (*menuFunctionPointers[menu_quitter])()={menuOuverture,menuFermeture,reglageDateHeure,installationTrappe,menuExpert};
+
+uint8_t menu(){
+	uint8_t menuPointer=menu_ouverture;
+
+	while(1){
 		clearButtons();
-		lcdPrintLine(ERREUR_MENU,0);
-		lcdClearLine(1);
-		delay(5000);
-		return;
+		lcdPrintScreen(menuText[menuPointer]);
+		switch(waitButton()){
+		case BPUP:
+			if (menuPointer>0){
+				--menuPointer;
+			}
+			continue;
+		case BPDW:
+			if (menuPointer<menu_quitter){
+				++menuPointer;
+			}
+			continue;
+		case TIMEOUT:
+			return TIMEOUT;
+		case BPOK:
+			if(menuPointer==menu_quitter){
+				return 0;
+			}
+			switch ((*menuFunctionPointers[menuPointer])()){
+			case TIMEOUT:
+				return TIMEOUT;
+				break;
+			case ERROR:
+				return ERROR;
+				break;
+			default:
+				break;
+			}
+			continue;
+		default:
+			return ERROR;
+		}
+	}
+}
+
+uint8_t reglageHauteur(){
+	clearButtons();
+	activateMotor();
+
+	lcdPrintLine(REGLAGE,0);
+	lcdPrintLine(POSITION_FERMEE,1);
+	if(manualMoveMotor()==TIMEOUT){
+		return TIMEOUT;
+	}
+	resetPosition();
+	lcdPrintLine(POSITION_FERMEE,0);
+	lcdPrintLine(ENREGISTREE,1);
+	delay(2000);
+	clearButtons();
+	lcdPrintLine(REGLAGE,0);
+	lcdPrintLine(POSITION_OUVERTE,1);
+	if(manualMoveMotor()==TIMEOUT){
+		return TIMEOUT;
+	}
+	positionHaute=motorPosition;
+	EEPROM.put(EEPROM_POSOPEN,positionHaute);
+	deactivateMotor();
+	lcdPrintLine(POSITION_OUVERTE,0);
+	lcdPrintLine(ENREGISTREE,1);
+	delay(2000);
+	doorState=ds_earlyOpened;
+	updateCloseTime();
+	return 0;
+}
+
+uint8_t reglageGPS(){
+	return enterDepartement();
+
+}
+
+uint8_t installationTrappe(){
+	topTimeout=millis();
+	switch(configured){
+	case 0:
+		if(reglageHauteur()!=0){
+			return ERROR;
+		}
+		configured=1;
+	case 1:
+		if(reglageGPS()!=0){
+			return ERROR;
+		}
+		configured=2;
+	case 2:
+		if(reglageDateHeure()!=0){
+			return ERROR;
+		}
+		configured=3;
+		updateOpenTime();
+		updateCloseTime();
+	}
+	return 0;
 }
 
 void updateOpenTime(){
 	updateDateTime();
-	calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),-5,45,&lever,&meridien,&coucher);
+	calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),longitudeOuest,latitudeNord,&lever,&meridien,&coucher);
 	if (openMode==SOLEIL){
 		julianTranslate(&openTime.H,&openTime.M,&nowTime.S,lever);//nowTime used only as trash result to limit variable number
 	}
@@ -1134,14 +988,14 @@ void updateOpenTime(){
 
 void updateCloseTime(){
 	updateDateTime();
-	calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),-5,45,&lever,&meridien,&coucher);
+	calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),longitudeOuest,latitudeNord,&lever,&meridien,&coucher);
 	if (closeMode==SOLEIL){
 		julianTranslate(&closeTime.H,&closeTime.M,&nowTime.S,coucher);//nowTime used only to limit variable number
 		closeTime.M+=closeDelay;
-		while(closeTime.M>59){
+	/*	while(closeTime.M>59){
 			closeTime.H+=1;
 			closeTime.M-=60;
-		}
+		}*/
 	}
 }
 

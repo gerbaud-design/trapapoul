@@ -89,7 +89,7 @@ void LiquidCrystal_I2C::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 	command(LCD_FUNCTIONSET | _displayfunction);  
 	
 	// turn the display on with no cursor or blinking default
-	_displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;
+	_displaycontrol = LCD_DISPLAYOFF | LCD_CURSOROFF | LCD_BLINKOFF;
 	display();
 	
 	// clear it off
@@ -209,6 +209,9 @@ void LiquidCrystal_I2C::backlight(void) {
 	expanderWrite(0);
 }
 
+void LiquidCrystal_I2C::clearExpander(){
+	expanderWrite(0);
+}
 
 
 /*********** mid level commands, for sending data/cmds */

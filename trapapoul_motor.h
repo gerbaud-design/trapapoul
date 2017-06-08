@@ -12,6 +12,7 @@
 #include <Arduino.h>
 #include "ERRcodes.h"
 #include "trapapoul_config.h"
+#include "trapapoul_UI.h"
 
 
 enum motorState_t {
@@ -104,17 +105,21 @@ ISR (PCINT1_vect){ // handle pin change interrupt for A0 to A7 here
 }
 
 void activateVpp(){
+	//put expander signals to low
+	lcd.clearExpander();
 	pinMode(pinVppEn,OUTPUT);
 	digitalWrite(pinVppEn,1);
-	delay(100);
+	//delay(200);
 	lcd.init();
-	lcd.noBacklight();
-	lcd.clear();
+	//lcd.noBacklight();
+	//lcd.clear();
 	uploadChar(CHECK_CHAR,checkChar);
 	uploadChar(DEG_CHAR,degChar);
 }
 
 void deactivateVpp(){
+
+	digitalWrite(12,0);
 	digitalWrite(pinVppEn,0);
 	delay(10);
 	pinMode(pinVppEn,INPUT);
@@ -122,7 +127,7 @@ void deactivateVpp(){
 
 void activateMotor ()
 {
-	activateVpp();
+	//activateVpp();
 	delay(1000);//just in case, can be quicken after tests
 	PCIFR  |= bit (digitalPinToPCICRbit(pinQuadratureB));//enable interrupt for the group
 	PCICR  |= bit (digitalPinToPCICRbit(pinQuadratureB));//clear outstanding interrupt
@@ -235,46 +240,45 @@ void resetPosition(){
 	motorPosition=0;
 }
 
-void manualMoveMotor(){
+uint8_t manualMoveMotor(){
 uint8_t manualMoveMachineState=0;	//1=frd 2=bkw
-//uint32_t millisMarker=0;
+	topTimeout=millis();
 	manualMoveMachineState=0;
 	clearButtons();
 	while(1){
 		if (manualMoveMachineState==0){
-			if(buttonState[BPUP]==0){
+
+			if(buttonState[BPUP]==1){
 				manualMoveMachineState=1;
 				motorForward();
-			}
-			if(buttonState[BPDW]==0){
-				manualMoveMachineState=2;
-				motorBackward();
-			}
-		}
-		if (manualMoveMachineState==1){
-			if(buttonState[BPUP]==1){
-				manualMoveMachineState=0;
-				motorStop();
-			}
-			if(buttonState[BPDW]==0){
-				manualMoveMachineState=0;
-				motorStop();
-			}
-		}
-		if (manualMoveMachineState==2){
-			if(buttonState[BPUP]==0){
-				manualMoveMachineState=0;
-				motorStop();
+				continue;
 			}
 			if(buttonState[BPDW]==1){
+				manualMoveMachineState=2;
+				motorBackward();
+				continue;
+			}
+			if((millis()-topTimeout)>BUTTON_TIMEOUT)
+					return TIMEOUT;
+		}
+		if (manualMoveMachineState==1){
+			if(buttonState[BPUP]==0 || buttonState[BPDW]==1){
 				manualMoveMachineState=0;
 				motorStop();
 			}
+			topTimeout=millis();
+		}
+		if (manualMoveMachineState==2){
+			if(buttonState[BPUP]==1 || buttonState[BPDW]==0){
+				manualMoveMachineState=0;
+				motorStop();
+			}
+			topTimeout=millis();
 		}
 		if(buttonPushed[BPOK]){
 			motorStop();
 			clearButtons();
-			return;
+			return 0;
 		}
 	}
 }

@@ -70,6 +70,24 @@ const uint8_t LONGITUDE_EST   [16] PROGMEM = {'L','O','N','G','I','T','U','D','E
 
 
 
+
+enum menu_schedule_t{
+	menu_schedule_soleil,
+	menu_schedule_fixe,
+	//menu_schedule_minimum,
+	menu_schedule_return
+};
+//uint8_t menuSchedulePointer=menu_schedule_soleil;//not an enum so it can be iterated
+
+
+const uint8_t menuScheduleText[3][16] PROGMEM ={
+	{'S','O','L','E','I','L',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+	{'H','E','U','R','E',' ','F','I','X','E',' ',' ',' ',' ',' ',' '},
+//	{'M','I','N','I','M','U','M',' ',' ',' ',' ',' ',' ',' ',' ',' '}
+	{'R','E','T','O','U','R',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '}
+};
+const uint8_t DELAI           [16] PROGMEM = {'D','E','L','A','I',' ',':',' ',' ',' ',' ',' ',' ',' ',' ',' '};
+
 enum menu_t{
 	menu_ouverture,
 	menu_fermeture,
@@ -77,22 +95,10 @@ enum menu_t{
 	menu_installation,
 	menu_expert,
 	menu_quitter
-}menuPointer=menu_ouverture;
-
-enum menu_modeture_t{
-	menu_modeture_soleil,
-	menu_modeture_fixe,
-	menu_modeture_minimum
-}menuModeturePointer=menu_modeture_soleil;
-
-const uint8_t menuModetureText[3][16] PROGMEM ={
-	{'S','O','L','E','I','L',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
-	{'H','E','U','R','E',' ','F','I','X','E',' ',' ',' ',' ',' ',' '},
-	{'M','I','N','I','M','U','M',' ',' ',' ',' ',' ',' ',' ',' ',' '}
 };
+//uint8_t menuPointer=menu_ouverture;//not an enum so it can be iterated
 
-
-const uint8_t menuText[menu_quitter][2][16] PROGMEM = {
+const uint8_t menuText[menu_quitter+1][2][16] PROGMEM = {
 	{{'R','E','G','L','A','G','E',' ','D','U',' ','M','O','D','E',' '},
 	{'D','\'','O','U','V','E','R','T','U','R','E',' ',' ',' ',' ',' '}},
 	{{'R','E','G','L','A','G','E',' ','D','U',' ','M','O','D','E',' '},
@@ -102,7 +108,27 @@ const uint8_t menuText[menu_quitter][2][16] PROGMEM = {
 	{{'I','N','S','T','A','L','L','A','T','I','O','N',' ',' ',' ',' '},
 	{'D','E',' ','L','A',' ','T','R','A','P','P','E',' ',' ',' ',' '}},
 	{{'R','E','G','L','A','G','E',' ','D','U',' ','M','O','D','E',' '},
-	{'E','X','P','E','R','T',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '}}
+	{'E','X','P','E','R','T',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '}},
+	{{'R','E','T','O','U','R',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+	{' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '}}
 };
+
+enum menu_expert_t{
+	menu_expert_charge,
+	menu_expert_cyclage,
+	menu_expert_ephemeride,
+	menu_expert_debug,
+	menu_expert_quitter
+};
+
+const uint8_t menuExpertText[menu_expert_quitter+1][16] PROGMEM ={
+	{'C','H','A','R','G','E',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+	{'C','Y','C','L','A','G','E',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+	{'E','P','H','E','M','E','R','I','D','E',' ',' ',' ',' ',' ',' '},
+	{'D','E','B','U','G',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+	{'R','E','T','O','U','R',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+};
+
+
 
 #endif /* TRAPAPOUL_TEXT_H_ */

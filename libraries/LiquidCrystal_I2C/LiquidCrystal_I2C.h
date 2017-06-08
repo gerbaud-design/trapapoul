@@ -82,6 +82,7 @@ public:
   virtual size_t write(uint8_t);
   void command(uint8_t);
   void init();
+  void clearExpander();
 
 
 ////compatibility API function aliases
