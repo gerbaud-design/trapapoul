@@ -65,6 +65,9 @@ const uint8_t LATITUDE_SUD    [16] PROGMEM = {'L','A','T','I','T','U','D','E',' 
 const uint8_t LONGITUDE_OUEST [16] PROGMEM = {'L','O','N','G','I','T','U','D','E',' ','O','U','E','S','T',' '};
 const uint8_t LONGITUDE_EST   [16] PROGMEM = {'L','O','N','G','I','T','U','D','E',' ','E','S','T',' ',' ',' '};
 
+const uint8_t ERRORtxt        [16] PROGMEM = {'E','R','R','O','R',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '};
+const uint8_t TIMEOUTtxt      [16] PROGMEM = {'T','I','M','E','O','U','T',' ',' ',' ',' ',' ',' ',' ',' ',' '};
+const uint8_t ALARMtxt        [16] PROGMEM = {'A','L','A','R','M',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '};
 
 
 
@@ -118,6 +121,7 @@ enum menu_expert_t{
 	menu_expert_cyclage,
 	menu_expert_ephemeride,
 	menu_expert_debug,
+	menu_expert_alarm,
 	menu_expert_quitter
 };
 
@@ -126,6 +130,7 @@ const uint8_t menuExpertText[menu_expert_quitter+1][16] PROGMEM ={
 	{'C','Y','C','L','A','G','E',' ',' ',' ',' ',' ',' ',' ',' ',' '},
 	{'E','P','H','E','M','E','R','I','D','E',' ',' ',' ',' ',' ',' '},
 	{'D','E','B','U','G',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
+	{'A','L','A','R','M',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
 	{'R','E','T','O','U','R',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '},
 };
 

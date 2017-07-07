@@ -36,9 +36,9 @@
 //button timing const
 #define DEBOUNCE 100 //ms
 #define FAST_BUTTON 200 //ms
-#define BUTTON_TIMEOUT 10000 //ms
 #define BLINK_HALF_PERIOD 500 //ms
-#define DEFAULT_CLOSE_DELAY 30 //min
+#define BUTTON_TIMEOUT 10000 //ms
+#define MESSAGE_TIME 500 //ms
 
 //EEPROM adresses
 #define EEPROM_LON 10 //int
@@ -51,6 +51,9 @@
 #define POST_RUN_TIME 1000
 #define MOTOR_TIME_OUT 10000
 #define NB_ITERATION 1100
+
+//trapapoul default values
+#define DEFAULT_CLOSE_DELAY 30 //min
 
 //log config
 

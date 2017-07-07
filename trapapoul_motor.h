@@ -111,8 +111,9 @@ void activateVpp(){
 	digitalWrite(pinVppEn,1);
 	//delay(200);
 	lcd.init();
-	//lcd.noBacklight();
-	//lcd.clear();
+	lcd.noDisplay();
+	lcd.noBacklight();
+	lcd.clear();
 	uploadChar(CHECK_CHAR,checkChar);
 	uploadChar(DEG_CHAR,degChar);
 }

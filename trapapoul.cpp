@@ -24,8 +24,8 @@ extern volatile unsigned long lastPush[3];
 extern volatile bool buttonState[3];
 extern volatile bool buttonPushed[3];
 
-extern volatile int8_t latitudeNord;
-extern volatile int16_t longitudeOuest;
+extern int8_t latitudeNord;
+extern int16_t longitudeOuest;
 
 extern uint8_t resetSource;
 
@@ -35,7 +35,7 @@ extern uint8_t resetSource;
 #define MINIMUM 2
 uint8_t openMode=SOLEIL;
 uint8_t closeMode=SOLEIL;
-gdiTime_t openTime,closeTime;
+gdiTime_t openUTCTime,closeUTCTime;
 uint8_t closeDelay=DEFAULT_CLOSE_DELAY;
 
 enum wakeUpSource_t{
@@ -75,12 +75,21 @@ uint16_t writeCount;
 	}while(eeBlockCount<50);*/
 
 
+//functions declaration
+
+
 uint8_t installationTrappe();
 uint8_t manualMoveMotor();
 void updateOpenTime();
 void updateCloseTime();
 uint8_t userInterface();
 uint8_t menu();
+//expert functions
+uint8_t expertCharge();
+uint8_t expertCyclage();
+uint8_t expertEphemerides();
+uint8_t expertDebug();
+uint8_t expertAlarm();
 
 //interrupt routine for pin change of port D
 ISR (PCINT2_vect){ // handle pin change interrupt for D0 to D7 here
@@ -223,17 +232,19 @@ void loop()
 {
 
 	activateVpp();
+	RTC.getDateTime();
 	switch(wakeUpSource){
 	case wu_unknown:
 		LCDON;
 		lcdPrintLine(UNKNOWN_WAKE_UP,0);
-		delay(2000);
+		delay(500);
 		LCDOFF;
 		//nobreak
 	case wu_button:
-		clearButtons();
 		lcd.clear();
 		LCDON;
+		clearButtons();
+		updateSummerTime();
 		if(configured<3){
 			installationTrappe();
 		}else{
@@ -241,29 +252,37 @@ void loop()
 		}
 		LCDOFF;
 		lcd.clear();
+		updateCloseTime();
+		updateOpenTime();
 		//nobreak
 	case wu_alarm:
-		if(configured>3){
-			updateCloseTime();
-			updateOpenTime();
+		LCDON;
+		lcdPrintLine(ALARMtxt,0);
+		delay(1000);
+		LCDOFF;
+		if(configured>=3){
 			updateDateTime();
-			if((((RTC.getHour()>openTime.H)||\
-					((RTC.getHour()==openTime.H)&&(RTC.getMinute()>=openTime.M)))\
-					&&((RTC.getHour()<closeTime.H)||\
-					((RTC.getHour()==closeTime.H)&&(RTC.getMinute()<closeTime.M))))==1){
+			if(RTC.getVoltLow()){
+				LCDON;
+				lcdPrintLine(DEBUG,0);
+				delay(10000);
+				LCDOFF;
+			}
+
+			if((((RTC.getHour()>openUTCTime.H)||\
+					((RTC.getHour()==openUTCTime.H)&&(RTC.getMinute()>=openUTCTime.M)))\
+					&&((RTC.getHour()<closeUTCTime.H)||\
+					((RTC.getHour()==closeUTCTime.H)&&(RTC.getMinute()<closeUTCTime.M))))==1){
 				if(doorState==ds_earlyOpened){
 					doorState=ds_opened;
 				}
 				if(doorState==ds_closed){
 					activateMotor();
-					if(RTC.getVoltLow()){
-						motorGoTo(positionHaute);//open door
-						deactivateMotor();
-						doorState=ds_opened;
-					}else{
-						doorState=ds_forceClosed;
-					}
+					motorGoTo(positionHaute);//open door
+					deactivateMotor();
+					doorState=ds_opened;
 				}
+				RTC.setAlarm(closeUTCTime.M, closeUTCTime.H, 99, 99);
 				//set alarm to closeTime
 			}
 			else{
@@ -276,6 +295,7 @@ void loop()
 					deactivateMotor();
 					doorState=ds_closed;
 				}
+				RTC.setAlarm(openUTCTime.M, openUTCTime.H, 99, 99);
 				//set alarm to openTime
 			}
 		}
@@ -299,51 +319,17 @@ void loop()
 	sleep_disable();
 	clearButtons();
 	ENABLE_ADC;
-
-
 }
-
-
-void loadPosition(void){
-	/*
-	switch(oldMotorPosition%4){//use the variable as buffer before we use it for its true function
-	case 0:
-		oldQuadrature=QUAD0;
-		oldQuadratureA=0;
-		oldQuadratureB=1;
-		break;
-	case 1:
-		oldQuadrature=QUAD1;
-		oldQuadratureA=1;
-		oldQuadratureB=1;
-		break;
-	case 2:
-		oldQuadrature=QUAD2;
-		oldQuadratureA=1;
-		oldQuadratureB=0;
-		break;
-	case 3:
-		oldQuadrature=QUAD3;
-		oldQuadratureA=0;
-		oldQuadratureB=0;
-		break;
-	}
-	quadratureA = digitalRead(pinQuadratureA);
-	quadratureB = digitalRead(pinQuadratureB);
-	quadrature = (quadratureA + quadratureA + quadratureB);*/
-}
-
 
 uint8_t userInterface()
 {
-	 topTimeout=millis();
+	updateSummerTime();
+	topTimeout=millis();
 		while(1){
-
-
 			//time display
-			updateDateTime();
+			updateTime();
 			lcd.setCursor(0,0);
-			lcdPrintTime(&nowTime,1);
+			lcdPrintTime(&nowUTCTime,1);
 			if(!resetSource) lcd.write('X');
 			//battery voltage measurement
 			anaRead=0;
@@ -367,13 +353,13 @@ uint8_t userInterface()
 			case ds_earlyOpened:
 				lcdPrintLine(FERMERA_A,1);
 				lcd.setCursor(10,1);
-				lcdPrintTime(&closeTime,0);
+				lcdPrintTime(&closeUTCTime,0);
 				break;
 			case ds_closed:
 			case ds_earlyClosed:
 				lcdPrintLine(OUVRIRA_A,1);
 				lcd.setCursor(10,1);
-				lcdPrintTime(&openTime,0);
+				lcdPrintTime(&openUTCTime,0);
 				break;
 			case ds_unknown:
 				lcdPrintLine(PARAMETREZ_MOI,1);
@@ -385,6 +371,9 @@ uint8_t userInterface()
 				lcdPrintLine(FERME_INFINI,1);
 				break;
 			}
+			//	lcd.setCursor(0,1);
+			//	lcd.print(doorState);
+
 
 			if(buttonPushed[BPOK]==1)
 				switch(menu()){
@@ -394,6 +383,8 @@ uint8_t userInterface()
 					lcdClearLine(1);
 					delay(5000);
 				case TIMEOUT:
+					lcdPrintLine(TIMEOUTtxt,0);
+					delay(200);
 					return TIMEOUT;
 				default:
 					clearButtons();
@@ -783,9 +774,9 @@ uint8_t SheduleSetting(bool opening){//(opening=0)=>closing
 			if (menuSchedulePointer==menu_schedule_fixe){
 				gdiTime_t *toSet;
 				if(opening){
-					toSet=&openTime;
+					toSet=&openUTCTime;
 				}else{
-					toSet=&closeTime;
+					toSet=&closeUTCTime;
 				}
 				lcdPrintLine(HEURE,1);
 				lcd.setCursor(6,1);
@@ -812,37 +803,45 @@ uint8_t menuFermeture(){
 	return SheduleSetting(1);
 }
 uint8_t reglageDateHeure(){
-	updateDateTime();
-	lcdPrintLine(HEURE,0);
-	if(enterTime(&nowTime,1)==0){
-		RTC.setTime(nowTime.H,nowTime.M,nowTime.S);
-		lcdPrintLine(HEURE,0);
-		lcdPrintLine(ENREGISTREE,1);
-		delay(2000);
-		lcd.clear();
-	}else{
-		return ERROR;
-	}
+	updateTime();
+	lcd.clear();
 	lcdPrintLine(DATE,0);
 	if(enterDate(&nowDate)==0){
 		RTC.setDate(nowDate.D,1,nowDate.M,0,nowDate.Y);
 		lcdPrintLine(DATE,0);
 		lcdPrintLine(ENREGISTREE,1);
+		updateSummerTime();
+		//delay(500);
+		lcd.clear();
 	}else{
 		return ERROR;
 	}
+	lcd.clear();
+	lcdPrintLine(HEURE,0);
+	if(enterTime(&nowUTCTime,1)==0){
+
+		RTC.setDateTime(nowDate.D,RTC.whatWeekday(nowDate.D,nowDate.M,0,nowDate.Y),nowDate.M,0,nowDate.Y,nowUTCTime.H,nowUTCTime.M,nowUTCTime.S);
+		lcdPrintLine(HEURE,0);
+		lcdPrintLine(ENREGISTREE,1);
+		//delay(500);
+		lcd.clear();
+	}else{
+		return ERROR;
+	}
+
 	RTC.clearVoltLow();
 	updateCloseTime();
 	updateOpenTime();
 	return 0;
 }
 
-uint8_t (*menuExpertFunctionPointers[menu_expert_quitter])()={expertCharge,expertCyclage,expertEphemerides,expertDebug};
+uint8_t (*menuExpertFunctionPointers[menu_expert_quitter])()={expertCharge,expertCyclage,expertEphemerides,expertDebug,expertAlarm};
 uint8_t menuExpert(){
 	uint8_t menuExpertPointer=0;
 	while(1){
 		clearButtons();
-		lcdPrintScreen(menuText[menuExpertPointer]);
+		lcd.clear();
+		lcdPrintLine(menuExpertText[menuExpertPointer],0);
 		switch(waitButton()){
 		case BPUP:
 			if (menuExpertPointer>0){
@@ -905,9 +904,13 @@ uint8_t menu(){
 			switch ((*menuFunctionPointers[menuPointer])()){
 			case TIMEOUT:
 				return TIMEOUT;
+				lcdPrintLine(TIMEOUTtxt,0);
+				delay(200);
 				break;
 			case ERROR:
 				return ERROR;
+				lcdPrintLine(ERRORtxt,0);
+				delay(200);
 				break;
 			default:
 				break;
@@ -931,7 +934,7 @@ uint8_t reglageHauteur(){
 	resetPosition();
 	lcdPrintLine(POSITION_FERMEE,0);
 	lcdPrintLine(ENREGISTREE,1);
-	delay(2000);
+	delay(MESSAGE_TIME);
 	clearButtons();
 	lcdPrintLine(REGLAGE,0);
 	lcdPrintLine(POSITION_OUVERTE,1);
@@ -943,8 +946,8 @@ uint8_t reglageHauteur(){
 	deactivateMotor();
 	lcdPrintLine(POSITION_OUVERTE,0);
 	lcdPrintLine(ENREGISTREE,1);
-	delay(2000);
-	doorState=ds_earlyOpened;
+	delay(MESSAGE_TIME);
+	doorState=ds_opened;
 	updateCloseTime();
 	return 0;
 }
@@ -956,6 +959,7 @@ uint8_t reglageGPS(){
 
 uint8_t installationTrappe(){
 	topTimeout=millis();
+	configured=0;
 	switch(configured){
 	case 0:
 		if(reglageHauteur()!=0){
@@ -980,24 +984,188 @@ uint8_t installationTrappe(){
 
 void updateOpenTime(){
 	updateDateTime();
-	calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),longitudeOuest,latitudeNord,&lever,&meridien,&coucher);
+	calculerEphemeride(nowDate.D,nowDate.M,nowDate.Y,longitudeOuest,latitudeNord,&lever,&meridien,&coucher);
+	if (lever<-0.5) lever+=1;
+	if (lever>=0.5) lever-=1;
 	if (openMode==SOLEIL){
-		julianTranslate(&openTime.H,&openTime.M,&nowTime.S,lever);//nowTime used only as trash result to limit variable number
+		julianTranslate(&openUTCTime.H,&openUTCTime.M,&openUTCTime.S,lever);//nowTime used only as trash result to limit variable number
 	}
 }
 
 void updateCloseTime(){
 	updateDateTime();
-	calculerEphemeride(RTC.getDay(),RTC.getMonth(),RTC.getYear(),longitudeOuest,latitudeNord,&lever,&meridien,&coucher);
+	calculerEphemeride(nowDate.D,nowDate.M,nowDate.Y,longitudeOuest,latitudeNord,&lever,&meridien,&coucher);
+	if (coucher<-0.5) lever+=1;
+	if (coucher>=0.5) lever-=1;
 	if (closeMode==SOLEIL){
-		julianTranslate(&closeTime.H,&closeTime.M,&nowTime.S,coucher);//nowTime used only to limit variable number
-		closeTime.M+=closeDelay;
-	/*	while(closeTime.M>59){
-			closeTime.H+=1;
-			closeTime.M-=60;
-		}*/
+		julianTranslate(&closeUTCTime.H,&closeUTCTime.M,&closeUTCTime.S,coucher);//nowTime used only to limit variable number
+		closeUTCTime.M+=closeDelay;
+		while(closeUTCTime.M>59){
+			closeUTCTime.H+=1;
+			closeUTCTime.M-=60;
+		}
 	}
 }
 
+///expret functions:
 
+
+uint8_t expertCharge(){
+	clearButtons();
+			/*pinMode(pinVppEn,OUTPUT);
+			digitalWrite(pinVppEn,1);
+			lcd.setCursor(0,0);
+			lcd.print(F("CHARGE READY    "));
+			lcd.setCursor(0,1);
+			lcdClearLine();
+			while(waitButton()!=BPOK);
+			lcd.setCursor(0,0);
+			lcd.print(F("CHARGE ON       "));
+			//chargeStartTime=millis();
+			digitalWrite(pinChargeOff,1);
+			while((millis()-chargeStartTime)<3600000){
+				float batVoltage;
+				anaRead=0;
+				for (i8_1=0;i8_1<16;i8_1++){
+					anaRead += analogRead(pinMesVbat);
+					delay(10);
+				}
+				batVoltage=anaRead*vrefVoltage*3.13/10240;
+				lcd.setCursor(0,1);
+				lcd.print(batVoltage);
+				lcd.print('V');
+				if (batVoltage>7.2) break;
+				delay(1000);
+			}*/
+			digitalWrite(pinChargeOff,0);
+			clearButtons();
+			waitButton();
+			return 0;
+}
+
+uint8_t expertCyclage(){
+
+			activateMotor();
+			lcd.setCursor(0,0);
+			lcdPrintLine(CYCLAGE,0);
+			nbCycles=0;
+			while(1){
+				motorGoTo(positionHaute);
+				delay(10000);
+				if(machineState==TIMEOUT)
+					break;
+				motorGoTo(0);
+				if(machineState==TIMEOUT)
+					break;
+				nbCycles++;
+				lcd.setCursor(10,1);
+				lcd.print(nbCycles);
+				if(nbCycles==NB_ITERATION)
+					break;
+
+				delay(10000);
+			}
+			if(machineState==TIMEOUT){
+			}
+			manualMoveMotor();
+			deactivateMotor();
+	return 0;
+}
+
+
+extern float lever,coucher,meridien;
+uint8_t expertEphemerides(){
+	gdiDate_t tmpDate={0,0,0};
+	gdiTime_t tmpTime;
+	while(1){
+		lcd.clear();
+		enterDate(&tmpDate);
+		lcd.clear();
+	//	calculerEphemeride(timeElements.Day,timeElements.Month,timeElements.Year,45,-5,&lever,&meridien,&coucher);
+		calculerEphemeride(tmpDate.D,tmpDate.M,tmpDate.Y,longitudeOuest,latitudeNord,&lever,&meridien,&coucher);
+	/*	if (lever<-0.5) lever+=1;
+		if (lever>=0.5) lever-=1;
+		if (coucher<-0.5) lever+=1;
+		if (coucher>=0.5) lever-=1;*/
+		lcd.setCursor(0,0);
+		lcd.print(lever);
+		lcd.setCursor(0,1);
+		lcd.print(coucher);
+		julianTranslate(&tmpTime.H,&tmpTime.M,&tmpTime.S,lever);
+		lcd.setCursor(6,0);
+		lcdPrintTime(&tmpTime,1);
+		julianTranslate(&tmpTime.H,&tmpTime.M,&tmpTime.S,coucher);
+		lcd.setCursor(6,1);
+		lcdPrintTime(&tmpTime,1);
+		while(buttonPushed[BPOK]==0){
+			if (buttonPushed[BPDW]==1) continue;
+		}
+		break;
+	}
+	return 0;
+}
+
+uint8_t expertDebug(){
+
+
+/*	activateMotor();
+motorForward();
+clearButtons();
+lcd.setCursor(0,0);
+lcd.print(F("MOTOR ON        "));
+lcd.setCursor(0,1);
+lcdClearLine();
+while(1){
+	anaRead=0;
+	for(i8_1=0;i8_1<64;i8_1++){
+		anaRead+=analogRead(pinMesImot);
+		delay(2);
+	}
+
+	anaRead /=ratioImot;
+	lcd.setCursor(10,0);
+	lcd.print(anaRead);
+	lcd.print('"mA");
+
+	anaRead=0;
+	for(i8_1=0;i8_1<64;i8_1++){
+		anaRead+=analogRead(pinMesVbat);
+		delay(2);
+	}
+	anaRead /=ratioVbat;
+	lcd.setCursor(10,1);
+	lcd.print(anaRead);
+	lcd.setCursor(11,1);
+	lcd.print(anaRead);
+	lcd.print('V');
+	lcd.setCursor(11,1);
+	lcd.print(',');
+
+	if (buttonPushed[BPUP]){
+		motorStop();
+		motorForward();
+		clearButtons();
+	}
+	if (buttonPushed[BPDW]){
+		motorStop();
+		motorBackward();
+		clearButtons();
+	}
+	if (buttonPushed[BPOK]){
+		motorStop();
+		clearButtons();
+		break;
+	}*/
+	return 0;
+}
+
+
+uint8_t expertAlarm(){
+	gdiTime_t tmpTime;
+	lcd.clear();
+	enterTime(&tmpTime,0);
+	RTC.setAlarm(tmpTime.M,tmpTime.H,99,99);
+	delay(1000);
+	return 0;
+}
 

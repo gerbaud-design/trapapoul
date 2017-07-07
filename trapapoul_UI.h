@@ -18,8 +18,8 @@
 //lcd_I2C config
 LiquidCrystal_I2C lcd(LCD_ADDRESS,16,2);
 
-volatile int8_t latitudeNord=45;
-volatile int16_t longitudeOuest=-6;
+int8_t latitudeNord=45;
+int16_t longitudeOuest=-5;
 
 //RTC
 
@@ -305,8 +305,9 @@ uint8_t enterDepartement (){
 	if(enterNumber(&dpt,1,95,13,1,2)==TIMEOUT){
 		return TIMEOUT;
 	}
-	latitudeNord=departement[((dpt-1)*2)];
-	longitudeOuest=departement[((dpt*2)-1)];
+	latitudeNord=(int8_t)(pgm_read_byte(departement+((dpt-1)*2)));
+	longitudeOuest=(int8_t)(pgm_read_byte(departement+((dpt*2)-1)));
+	lcd.clear();
 	return 0;
 }
 
@@ -421,5 +422,6 @@ LATLON_LABEL:
 	}
 	return 0;
 }
+
 
 #endif /* TRAPAPOUL_UI_H_ */
